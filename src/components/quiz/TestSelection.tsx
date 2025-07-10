@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BackButton from '../common/BackButton';
+import { useAuth } from '../../contexts/AuthContext';
+import { updateUserEnergy } from '../../services/firebase';
 
 const TEST_COUNT = 10;
 
@@ -20,6 +22,8 @@ const TestSelection: React.FC = () => {
   const navigate = useNavigate();
   const { subTopic } = useParams();
   const mainTopic = window.location.pathname.split('/')[1];
+  const { user, updateUser, refreshUser } = useAuth();
+  const [energyError, setEnergyError] = React.useState<string | null>(null);
 
   if (!mainTopic || !subTopic) {
     return (
@@ -32,8 +36,27 @@ const TestSelection: React.FC = () => {
     );
   }
 
-  const handleTestClick = (testNumber: number) => {
-    navigate(`/quiz/${mainTopic}/${subTopic}/${testNumber}`);
+  const handleTestClick = async (testNumber: number) => {
+    setEnergyError(null);
+    if (!user) {
+      setEnergyError('Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.');
+      return;
+    }
+    if ((user.energy ?? 0) < 20) {
+      setEnergyError('Bu testi çözmek için yeterli enerjiniz yok. (En az 20 enerji gerekir)');
+      return;
+    }
+    // Enerji düşümü
+    const newEnergy = Math.max(0, (user.energy ?? 0) - 20);
+    const now = new Date().toISOString();
+    try {
+      await updateUserEnergy(user.id, newEnergy, now);
+      // Local user bilgisini de güncelle
+      updateUser({ ...user, energy: newEnergy, lastEnergyUpdate: now });
+      navigate(`/quiz/${mainTopic}/${subTopic}/${testNumber}`);
+    } catch (err) {
+      setEnergyError('Enerji güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+    }
   };
 
   const gradients = [
@@ -67,6 +90,9 @@ const TestSelection: React.FC = () => {
         <div style={{ width: 120 }} />
       </div>
       <div className="card" style={{ background: 'linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%)', boxShadow: '0 8px 40px #43e97b22' }}>
+        {energyError && (
+          <div style={{ color: 'red', fontWeight: 700, fontSize: 17, marginBottom: 12, textAlign: 'center' }}>{energyError}</div>
+        )}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <h2 style={{ color: '#43e97b', fontWeight: 800, fontSize: 28, letterSpacing: 1 }}>🔢 Hangi testi çözmek istersin?</h2>
           <p style={{ color: '#555', fontSize: 16, marginTop: 8 }}>Aşağıdan bir test seçerek başlayabilirsin.</p>

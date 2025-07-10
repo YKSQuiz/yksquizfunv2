@@ -67,10 +67,21 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
       };
       needsUpdate = true;
     }
+    // Enerji alanları yoksa ekle
+    if (typeof userData.energy !== 'number') {
+      userData.energy = 100;
+      needsUpdate = true;
+    }
+    if (!userData.lastEnergyUpdate) {
+      userData.lastEnergyUpdate = new Date().toISOString();
+      needsUpdate = true;
+    }
     if (needsUpdate) {
       await updateDoc(userRef, {
         jokers: userData.jokers,
         jokersUsed: userData.jokersUsed,
+        energy: userData.energy,
+        lastEnergyUpdate: userData.lastEnergyUpdate,
       });
     }
     return userData;
@@ -104,7 +115,9 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
         extraTime: 0,
         doubleAnswer: 0,
         autoCorrect: 0,
-      }
+      },
+      energy: 100,
+      lastEnergyUpdate: new Date().toISOString(),
     };
     await setDoc(userRef, newUser, { merge: true });
     return newUser;
@@ -410,7 +423,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           extraTime: 0,
           doubleAnswer: 0,
           autoCorrect: 0,
-        }
+        },
+        energy: 100,
+        lastEnergyUpdate: new Date().toISOString(),
       };
       await setDoc(doc(db, 'users', result.user.uid), newUser);
       setUser(newUser);

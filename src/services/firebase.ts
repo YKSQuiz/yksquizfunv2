@@ -37,4 +37,18 @@ export async function updateSessionTime(uid: string, sessionDuration: number) {
   }
 }
 
+/**
+ * Kullanıcının enerjisini ve son enerji güncelleme zamanını Firestore'da günceller.
+ * @param uid Kullanıcı ID'si
+ * @param newEnergy Yeni enerji miktarı (0-100)
+ * @param lastUpdate Son güncelleme zamanı (ISO string)
+ */
+export async function updateUserEnergy(uid: string, newEnergy: number, lastUpdate: string) {
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, {
+    energy: newEnergy,
+    lastEnergyUpdate: lastUpdate,
+  });
+}
+
 export default app; 

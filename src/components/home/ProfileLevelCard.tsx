@@ -87,66 +87,66 @@ const ProfileLevelCard: React.FC<ProfileLevelCardProps> = ({ avatar, displayName
         .modern-glass-card {
           background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
           background-blend-mode: lighten;
-          box-shadow: 0 9px 36px #764ba244, 0 1.125px 6px #fff8;
-          border-radius: 36px;
-          padding: 49.5px 40.5px 36px 40.5px;
-          min-width: 360px; max-width: 472.5px; margin: 0 auto 6px auto;
-          border: 1.6875px solid rgba(120, 80, 220, 0.13);
+          box-shadow: 0 6.3px 25.2px #764ba244, 0 0.7875px 4.2px #fff8;
+          border-radius: 25.2px;
+          padding: 34.65px 28.35px 25.2px 28.35px;
+          min-width: 252px; max-width: 330.75px; margin: 0 auto 4.2px auto;
+          border: 1.18125px solid rgba(120, 80, 220, 0.13);
           display: flex; flex-direction: column; align-items: center; justify-content: center;
-          backdrop-filter: blur(15.75px) saturate(1.2);
+          backdrop-filter: blur(11.025px) saturate(1.2);
           position: relative;
         }
-        .plc-avatar-row { margin-bottom: 11.25px; }
+        .plc-avatar-row { margin-bottom: 7.875px; }
         .modern-avatar-glow {
-          width: 103.5px; height: 103.5px; border-radius: 50%; background: linear-gradient(135deg,#764ba2 0%,#667eea 100%);
-          display: flex; align-items: center; justify-content: center; font-size: 3.4875rem; color: #fff; font-weight: 900;
-          box-shadow: 0 4.5px 27px #764ba244, 0 0 0 9px #fff2;
-          border: 4.5px solid #fff; margin-bottom: 2.25px;
+          width: 72.45px; height: 72.45px; border-radius: 50%; background: linear-gradient(135deg,#764ba2 0%,#667eea 100%);
+          display: flex; align-items: center; justify-content: center; font-size: 2.44125rem; color: #fff; font-weight: 900;
+          box-shadow: 0 3.15px 18.9px #764ba244, 0 0 0 6.3px #fff2;
+          border: 3.15px solid #fff; margin-bottom: 1.575px;
           transition: box-shadow 0.3s, transform 0.2s;
         }
         .modern-avatar-glow:hover {
-          box-shadow: 0 9px 36px #764ba288, 0 0 0 13.5px #fff4;
+          box-shadow: 0 6.3px 25.2px #764ba288, 0 0 0 9.45px #fff4;
           transform: scale(1.06);
         }
         .plc-name-row {
-          font-size: 1.51875rem; font-weight: 900; color: #333; margin-bottom: 2.25px; margin-top: 9px;
-          letter-spacing: 0.5625px;
+          font-size: 1.063125rem; font-weight: 900; color: #333; margin-bottom: 1.575px; margin-top: 6.3px;
+          letter-spacing: 0.39375px;
         }
         .plc-rank-row {
-          display: flex; align-items: center; gap: 11.25px; margin-bottom: 20.25px;
+          display: flex; align-items: center; gap: 7.875px; margin-bottom: 14.175px;
         }
-        .plc-rank-icon { font-size: 1.9125rem; filter: drop-shadow(0 2.25px 9px #fff8); }
-        .plc-rank-name { font-size: 1.29375rem; font-weight: 700; color: #764ba2; letter-spacing: 1.125px; }
+        .plc-rank-icon { font-size: 1.33875rem; filter: drop-shadow(0 1.575px 6.3px #fff8); }
+        .plc-rank-name { font-size: 0.905625rem; font-weight: 700; color: #764ba2; letter-spacing: 0.7875px; }
         .plc-level-row {
-          display: flex; align-items: center; gap: 11.25px; margin-bottom: 11.25px;
+          display: flex; align-items: center; gap: 7.875px; margin-bottom: 7.875px;
         }
-        .plc-level-label { font-size: 1.2375rem; color: #764ba2; font-weight: 700; }
+        .plc-level-label { font-size: 0.86625rem; color: #764ba2; font-weight: 700; }
         .plc-level-value-glow.modern-level-glow {
-          font-size: 3.0375rem; font-weight: 900; color: #fff; text-shadow: 0 0 20.25px #764ba2cc, 0 2.25px 9px #fff8;
-          letter-spacing: 1.6875px;
+          font-size: 2.12625rem; font-weight: 900; color: #fff; text-shadow: 0 0 14.175px #764ba2cc, 0 1.575px 6.3px #fff8;
+          letter-spacing: 1.18125px;
         }
         .modern-xp-bar-bg {
-          width: 202.5px; height: 22.5px; background: #e0e7ff; border-radius: 13.5px; overflow: hidden; margin-bottom: 9px;
-          box-shadow: 0 2.25px 9px #764ba222;
+          width: 141.75px; height: 15.75px; background: #e0e7ff; border-radius: 9.45px; overflow: hidden; margin-bottom: 6.3px;
+          box-shadow: 0 1.575px 6.3px #764ba222;
         }
         .modern-xp-bar {
           height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 60%, #fff 100%);
           background-size: 200% 100%;
           animation: shineBar 2.5s linear infinite;
-          border-radius: 13.5px; transition: width 1.1s cubic-bezier(.39,.575,.56,1.000);
-          box-shadow: 0 0 13.5px #764ba288;
+          border-radius: 9.45px; transition: width 1.1s cubic-bezier(.39,.575,.56,1.000);
+          box-shadow: 0 0 9.45px #764ba288;
         }
         @keyframes shineBar {
           0% { background-position: 0% 0%; }
           100% { background-position: 100% 0%; }
         }
         .modern-xp-info-row {
-          display: flex; align-items: center; gap: 11.25px; font-size: 1.215rem; color: #764ba2; font-weight: 700; margin-bottom: 0;
+          display: flex; align-items: center; gap: 7.875px; font-size: 0.8505rem; color: #764ba2; font-weight: 700; margin-bottom: 0;
         }
-        .plc-xp-next { color: #333; font-weight: 600; font-size: 1.1475rem; }
+        .plc-xp-next { color: #333; font-weight: 600; font-size: 0.80325rem; }
         @media (max-width: 600px) {
-          .modern-glass-card { min-width: 0; max-width: 98vw; padding: 20.25px 4.5vw 20.25px 4.5vw; }
-          .modern-xp-bar-bg { width: 90vw; max-width: 247.5px; }
+          .modern-glass-card { min-width: 0; max-width: 98vw; padding: 14.175px 3.15vw 14.175px 3.15vw; }
+          .modern-xp-bar-bg { width: 63vw; max-width: 173.25px; }
         }
       `}</style>
     </div>

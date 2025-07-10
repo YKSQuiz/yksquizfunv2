@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import ProfileLevelCard from './ProfileLevelCard';
@@ -6,6 +6,7 @@ import SettingsActions from '../common/SettingsActions';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { User } from '../../types/index';
+import { updateUserEnergy } from '../../services/firebase';
 
 const Home: React.FC = () => {
   const { user, logout, updateUser, refreshUser, manualResetJokers } = useAuth();
@@ -13,6 +14,16 @@ const Home: React.FC = () => {
   const location = useLocation();
   const [showLevelModal, setShowLevelModal] = useState(false);
   const [levelModalData, setLevelModalData] = useState<any>(null);
+  const [energyPopup, setEnergyPopup] = useState<string | null>(null);
+  const [energyTimer, setEnergyTimer] = useState<NodeJS.Timeout | null>(null);
+  const [regenCountdown, setRegenCountdown] = useState<number>(0); // saniye cinsinden kalan süre
+  const [justRegenerated, setJustRegenerated] = useState(false); // Birikmiş enerji eklendi mi?
+  const userRef = useRef(user);
+
+  // user değiştikçe ref'i güncelle
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     if (location.state && location.state.xpResult) {
@@ -25,6 +36,73 @@ const Home: React.FC = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  // Enerji yenileme algoritması
+  useEffect(() => {
+    if (!user) return;
+    let interval: NodeJS.Timeout | null = null;
+    const ENERGY_MAX = 100;
+    const ENERGY_REGEN_MINUTES = 1;
+    const ENERGY_PER_REGEN = 1;
+    const now = new Date();
+    const lastUpdate = user.lastEnergyUpdate ? new Date(user.lastEnergyUpdate) : now;
+    const diffMs = now.getTime() - lastUpdate.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    let regenCount = Math.floor(diffMinutes / ENERGY_REGEN_MINUTES);
+    if (regenCount > 0 && (user.energy ?? 0) < ENERGY_MAX) {
+      let newEnergy = Math.min(ENERGY_MAX, (user.energy ?? 0) + regenCount * ENERGY_PER_REGEN);
+      let minutesUsed = regenCount * ENERGY_REGEN_MINUTES;
+      let newLastUpdate = new Date(lastUpdate.getTime() + minutesUsed * 60000);
+      updateUserEnergy(user.id, newEnergy, newLastUpdate.toISOString());
+      updateUser({ ...user, energy: newEnergy, lastEnergyUpdate: newLastUpdate.toISOString() });
+      setEnergyPopup(`${diffMinutes} dakika içinde ${regenCount} enerji kazandınız!`);
+      setTimeout(() => setEnergyPopup(null), 5000);
+      // Kalan süreyi yeni lastUpdate'e göre ayarla
+      const now2 = new Date();
+      const diffMs2 = now2.getTime() - newLastUpdate.getTime();
+      const secondsSinceLast2 = Math.floor(diffMs2 / 1000);
+      const secondsToNext2 = Math.max(0, ENERGY_REGEN_MINUTES * 60 - (secondsSinceLast2 % (ENERGY_REGEN_MINUTES * 60)));
+      setRegenCountdown(secondsToNext2);
+      setJustRegenerated(true); // Birikmiş enerji eklendi, ilk intervalde enerji eklenmesin
+    } else {
+      // Kalan süreyi hesapla (offline enerji eklenmediyse normal hesapla)
+      const minutesSinceLast = Math.floor(diffMs / 60000);
+      const secondsSinceLast = Math.floor(diffMs / 1000);
+      const secondsToNext = Math.max(0, ENERGY_REGEN_MINUTES * 60 - (secondsSinceLast % (ENERGY_REGEN_MINUTES * 60)));
+      setRegenCountdown(secondsToNext);
+      setJustRegenerated(false);
+    }
+    // Gerçek zamanlı enerji artışı için interval kur
+    if (interval) clearInterval(interval);
+    interval = setInterval(() => {
+      setRegenCountdown(prev => {
+        if (prev <= 1) {
+          if (justRegenerated) {
+            setJustRegenerated(false);
+            return ENERGY_REGEN_MINUTES * 60;
+          }
+          // Süre doldu, enerji ekle
+          const currentUser = userRef.current;
+          if (currentUser && (currentUser.energy ?? 0) < ENERGY_MAX) {
+            const newEnergy = Math.min(ENERGY_MAX, (currentUser.energy ?? 0) + 1);
+            const newLastUpdate = new Date().toISOString();
+            updateUserEnergy(currentUser.id, newEnergy, newLastUpdate);
+            updateUser({ ...currentUser, energy: newEnergy, lastEnergyUpdate: newLastUpdate });
+            setEnergyPopup('1 dakika geçti, 1 enerji kazandınız!');
+            setTimeout(() => setEnergyPopup(null), 4000);
+          }
+          return ENERGY_REGEN_MINUTES * 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    setEnergyTimer(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+      if (energyTimer) clearInterval(energyTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   useEffect(() => {
     if (refreshUser) {
@@ -92,15 +170,157 @@ const Home: React.FC = () => {
           `}</style>
         </div>
       )}
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 12, marginBottom: 2 }}>
-        <ProfileLevelCard
-          avatar={user.avatar}
-          displayName={user.displayName}
-          level={user.stats.level || 1}
-          xp={user.stats.experience || 0}
-          xpToNext={user.stats.experienceToNext || 0}
-          rank={user.stats.rank || ''}
-        />
+      <div style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        margin: '18px 0 12px 0',
+      }}>
+        <div style={{
+          background: 'linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%)',
+          borderRadius: 22,
+          boxShadow: '0 6px 24px 0 #6c63ff33, 0 1px 8px #fff2',
+          padding: '22px 22px 16px 22px',
+          minWidth: 320,
+          maxWidth: 400,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          backdropFilter: 'blur(12px) saturate(1.1)',
+          WebkitBackdropFilter: 'blur(12px) saturate(1.1)',
+        }}>
+          {/* Profil/Seviye Kartı */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ width: 100.8, height: 100.8, borderRadius: '50%', background: 'linear-gradient(135deg,#764ba2 0%,#667eea 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 55.2, color: '#fff', fontWeight: 900, boxShadow: '0 4.32px 25.92px #764ba244, 0 0 0 8.64px #fff2', border: '4.32px solid #fff', marginBottom: 2.88 }}>
+                {user.avatar || '👤'}
+              </div>
+            </div>
+            <div style={{ fontSize: 25.92, fontWeight: 900, color: '#333', marginBottom: 2.88, marginTop: 5.76, letterSpacing: 0.72 }}>{user.displayName}</div>
+            <div style={{ fontSize: 18.72, fontWeight: 700, color: '#764ba2', marginBottom: 11.52 }}>{user.stats.rank || ''}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10.08, marginBottom: 8.64 }}>
+              <span style={{ fontSize: 18.72, color: '#764ba2', fontWeight: 700 }}>Seviye</span>
+              <span style={{ fontSize: 37.44, fontWeight: 900, color: '#fff', textShadow: '0 0 17.28px #764ba2cc, 0 2.16px 8.64px #fff8', letterSpacing: 1.44 }}>{user.stats.level || 1}</span>
+            </div>
+            <div style={{ width: 201.6, height: 17.28, background: '#e0e7ff', borderRadius: 10.08, overflow: 'hidden', marginBottom: 5.76, boxShadow: '0 2.16px 8.64px #764ba222' }}>
+              <div style={{ height: '100%', background: 'linear-gradient(90deg, #667eea 0%, #764ba2 60%, #fff 100%)', backgroundSize: '200% 100%', animation: 'shineBar 2.5s linear infinite', borderRadius: 10.08, transition: 'width 1.1s cubic-bezier(.39,.575,.56,1.000)', boxShadow: '0 0 10.08px #764ba288', width: `${Math.min(100, Math.round((user.stats.experienceToNext > 0 ? (user.stats.experience / (user.stats.experience + user.stats.experienceToNext)) : 1) * 100))}%` }}></div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8.64, fontSize: 15.84, color: '#764ba2', fontWeight: 700, marginBottom: 11.52 }}>
+              <span>{user.stats.experience} / {user.stats.experience + user.stats.experienceToNext} XP</span>
+              {user.stats.experienceToNext > 0 && <span style={{ color: '#333', fontWeight: 600, fontSize: 14.4 }}>({user.stats.experienceToNext} XP kaldı)</span>}
+            </div>
+          </div>
+          {/* Enerji Barı ve motivasyon */}
+          <div style={{ width: '100%', height: 25.92, background: 'rgba(35,41,70,0.7)', borderRadius: 14.4, position: 'relative', overflow: 'hidden', boxShadow: '0 0 17.28px #6c63ff22', marginBottom: 5.76 }}>
+            <div style={{
+              width: `${user.energy ?? 0}%`,
+              height: '100%',
+              background: `linear-gradient(90deg, #00fff0 0%, #6c63ff 60%, #a084ee 100%)`,
+              borderRadius: 14.4,
+              transition: 'width 0.7s cubic-bezier(.39,.575,.56,1.000)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              position: 'relative',
+              boxShadow: (user.energy ?? 0) === 100 ? '0 0 28.8px 8.64px #00fff088, 0 0 57.6px 0 #6c63ffcc' : '0 0 14.4px 2.88px #00fff055',
+              animation: (user.energy ?? 0) === 100 ? 'futuristicPulse 1.2s infinite alternate' : 'futuristicBarMove 2.5s linear infinite',
+              zIndex: 2,
+            }}>
+              {/* Bar ucunda pulse ve glow efekti */}
+              <span style={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 23.04,
+                height: 23.04,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, #00fff0cc 0%, #6c63ff00 80%)',
+                opacity: 0.7,
+                filter: 'blur(1.44px)',
+                animation: (user.energy ?? 0) === 100 ? 'pulseGlow 1.2s infinite alternate' : 'none',
+                zIndex: 3,
+              }} />
+              {/* Şimşek/Yıldırım animasyonu */}
+              <span style={{
+                position: 'absolute',
+                right: 10.08,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 23.04,
+                color: '#fffbe7',
+                textShadow: '0 0 11.52px #00fff0, 0 0 23.04px #6c63ff',
+                animation: 'futuristicLightning 0.7s infinite alternate, lightningShake 1.2s infinite',
+                pointerEvents: 'none',
+                filter: (user.energy ?? 0) === 100 ? 'drop-shadow(0 0 17.28px #00fff0)' : 'none',
+                transition: 'color 0.5s, text-shadow 0.5s',
+                zIndex: 4,
+              }}>⚡</span>
+            </div>
+          </div>
+          <div style={{ marginTop: 2.88, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+              <span style={{ fontWeight: 900, color: '#e0e0ff', fontSize: 25.92, letterSpacing: 0.72, fontFamily: 'Orbitron, monospace', textShadow: '0 0 8.64px #6c63ff' }}>{user.energy ?? 0}</span>
+              <span style={{ fontWeight: 400, fontSize: 17.28, color: '#e0e0ff', marginLeft: 1.44, fontFamily: 'Orbitron, monospace' }}>/ 100</span>
+            </span>
+            <div style={{ fontWeight: 700, color: '#00fff0', fontSize: 14.4, marginTop:2.88, fontFamily: 'Orbitron, monospace', textShadow: '0 0 7.2px #00fff0', display: 'flex', alignItems: 'center', gap: 5.76 }}>
+              {/* Dönen saat ikonu */}
+              <span style={{ display: 'inline-block', animation: 'spinClock 2s linear infinite', fontSize: 15.84 }}>⏳</span>
+              {regenCountdown > 0 && regenCountdown < 10000 && (
+                <>Yeni enerji için: {Math.floor(regenCountdown / 60)}:{(regenCountdown % 60).toString().padStart(2, '0')}</>
+              )}
+            </div>
+          </div>
+          <style>{`
+            @keyframes futuristicLightning {
+              0% { filter: brightness(1.2) drop-shadow(0 0 8px #00fff0); }
+              100% { filter: brightness(2.5) drop-shadow(0 0 24px #6c63ff); }
+            }
+            @keyframes lightningShake {
+              0% { transform: translateY(-50%) translateX(0); }
+              20% { transform: translateY(-50%) translateX(-2px); }
+              40% { transform: translateY(-50%) translateX(2px); }
+              60% { transform: translateY(-50%) translateX(-1px); }
+              80% { transform: translateY(-50%) translateX(1px); }
+              100% { transform: translateY(-50%) translateX(0); }
+            }
+            @keyframes futuristicPulse {
+              0% { box-shadow: 0 0 40px 12px #00fff088, 0 0 80px 0 #6c63ffcc; }
+              100% { box-shadow: 0 0 80px 24px #00fff0cc, 0 0 160px 0 #6c63ff; }
+            }
+            @keyframes pulseGlow {
+              0% { opacity: 0.7; transform: scale(1); }
+              100% { opacity: 1; transform: scale(1.15); }
+            }
+            @keyframes futuristicBarMove {
+              0% { background-position: 0% 50%; }
+              100% { background-position: 100% 50%; }
+            }
+            @keyframes spinClock {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+            @keyframes particleMove1 {
+              0% { top: 18%; left: 12%; opacity: 0.7; }
+              100% { top: 10%; left: 20%; opacity: 0.2; }
+            }
+            @keyframes particleMove2 {
+              0% { top: 10%; left: 70%; opacity: 0.5; }
+              100% { top: 20%; left: 60%; opacity: 0.1; }
+            }
+            @keyframes particleMove3 {
+              0% { top: 80%; left: 40%; opacity: 0.6; }
+              100% { top: 70%; left: 50%; opacity: 0.2; }
+            }
+            @keyframes particleMove4 {
+              0% { top: 60%; left: 85%; opacity: 0.4; }
+              100% { top: 50%; left: 75%; opacity: 0.1; }
+            }
+          `}</style>
+        </div>
       </div>
       
       {/* Manuel Joker Yenileme Butonu */}

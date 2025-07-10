@@ -9,6 +9,9 @@ export interface User {
   jokersUsed: JokersUsed;
   totalSessionTime?: number;
   totalQuizTime?: number;
+  // Enerji sistemi
+  energy?: number; // Kullanıcının mevcut enerjisi (0-100)
+  lastEnergyUpdate?: string; // Son enerji güncelleme zamanı (ISO string veya timestamp)
 }
 
 // Kullanıcı istatistikleri
