@@ -2,6 +2,7 @@
   "name": "yks-quiz",
   "version": "1.0.0",
   "description": "YKS Quiz Uygulaması",
+  "homepage": "https://www.yksquiz.fun",
   "private": true,
   "dependencies": {
     "@types/node": "^16.18.0",
