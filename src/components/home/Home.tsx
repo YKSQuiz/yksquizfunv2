@@ -488,7 +488,7 @@ const Home: React.FC = React.memo(() => {
             <span style={{ position: 'relative', zIndex: 3, display: 'inline-flex', alignItems: 'center', gap: 8.75 }}>
               <span style={{ fontSize: '1.8375rem', marginRight: 5.25, filter: 'drop-shadow(0 1.75px 7px #fff8)' }}>👋</span>
               <span style={{ fontWeight: 900, color: '#5a3399', fontSize: '1.09375em', letterSpacing: '0.875px', textShadow: '0 1.75px 7px #fff8' }}>
-                Welcome,
+                Hoşgeldin !!!
               </span>
               <span style={{ fontWeight: 900, color: '#ff6b6b', fontSize: '1.09375em', marginLeft: 7, textShadow: '0 1.75px 7px #fff8' }}>
                 {user.displayName || 'Kullanıcı'}
