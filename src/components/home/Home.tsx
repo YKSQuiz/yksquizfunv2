@@ -176,16 +176,16 @@ const Home: React.FC = React.memo(() => {
     }
   }, [user?.jokers, user?.jokersUsed]);
 
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
   const handleEditProfile = useCallback(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log("Profil düzenleme sayfasına git...");
     }
     navigate('/edit-profile');
   }, [navigate]);
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <div className="container home-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh' }}>
