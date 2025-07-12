@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { auth, db, updateSessionTime } from '../services/firebase';
 import {
   signInWithEmailAndPassword,
@@ -304,6 +304,7 @@ export async function manualResetJokers(userId: string) {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const sessionStartRef = React.useRef<number | null>(null);
   const sessionAccumulatedRef = React.useRef<number>(0); // Henüz kaydedilmemiş süre (ms)
   const sessionIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -635,7 +636,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value: AuthContextType = {
+  // Optimized context value
+  const contextValue = useMemo(() => ({
     user,
     isAuthenticated,
     login,
@@ -646,11 +648,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearUserStats,
     updateUser,
     refreshUser,
-    manualResetJokers,
-  };
+    manualResetJokers
+  }), [
+    user, 
+    isAuthenticated, 
+    login, 
+    register, 
+    loginWithGoogle, 
+    logout, 
+    updateUserStats, 
+    clearUserStats, 
+    updateUser, 
+    refreshUser, 
+    manualResetJokers
+  ]);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

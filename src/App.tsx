@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/auth/Login';
 import Home from './components/home/Home';
-import Quiz from './components/quiz/Quiz';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import EditProfile from './components/auth/EditProfile';
 import TYTSubjects from './components/subjects/tyt/TYTSubjects';
@@ -28,8 +27,27 @@ import AYTKimyaAltKonular from './components/subjects/ayt/AYTKimyaAltKonular';
 import AYTBiyolojiAltKonular from './components/subjects/ayt/AYTBiyolojiAltKonular';
 import AYTFelsefeAltKonular from './components/subjects/ayt/AYTFelsefeAltKonular';
 import AYTDinAltKonular from './components/subjects/ayt/AYTDinAltKonular';
-import Istatistiklerim from './components/stats/Istatistiklerim';
 import { FiArrowLeft } from "react-icons/fi";
+import { initializeABTests } from './utils/abTesting';
+
+// Lazy load heavy components
+const Quiz = lazy(() => import('./components/quiz/Quiz'));
+const Istatistiklerim = lazy(() => import('./components/stats/Istatistiklerim'));
+const PerformanceDashboard = lazy(() => import('./components/admin/PerformanceDashboard'));
+
+// Loading component
+const LoadingSpinner = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    fontSize: '18px',
+    color: '#667eea'
+  }}>
+    <div>Yükleniyor...</div>
+  </div>
+);
 
 const APP_ACTIVE_KEY = 'totalAppActiveSeconds';
 
@@ -63,72 +81,81 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Initialize AB Tests
+  useEffect(() => {
+    initializeABTests();
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
         <div className="App">
-          <Routes>
-            {/* Giriş */}
-            <Route path="/login" element={<Login />} />
-            {/* Ana Sayfa */}
-            <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-            {/* Konu Seçimi */}
-            {/* Removed: <Route path="/topics" element={<PrivateRoute><TopicSelection /></PrivateRoute>} /> */}
-            {/* TYT Ana Konular */}
-            <Route path="/tyt-subjects" element={<PrivateRoute><TYTSubjects /></PrivateRoute>} />
-            {/* TYT Alt Konular */}
-            <Route path="/tyt-turkce-altkonular" element={<PrivateRoute><TYTTrAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-tarih-altkonular" element={<PrivateRoute><TYTTarihAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-cografya-altkonular" element={<PrivateRoute><TYTCografyaAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-felsefe-altkonular" element={<PrivateRoute><TYTFelsefeAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-din-altkonular" element={<PrivateRoute><TYTDinAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-matematik-altkonular" element={<PrivateRoute><TYTMatematikAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-fizik-altkonular" element={<PrivateRoute><TYTFizikAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-kimya-altkonular" element={<PrivateRoute><TYTKimyaAltKonular /></PrivateRoute>} />
-            <Route path="/tyt-biyoloji-altkonular" element={<PrivateRoute><TYTBiyolojiAltKonular /></PrivateRoute>} />
-            {/* TYT Test Seçimi */}
-            <Route path="/turkce/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/tarih/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/cografya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/felsefe/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/din/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/matematik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/fizik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/kimya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/biyoloji/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            {/* AYT Ana Konular */}
-            <Route path="/ayt-say-subjects" element={<PrivateRoute><AYTSaySubjects /></PrivateRoute>} />
-            <Route path="/ayt-ea-subjects" element={<PrivateRoute><AYTEASubjects /></PrivateRoute>} />
-            <Route path="/ayt-soz-subjects" element={<PrivateRoute><AYTSOZSubjects /></PrivateRoute>} />
-            {/* AYT Alt Konular */}
-            <Route path="/ayt-matematik-altkonular" element={<PrivateRoute><AYTMatematikAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-fizik-altkonular" element={<PrivateRoute><AYTFizikAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-kimya-altkonular" element={<PrivateRoute><AYTKimyaAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-biyoloji-altkonular" element={<PrivateRoute><AYTBiyolojiAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-edebiyat-altkonular" element={<PrivateRoute><AYTEdebiyatAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-tarih-altkonular" element={<PrivateRoute><AYTTarihAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-cografya-altkonular" element={<PrivateRoute><AYTCografyaAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-felsefe-altkonular" element={<PrivateRoute><AYTFelsefeAltKonular /></PrivateRoute>} />
-            <Route path="/ayt-din-altkonular" element={<PrivateRoute><AYTDinAltKonular /></PrivateRoute>} />
-            {/* AYT Test Seçimi */}
-            <Route path="/ayt-matematik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-fizik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-kimya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-biyoloji/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-edebiyat/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-tarih/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-cografya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-felsefe/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            <Route path="/ayt-din/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
-            {/* Quiz (TYT ve AYT ortak) */}
-            <Route path="/quiz/:mainTopic/:subTopic/:testNumber" element={<PrivateRoute><Quiz /></PrivateRoute>} />
-            {/* Edit Profile */}
-            <Route path="/edit-profile" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
-            {/* Istatistiklerim */}
-            <Route path="/istatistikler" element={<PrivateRoute><Istatistiklerim /></PrivateRoute>} />
-            {/* 404 fallback */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              {/* Giriş */}
+              <Route path="/login" element={<Login />} />
+              {/* Ana Sayfa */}
+              <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+              {/* Konu Seçimi */}
+              {/* Removed: <Route path="/topics" element={<PrivateRoute><TopicSelection /></PrivateRoute>} /> */}
+              {/* TYT Ana Konular */}
+              <Route path="/tyt-subjects" element={<PrivateRoute><TYTSubjects /></PrivateRoute>} />
+              {/* TYT Alt Konular */}
+              <Route path="/tyt-turkce-altkonular" element={<PrivateRoute><TYTTrAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-tarih-altkonular" element={<PrivateRoute><TYTTarihAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-cografya-altkonular" element={<PrivateRoute><TYTCografyaAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-felsefe-altkonular" element={<PrivateRoute><TYTFelsefeAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-din-altkonular" element={<PrivateRoute><TYTDinAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-matematik-altkonular" element={<PrivateRoute><TYTMatematikAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-fizik-altkonular" element={<PrivateRoute><TYTFizikAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-kimya-altkonular" element={<PrivateRoute><TYTKimyaAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-biyoloji-altkonular" element={<PrivateRoute><TYTBiyolojiAltKonular /></PrivateRoute>} />
+              {/* TYT Test Seçimi */}
+              <Route path="/turkce/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/tarih/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/cografya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/felsefe/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/din/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/matematik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/fizik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/kimya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/biyoloji/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              {/* AYT Ana Konular */}
+              <Route path="/ayt-say-subjects" element={<PrivateRoute><AYTSaySubjects /></PrivateRoute>} />
+              <Route path="/ayt-ea-subjects" element={<PrivateRoute><AYTEASubjects /></PrivateRoute>} />
+              <Route path="/ayt-soz-subjects" element={<PrivateRoute><AYTSOZSubjects /></PrivateRoute>} />
+              {/* AYT Alt Konular */}
+              <Route path="/ayt-matematik-altkonular" element={<PrivateRoute><AYTMatematikAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-fizik-altkonular" element={<PrivateRoute><AYTFizikAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-kimya-altkonular" element={<PrivateRoute><AYTKimyaAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-biyoloji-altkonular" element={<PrivateRoute><AYTBiyolojiAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-edebiyat-altkonular" element={<PrivateRoute><AYTEdebiyatAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-tarih-altkonular" element={<PrivateRoute><AYTTarihAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-cografya-altkonular" element={<PrivateRoute><AYTCografyaAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-felsefe-altkonular" element={<PrivateRoute><AYTFelsefeAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-din-altkonular" element={<PrivateRoute><AYTDinAltKonular /></PrivateRoute>} />
+              {/* AYT Test Seçimi */}
+              <Route path="/ayt-matematik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-fizik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-kimya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-biyoloji/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-edebiyat/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-tarih/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-cografya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-felsefe/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              <Route path="/ayt-din/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              {/* Quiz (TYT ve AYT ortak) */}
+              <Route path="/quiz/:mainTopic/:subTopic/:testNumber" element={<PrivateRoute><Quiz /></PrivateRoute>} />
+              {/* Edit Profile */}
+              <Route path="/edit-profile" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
+              {/* Istatistiklerim */}
+              <Route path="/istatistikler" element={<PrivateRoute><Istatistiklerim /></PrivateRoute>} />
+              {/* Performance Dashboard */}
+              <Route path="/performance" element={<PrivateRoute><PerformanceDashboard /></PrivateRoute>} />
+              {/* 404 fallback */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Suspense>
         </div>
       </Router>
     </AuthProvider>

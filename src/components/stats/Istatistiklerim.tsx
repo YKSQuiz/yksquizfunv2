@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { FiArrowLeft, FiTrendingUp, FiClock, FiTarget, FiBarChart, FiCalendar, FiBookOpen, FiAlertTriangle, FiCheckCircle, FiXCircle, FiHelpCircle } from 'react-icons/fi';
@@ -24,7 +24,7 @@ interface SubjectData {
   timeSpent: number;
 }
 
-const Istatistiklerim: React.FC = () => {
+const Istatistiklerim: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
@@ -44,8 +44,8 @@ const Istatistiklerim: React.FC = () => {
     { day: 'Pazar', minutes: 25 },
   ]);
 
-  // Tüm dersler (TYT/AYT ayrımı olmadan, label ve id ile)
-  const subjects = [
+  // Memoized subjects array
+  const subjects = useMemo(() => [
     { id: 'all', label: 'Tüm Dersler' },
     { id: 'tyt-turkce', label: 'TYT Türkçe' },
     { id: 'tyt-tarih', label: 'TYT Tarih' },
@@ -65,7 +65,38 @@ const Istatistiklerim: React.FC = () => {
     { id: 'ayt-cografya', label: 'AYT Coğrafya' },
     { id: 'ayt-felsefe', label: 'AYT Felsefe' },
     { id: 'ayt-din', label: 'AYT Din' },
-  ];
+  ], []);
+
+  // Memoized time filter label
+  const getTimeFilterLabel = useCallback(() => {
+    switch (timeFilter) {
+      case 'daily': return 'Günlük';
+      case 'weekly': return 'Haftalık';
+      case 'monthly': return 'Aylık';
+      default: return 'Haftalık';
+    }
+  }, [timeFilter]);
+
+  // Memoized colors array
+  const COLORS = useMemo(() => ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'], []);
+
+  // Tooltip için özel bileşen
+  const CustomChartTooltip = ({ active, payload, label }: TooltipProps<any, string>) => {
+    if (active && payload && payload.length) {
+      const correct = payload.find((p: any) => p.name === 'Doğru');
+      const incorrect = payload.find((p: any) => p.name === 'Yanlış');
+      const total = payload.find((p: any) => p.name === 'Çözülen Soru');
+      return (
+        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12, boxShadow: '0 2px 8px #0001' }}>
+          <div style={{ marginBottom: 4 }}>{label}</div>
+          {correct && <div style={{ color: '#22c55e' }}>Doğru : {correct.value}</div>}
+          {incorrect && <div style={{ color: '#ef4444' }}>Yanlış : {incorrect.value}</div>}
+          {total && <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '1.25rem' }}>Çözülen Soru : {total.value}</div>}
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Genel istatistikler (her zaman tüm zamanlar)
   const generalStats = {
@@ -330,35 +361,6 @@ const Istatistiklerim: React.FC = () => {
     fetchStats();
     // eslint-disable-next-line
   }, [user]);
-
-  const getTimeFilterLabel = () => {
-    switch (timeFilter) {
-      case 'daily': return 'Günlük';
-      case 'weekly': return 'Haftalık';
-      case 'monthly': return 'Aylık';
-      default: return 'Haftalık';
-    }
-  };
-
-  const COLORS = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
-
-  // Tooltip için özel bileşen
-  const CustomChartTooltip = ({ active, payload, label }: TooltipProps<any, string>) => {
-    if (active && payload && payload.length) {
-      const correct = payload.find((p: any) => p.name === 'Doğru');
-      const incorrect = payload.find((p: any) => p.name === 'Yanlış');
-      const total = payload.find((p: any) => p.name === 'Çözülen Soru');
-      return (
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12, boxShadow: '0 2px 8px #0001' }}>
-          <div style={{ marginBottom: 4 }}>{label}</div>
-          {correct && <div style={{ color: '#22c55e' }}>Doğru : {correct.value}</div>}
-          {incorrect && <div style={{ color: '#ef4444' }}>Yanlış : {incorrect.value}</div>}
-          {total && <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '1.25rem' }}>Çözülen Soru : {total.value}</div>}
-        </div>
-      );
-    }
-    return null;
-  };
 
   if (loading) {
     return (
@@ -775,6 +777,6 @@ const Istatistiklerim: React.FC = () => {
       )}
     </div>
   );
-};
+});
 
 export default Istatistiklerim; 

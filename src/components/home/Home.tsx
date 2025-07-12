@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import ProfileLevelCard from './ProfileLevelCard';
@@ -8,7 +8,7 @@ import { db } from '../../services/firebase';
 import { User } from '../../types/index';
 import { updateUserEnergy } from '../../services/firebase';
 
-const Home: React.FC = () => {
+const Home: React.FC = React.memo(() => {
   const { user, logout, updateUser, refreshUser, manualResetJokers } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,13 +16,58 @@ const Home: React.FC = () => {
   const [levelModalData, setLevelModalData] = useState<any>(null);
   const [energyPopup, setEnergyPopup] = useState<string | null>(null);
   const [energyTimer, setEnergyTimer] = useState<NodeJS.Timeout | null>(null);
-  const [regenCountdown, setRegenCountdown] = useState<number>(0); // saniye cinsinden kalan süre
-  const [justRegenerated, setJustRegenerated] = useState(false); // Birikmiş enerji eklendi mi?
+  const [regenCountdown, setRegenCountdown] = useState<number>(0);
+  const [justRegenerated, setJustRegenerated] = useState(false);
   const userRef = useRef(user);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   // user değiştikçe ref'i güncelle
   useEffect(() => {
     userRef.current = user;
+  }, [user]);
+
+  // Cleanup function for memory management
+  const cleanup = useCallback(() => {
+    if (energyTimer) {
+      clearInterval(energyTimer);
+      setEnergyTimer(null);
+    }
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+  }, [energyTimer]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
+
+  // Memoized energy calculation
+  const energyCalculation = useMemo(() => {
+    if (!user) return null;
+    
+    const ENERGY_MAX = 100;
+    const ENERGY_REGEN_MINUTES = 1;
+    const ENERGY_PER_REGEN = 1;
+    const now = new Date();
+    const lastUpdate = user.lastEnergyUpdate ? new Date(user.lastEnergyUpdate) : now;
+    const diffMs = now.getTime() - lastUpdate.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const regenCount = Math.floor(diffMinutes / ENERGY_REGEN_MINUTES);
+    
+    return {
+      ENERGY_MAX,
+      ENERGY_REGEN_MINUTES,
+      ENERGY_PER_REGEN,
+      now,
+      lastUpdate,
+      diffMs,
+      diffMinutes,
+      regenCount
+    };
   }, [user]);
 
   useEffect(() => {
@@ -37,18 +82,22 @@ const Home: React.FC = () => {
     }
   }, [location.state]);
 
-  // Enerji yenileme algoritması
+  // Optimized energy regeneration algorithm
   useEffect(() => {
-    if (!user) return;
+    if (!user || !energyCalculation) return;
+    
+    const {
+      ENERGY_MAX,
+      ENERGY_REGEN_MINUTES,
+      ENERGY_PER_REGEN,
+      lastUpdate,
+      diffMs,
+      diffMinutes,
+      regenCount
+    } = energyCalculation;
+
     let interval: NodeJS.Timeout | null = null;
-    const ENERGY_MAX = 100;
-    const ENERGY_REGEN_MINUTES = 1;
-    const ENERGY_PER_REGEN = 1;
-    const now = new Date();
-    const lastUpdate = user.lastEnergyUpdate ? new Date(user.lastEnergyUpdate) : now;
-    const diffMs = now.getTime() - lastUpdate.getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
-    let regenCount = Math.floor(diffMinutes / ENERGY_REGEN_MINUTES);
+    
     if (regenCount > 0 && (user.energy ?? 0) < ENERGY_MAX) {
       let newEnergy = Math.min(ENERGY_MAX, (user.energy ?? 0) + regenCount * ENERGY_PER_REGEN);
       let minutesUsed = regenCount * ENERGY_REGEN_MINUTES;
@@ -57,22 +106,22 @@ const Home: React.FC = () => {
       updateUser({ ...user, energy: newEnergy, lastEnergyUpdate: newLastUpdate.toISOString() });
       setEnergyPopup(`${diffMinutes} dakika içinde ${regenCount} enerji kazandınız!`);
       setTimeout(() => setEnergyPopup(null), 5000);
-      // Kalan süreyi yeni lastUpdate'e göre ayarla
+      
       const now2 = new Date();
       const diffMs2 = now2.getTime() - newLastUpdate.getTime();
       const secondsSinceLast2 = Math.floor(diffMs2 / 1000);
       const secondsToNext2 = Math.max(0, ENERGY_REGEN_MINUTES * 60 - (secondsSinceLast2 % (ENERGY_REGEN_MINUTES * 60)));
       setRegenCountdown(secondsToNext2);
-      setJustRegenerated(true); // Birikmiş enerji eklendi, ilk intervalde enerji eklenmesin
+      setJustRegenerated(true);
     } else {
-      // Kalan süreyi hesapla (offline enerji eklenmediyse normal hesapla)
       const minutesSinceLast = Math.floor(diffMs / 60000);
       const secondsSinceLast = Math.floor(diffMs / 1000);
       const secondsToNext = Math.max(0, ENERGY_REGEN_MINUTES * 60 - (secondsSinceLast % (ENERGY_REGEN_MINUTES * 60)));
       setRegenCountdown(secondsToNext);
       setJustRegenerated(false);
     }
-    // Gerçek zamanlı enerji artışı için interval kur
+    
+    // Real-time energy increase interval
     if (interval) clearInterval(interval);
     interval = setInterval(() => {
       setRegenCountdown(prev => {
@@ -81,7 +130,7 @@ const Home: React.FC = () => {
             setJustRegenerated(false);
             return ENERGY_REGEN_MINUTES * 60;
           }
-          // Süre doldu, enerji ekle
+          
           const currentUser = userRef.current;
           if (currentUser && (currentUser.energy ?? 0) < ENERGY_MAX) {
             const newEnergy = Math.min(ENERGY_MAX, (currentUser.energy ?? 0) + 1);
@@ -96,25 +145,32 @@ const Home: React.FC = () => {
         return prev - 1;
       });
     }, 1000);
+    
     setEnergyTimer(interval);
+    
+    // Store cleanup function
+    cleanupRef.current = () => {
+      if (interval) clearInterval(interval);
+    };
+    
     return () => {
       if (interval) clearInterval(interval);
-      if (energyTimer) clearInterval(energyTimer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, energyCalculation, justRegenerated, updateUser]);
 
   useEffect(() => {
     if (refreshUser) {
       refreshUser().then(() => {
-        console.log('Home - Joker hakları güncellendi:', user?.jokers);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Home - Joker hakları güncellendi:', user?.jokers);
+        }
       });
     }
   }, [refreshUser]);
 
   // Joker haklarını kontrol et
   useEffect(() => {
-    if (user?.jokers) {
+    if (user?.jokers && process.env.NODE_ENV === 'development') {
       console.log('Home - Mevcut joker hakları:', user.jokers);
       console.log('Home - Joker kullanım sayıları:', user.jokersUsed);
     }
@@ -124,10 +180,12 @@ const Home: React.FC = () => {
     return <Navigate to="/login" />;
   }
 
-  const handleEditProfile = () => {
-    console.log("Profil düzenleme sayfasına git...");
+  const handleEditProfile = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Profil düzenleme sayfasına git...");
+    }
     navigate('/edit-profile');
-  };
+  }, [navigate]);
 
   return (
     <div className="container home-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh' }}>
@@ -691,6 +749,6 @@ const Home: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Home; 

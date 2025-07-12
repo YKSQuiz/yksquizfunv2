@@ -4,6 +4,23 @@
   box-sizing: border-box;
 }
 
+/* Performance optimizations */
+.card, .quiz-card, .profile-card, .stat-card {
+  will-change: transform;
+  contain: layout style paint;
+}
+
+.quiz-option-btn {
+  will-change: transform, background-color;
+  contain: layout style paint;
+}
+
+.quiz-progress-inner {
+  will-change: width;
+  contain: layout style paint;
+}
+
+/* Critical CSS for above-the-fold content */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -12,6 +29,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  /* Performance optimizations */
+  contain: layout style;
+  will-change: auto;
 }
 
 code {
@@ -237,13 +257,14 @@ code {
 
 @media (max-width: 768px) {
   .container {
-    padding: 0 10px;
+    padding: 0 16px;
   }
   .header h1 {
     font-size: 2rem;
   }
   .card {
-    padding: 18px 8px;
+    padding: 24px 20px;
+    margin: 16px 0;
   }
   .quiz-grid {
     grid-template-columns: 1fr;
@@ -502,7 +523,7 @@ code {
 }
 
 @keyframes fadeSlideUp {
-  0% { opacity: 0; transform: translateY(32px); }
+  0% { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
@@ -1170,14 +1191,14 @@ code {
 
 @keyframes correct-answer {
   0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
 @keyframes incorrect-answer {
   0% { transform: scale(1); }
-  25% { transform: scale(1.05) rotate(-2deg); }
-  75% { transform: scale(1.05) rotate(2deg); }
+  25% { transform: scale(0.95); }
+  50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 

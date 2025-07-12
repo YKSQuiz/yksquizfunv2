@@ -1,66 +1,61 @@
-# YKS Coğrafya Quiz Uygulaması
+# YKS Quiz Uygulaması
 
-Modern ve kullanıcı dostu bir coğrafya True/False quiz uygulaması. YKS sınavına hazırlanan öğrenciler için tasarlanmıştır.
+Modern ve kullanıcı dostu bir YKS (Yükseköğretim Kurumları Sınavı) quiz uygulaması. TYT ve AYT sınavlarına hazırlanan öğrenciler için tasarlanmış kapsamlı bir eğitim platformu.
 
 ## 🚀 Özellikler
 
-- **3 Ana Ekran:**
-  - Login Ekranı
-  - Ana Sayfa (Profil bilgileri ve istatistikler)
-  - Konu Seçim Ekranı (22 farklı coğrafya konusu)
+### 📚 Kapsamlı Konu Kapsamı
+- **TYT Konuları:** Türkçe, Matematik, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din
+- **AYT Konuları:** Matematik, Fizik, Kimya, Biyoloji, Edebiyat, Tarih, Coğrafya, Felsefe, Din
+- **Alt Konular:** Her ana konu için detaylı alt konular
+- **Test Seçimi:** Her alt konu için 10 farklı test
 
-- **22 Coğrafya Konusu:**
-  1. Doğa ve İnsan
-  2. Dünya'nın Şekli ve Hareketleri
-  3. Coğrafi Konum
-  4. Harita Bilgisi
-  5. Atmosfer ve İklim
-  6. Sıcaklık
-  7. Basınç ve Rüzgarlar
-  8. Nem ve Yağış
-  9. İklim Tipleri
-  10. Dünya'nın Tektonik Oluşumu
-  11. İç Kuvvetler ve Kayaçlar
-  12. Dış Kuvvetler
-  13. Türkiye'nin Yeryüzü Şekilleri
-  14. Dünyada ve Türkiye'de Su, Toprak ve Bitki Varlığı
-  15. Yerleşmeler
-  16. Nüfus
-  17. Türkiye'de Nüfus
-  18. Göçler
-  19. Ekonomik Faaliyetler
-  20. Bölge Çeşitleri ve Bölge Sınırlarının Belirlenmesi
-  21. Uluslararası Ulaşım Hatları
-  22. Doğal Afetler
+### 🎯 Quiz Özellikleri
+- **Çoktan Seçmeli Sorular:** 4 seçenekli soru formatı
+- **Joker Sistemi:** 4 farklı joker türü (Eliminate, Extra Time, Double Answer, Auto Correct)
+- **Zaman Sınırı:** Her soru için 10 dakika süre
+- **Anlık Geri Bildirim:** Doğru/yanlış cevap gösterimi
+- **Detaylı Açıklamalar:** Her soru için kapsamlı açıklama
+- **İlerleme Takibi:** Soru numarası ve toplam soru sayısı
 
-- **Quiz Özellikleri:**
-  - True/False soru formatı
-  - Anlık geri bildirim
-  - Detaylı açıklamalar
-  - İlerleme çubuğu
-  - Skor takibi
-  - Başarı oranı hesaplama
+### 👤 Kullanıcı Sistemi
+- **Kayıt/Giriş:** Email ve şifre ile hesap oluşturma
+- **Google Girişi:** Google hesabı ile hızlı giriş
+- **Profil Yönetimi:** Kullanıcı bilgilerini düzenleme
+- **Seviye Sistemi:** XP kazanarak seviye atlama
+- **Rütbe Sistemi:** Seviyeye göre rütbe kazanma
 
-- **Kullanıcı Deneyimi:**
-  - Modern ve responsive tasarım
-  - Gradient renkler ve animasyonlar
-  - Kullanıcı istatistikleri
-  - Local storage ile veri saklama
+### 📊 İstatistikler ve Analiz
+- **Detaylı İstatistikler:** Konu bazında başarı oranları
+- **Grafikler:** Başarı trendleri ve performans analizi
+- **Zaman Takibi:** Quiz süreleri ve ortalama çözüm süreleri
+- **Başarı Oranları:** Doğru/yanlış cevap oranları
+
+### ⚡ Performans Optimizasyonları
+- **Lazy Loading:** Ağır bileşenlerin ihtiyaç halinde yüklenmesi
+- **Memoization:** React.memo ve useMemo optimizasyonları
+- **Bundle Splitting:** Kod bölme ile hızlı yükleme
+- **Service Worker:** Offline çalışma desteği
+- **A/B Testing:** Performans testleri ve varyant analizi
 
 ## 🛠️ Teknolojiler
 
 - **Frontend:** React 18 + TypeScript
-- **Routing:** React Router DOM
-- **Styling:** CSS3 (Custom CSS)
+- **Routing:** React Router DOM v6
+- **Styling:** CSS3 (Custom CSS + Animations)
 - **State Management:** React Context API
+- **Database:** Firebase Firestore
+- **Authentication:** Firebase Auth
 - **Build Tool:** Create React App
+- **Performance:** Web Vitals, Bundle Analyzer
+- **Testing:** A/B Testing Framework
 
 ## 📦 Kurulum
 
 1. Projeyi klonlayın:
 ```bash
 git clone <repository-url>
-cd yksquiz
+cd yksquizv14
 ```
 
 2. Bağımlılıkları yükleyin:
@@ -68,28 +63,45 @@ cd yksquiz
 npm install
 ```
 
-3. Uygulamayı başlatın:
+3. Firebase yapılandırmasını ayarlayın:
+   - `src/services/firebase.ts` dosyasında Firebase config bilgilerinizi girin
+
+4. Uygulamayı başlatın:
 ```bash
 npm start
 ```
 
-4. Tarayıcınızda `http://localhost:3000` adresini açın.
+5. Tarayıcınızda `http://localhost:3000` adresini açın.
 
 ## 🎯 Kullanım
 
-1. **Giriş Yapın:** Demo için herhangi bir e-posta ve şifre kullanabilirsiniz.
-2. **Ana Sayfa:** Profil bilgilerinizi ve istatistiklerinizi görüntüleyin.
-3. **Konu Seçin:** 22 farklı coğrafya konusundan birini seçin.
-4. **Quiz Çözün:** True/False sorularını yanıtlayın ve açıklamaları okuyun.
-5. **Sonuçları Görün:** Quiz sonunda başarı oranınızı ve detayları görüntüleyin.
+### 📱 Ana Özellikler
+1. **Giriş Yapın:** Email/şifre veya Google ile giriş yapın
+2. **Ana Sayfa:** Profil bilgilerinizi, seviyenizi ve enerji durumunuzu görün
+3. **Konu Seçin:** TYT veya AYT konularından birini seçin
+4. **Alt Konu Seçin:** Seçtiğiniz konunun alt konularından birini seçin
+5. **Test Seçin:** 1-10 arası testlerden birini seçin
+6. **Quiz Çözün:** Soruları yanıtlayın, jokerlerinizi kullanın
+7. **Sonuçları Görün:** Quiz sonunda XP kazanın ve seviye atlayın
+
+### 🎮 Joker Sistemi
+- **Eliminate (➗):** İki yanlış seçeneği eleme
+- **Extra Time (⏰):** Ek süre kazanma
+- **Double Answer (2️⃣):** İki cevap seçme hakkı
+- **Auto Correct (✅):** Otomatik doğru cevap
+
+### 📊 İstatistikler
+- **Konu Bazında:** Her konu için ayrı başarı oranları
+- **Zaman Analizi:** Quiz süreleri ve ortalama çözüm süreleri
+- **Grafikler:** Başarı trendleri ve performans analizi
 
 ## 📱 Responsive Tasarım
 
-Uygulama mobil cihazlarda da mükemmel çalışır:
-- Tablet ve telefon uyumlu
-- Touch-friendly butonlar
-- Responsive grid layout
-- Mobil optimizasyonu
+Uygulama tüm cihazlarda mükemmel çalışır:
+- **Desktop:** Tam özellikli deneyim
+- **Tablet:** Touch-friendly arayüz
+- **Mobile:** Mobil optimizasyonu
+- **Touch:** Dokunmatik ekran desteği
 
 ## 🔧 Geliştirme
 
@@ -97,45 +109,80 @@ Uygulama mobil cihazlarda da mükemmel çalışır:
 ```
 src/
 ├── components/          # React bileşenleri
-│   ├── Login.tsx       # Giriş ekranı
-│   ├── Home.tsx        # Ana sayfa
-│   ├── TopicSelection.tsx # Konu seçim
-│   └── Quiz.tsx        # Quiz ekranı
+│   ├── auth/           # Kimlik doğrulama
+│   │   ├── Login.tsx
+│   │   └── EditProfile.tsx
+│   ├── common/         # Ortak bileşenler
+│   │   ├── BackButton.tsx
+│   │   └── SettingsActions.tsx
+│   ├── home/           # Ana sayfa
+│   │   ├── Home.tsx
+│   │   └── ProfileLevelCard.tsx
+│   ├── quiz/           # Quiz bileşenleri
+│   │   ├── Quiz.tsx
+│   │   ├── TestSelection.tsx
+│   │   └── JokerPanel.tsx
+│   ├── stats/          # İstatistikler
+│   │   └── Istatistiklerim.tsx
+│   ├── subjects/       # Konu sayfaları
+│   │   ├── tyt/        # TYT konuları
+│   │   └── ayt/        # AYT konuları
+│   └── admin/          # Yönetim paneli
+│       └── PerformanceDashboard.tsx
 ├── contexts/           # React Context
-│   └── AuthContext.tsx # Kimlik doğrulama
-├── App.tsx             # Ana uygulama
-├── index.tsx           # Giriş noktası
-└── index.css           # Global stiller
+│   └── AuthContext.tsx
+├── services/           # Servisler
+│   └── firebase.ts
+├── utils/              # Yardımcı fonksiyonlar
+│   ├── constants.ts
+│   ├── performance.ts
+│   └── abTesting.ts
+├── types/              # TypeScript tipleri
+├── styles/             # Stil dosyaları
+└── hooks/              # Custom hooks
 ```
 
-### Yeni Soru Ekleme
-`src/components/Quiz.tsx` dosyasındaki `getQuestionsForTopic` fonksiyonunu düzenleyerek yeni sorular ekleyebilirsiniz.
+### Performans Optimizasyonları
+- **React.memo:** Gereksiz re-render'ları önleme
+- **useCallback:** Fonksiyon memoization
+- **useMemo:** Hesaplama memoization
+- **Lazy Loading:** Dinamik import
+- **Bundle Splitting:** Kod bölme
+- **Service Worker:** Offline cache
+
+### A/B Testing
+- **UI Varyantları:** Farklı arayüz testleri
+- **Loading Stratejileri:** Yükleme optimizasyonları
+- **Performance Monitoring:** Canlı performans izleme
 
 ## 🎨 Tasarım Özellikleri
 
-- **Renk Paleti:** Modern gradient renkler
-- **Tipografi:** Inter font ailesi
-- **Animasyonlar:** Smooth transitions ve hover efektleri
-- **Layout:** CSS Grid ve Flexbox
-- **Icons:** Emoji tabanlı ikonlar
+- **Modern UI:** Gradient renkler ve animasyonlar
+- **Responsive Design:** Tüm cihazlarda uyumlu
+- **Smooth Animations:** CSS transitions ve keyframes
+- **Interactive Elements:** Hover efektleri ve feedback
+- **Accessibility:** Erişilebilirlik standartları
 
-## 📊 İstatistikler
+## 📊 İstatistikler ve Analiz
 
 Uygulama şu istatistikleri takip eder:
-- Tamamlanan quiz sayısı
-- Doğru cevap sayısı
-- Toplam soru sayısı
-- Başarı oranı (%)
+- **Quiz İstatistikleri:** Tamamlanan quiz sayısı, doğru/yanlış oranları
+- **Zaman Analizi:** Quiz süreleri, ortalama çözüm süreleri
+- **Konu Bazında:** Her konu için ayrı başarı oranları
+- **Seviye Sistemi:** XP kazanma, seviye atlama, rütbe sistemi
+- **Joker Kullanımı:** Joker türleri ve kullanım oranları
 
 ## 🔮 Gelecek Özellikler
 
-- [ ] Daha fazla soru ekleme
-- [ ] Zaman sınırlı quiz modu
+- [ ] Daha fazla soru ve konu ekleme
+- [ ] Video açıklamaları
+- [ ] Sesli soru okuma
 - [ ] Liderlik tablosu
-- [ ] Sosyal medya paylaşımı
-- [ ] Offline çalışma modu
-- [ ] Ses efektleri
+- [ ] Sosyal özellikler (arkadaş ekleme, sıralama)
+- [ ] Offline quiz modu
+- [ ] Push notifications
 - [ ] Dark mode
+- [ ] Çoklu dil desteği
 
 ## 📄 Lisans
 
@@ -155,4 +202,4 @@ Herhangi bir sorunuz veya öneriniz için issue açabilirsiniz.
 
 ---
 
-**YKS Coğrafya Quiz** - Coğrafya öğrenmeyi eğlenceli hale getiriyor! 🗺️📚 
+**YKS Quiz** - YKS sınavına hazırlıkta yanınızda! 📚🎯 

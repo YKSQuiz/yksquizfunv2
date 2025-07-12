@@ -1,18 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { updateXpLevelRank, jokerKullan } from '../../contexts/AuthContext';
-import JokerPanel from "./JokerPanel";
 import './Quiz.css';
 import { User } from '../../types/index';
+import { usePerformanceMonitor } from '../../utils/performance';
+import { useABTest } from '../../utils/abTesting';
 import {
   TYT_SUBJECTS, AYT_SAY_SUBJECTS, AYT_EA_SUBJECTS, AYT_SOZ_SUBJECTS,
   TYT_TR_ALT_KONULAR, TYT_DIN_ALT_KONULAR, TYT_FIZIK_ALT_KONULAR, TYT_KIMYA_ALT_KONULAR, TYT_BIYOLOJI_ALT_KONULAR, TYT_COGRAFYA_ALT_KONULAR, TYT_TARIH_ALT_KONULAR,
   AYT_EDEBIYAT_ALT_KONULAR, AYT_FELSEFE_ALT_KONULAR, AYT_BIYOLOJI_ALT_KONULAR, AYT_KIMYA_ALT_KONULAR, AYT_FIZIK_ALT_KONULAR, AYT_COGRAFYA_ALT_KONULAR
 } from '../../utils/constants';
 import confetti from 'canvas-confetti';
+
+// Dynamic imports for heavy components
+const JokerPanel = lazy(() => import("./JokerPanel"));
+
+// Loading component for dynamic imports
+const DynamicComponentLoader = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div className="loading-spinner">Yükleniyor...</div>}>
+    {children}
+  </Suspense>
+);
 
 interface Question {
   id: string;
@@ -63,6 +74,11 @@ const Quiz: React.FC = () => {
   const { subTopic, testNumber } = useParams<{ subTopic: string; testNumber: string }>();
   const navigate = useNavigate();
   const { updateUserStats, user, updateUser, refreshUser, manualResetJokers } = useAuth();
+  const { measureAsync, measureSync, recordMetric } = usePerformanceMonitor();
+  
+  // AB Testing
+  const { variant: uiVariant, config: uiConfig, trackEvent: trackUIEvent } = useABTest('quiz_ui_variant');
+  const { variant: loadingVariant, config: loadingConfig, trackEvent: trackLoadingEvent } = useABTest('question_loading');
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -81,103 +97,179 @@ const Quiz: React.FC = () => {
   const [earnedXp, setEarnedXp] = useState(0);
   const [showXpInfo, setShowXpInfo] = useState(false);
 
+  // Timer ref for optimization
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Questions cache with AB testing config
+  const questionsCache = useRef<Map<string, Question[]>>(new Map());
+
+  // Memoized values
+  const progressPercentage = useMemo(() => 
+    questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0,
+    [currentQuestionIndex, questions.length]
+  );
+
+  const currentQuestion = useMemo(() => 
+    questions[currentQuestionIndex] || null,
+    [questions, currentQuestionIndex]
+  );
+
+  // Track quiz start
+  useEffect(() => {
+    trackUIEvent('quiz_started', {
+      variant: uiVariant,
+      config: uiConfig
+    });
+    trackLoadingEvent('quiz_started', {
+      variant: loadingVariant,
+      config: loadingConfig
+    });
+  }, [uiVariant, uiConfig, loadingVariant, loadingConfig, trackUIEvent, trackLoadingEvent]);
+
   useEffect(() => {
     const fetchQuestions = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+      return measureAsync('fetchQuestions', async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
 
-        console.log('🔍 Quiz sorgusu başlatılıyor...');
-        console.log('📝 subTopic:', subTopic);
-        console.log('📝 testNumber:', testNumber);
-        console.log('📝 parseInt(testNumber):', parseInt(testNumber || '1'));
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔍 Quiz sorgusu başlatılıyor...');
+            console.log('📝 subTopic:', subTopic);
+            console.log('📝 testNumber:', testNumber);
+            console.log('📝 parseInt(testNumber):', parseInt(testNumber || '1'));
+          }
 
-        const questionsRef = collection(db, 'questions');
-        const q = query(
-          questionsRef,
-          where('topicId', '==', subTopic),
-          where('testNumber', '==', parseInt(testNumber || '1'))
-        );
-        
-        console.log('🔄 Firebase sorgusu çalıştırılıyor...');
-        const querySnapshot = await getDocs(q);
-        console.log('📊 Sorgu sonucu:', querySnapshot.size, 'soru bulundu');
+          const cacheKey = `${subTopic}-${testNumber}`;
+          
+          // Check cache first
+          if (questionsCache.current.has(cacheKey)) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('📦 Cache\'den sorular yükleniyor...');
+            }
+            setQuestions(questionsCache.current.get(cacheKey)!);
+            setIsLoading(false);
+            recordMetric('cache_hit', 1);
+            trackLoadingEvent('cache_hit', { cacheKey });
+            return;
+          }
 
-        if (querySnapshot.empty) {
-          console.log('❌ Hiç soru bulunamadı!');
-          setError('Bu test için soru bulunamadı.');
+          const questionsRef = collection(db, 'questions');
+          const q = query(
+            questionsRef,
+            where('topicId', '==', subTopic),
+            where('testNumber', '==', parseInt(testNumber || '1'))
+          );
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔄 Firebase sorgusu çalıştırılıyor...');
+          }
+          const querySnapshot = await getDocs(q);
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📊 Sorgu sonucu:', querySnapshot.size, 'soru bulundu');
+          }
+
+          if (querySnapshot.empty) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('❌ Hiç soru bulunamadı!');
+            }
+            setError('Bu test için soru bulunamadı.');
+            setIsLoading(false);
+            return;
+          }
+
+          const fetchedQuestions: Question[] = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Question[];
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Sorular başarıyla yüklendi:', fetchedQuestions.length, 'adet');
+            console.log('📋 İlk soru:', fetchedQuestions[0]);
+          }
+
+          // Cache the questions based on AB test config
+          const cacheSize = loadingConfig.cacheSize || 10;
+          if (questionsCache.current.size < cacheSize) {
+            questionsCache.current.set(cacheKey, fetchedQuestions);
+          }
+
+          setQuestions(fetchedQuestions);
           setIsLoading(false);
-          return;
+          recordMetric('questions_loaded', fetchedQuestions.length);
+          trackLoadingEvent('questions_loaded', { 
+            count: fetchedQuestions.length,
+            variant: loadingVariant 
+          });
+        } catch (err) {
+          console.error('🚫 Firebase hatası:', err);
+          setError('Sorular yüklenirken bir hata oluştu.');
+          setIsLoading(false);
+          recordMetric('fetch_error', 1);
+          trackLoadingEvent('fetch_error', { error: err });
         }
-
-        const fetchedQuestions: Question[] = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Question[];
-
-        console.log('✅ Sorular başarıyla yüklendi:', fetchedQuestions.length, 'adet');
-        console.log('📋 İlk soru:', fetchedQuestions[0]);
-
-        setQuestions(fetchedQuestions);
-        setIsLoading(false);
-      } catch (err) {
-        console.error('🚫 Firebase hatası:', err);
-        setError('Sorular yüklenirken bir hata oluştu.');
-        setIsLoading(false);
-      }
+      });
     };
 
     if (subTopic && testNumber) {
-      console.log('🚀 fetchQuestions çağrılıyor...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 fetchQuestions çağrılıyor...');
+      }
       fetchQuestions();
     } else {
-      console.log('⚠️ Geçersiz parametreler:', { subTopic, testNumber });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Geçersiz parametreler:', { subTopic, testNumber });
+      }
       setError('Geçersiz quiz parametreleri.');
       setIsLoading(false);
     }
-  }, [subTopic, testNumber]);
+  }, [subTopic, testNumber, measureAsync, recordMetric, trackLoadingEvent, loadingConfig, loadingVariant]);
 
   useEffect(() => {
     if (refreshUser) {
       refreshUser().then(() => {
-        console.log('Quiz - Joker hakları güncellendi:', user?.jokers);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Quiz - Joker hakları güncellendi:', user?.jokers);
+        }
       });
     }
   }, [refreshUser]);
 
   // Joker haklarını kontrol et
   useEffect(() => {
-    if (user?.jokers) {
+    if (user?.jokers && process.env.NODE_ENV === 'development') {
       console.log('Quiz - Mevcut joker hakları:', user.jokers);
       console.log('Quiz - Joker kullanım sayıları:', user.jokersUsed);
     }
   }, [user?.jokers, user?.jokersUsed]);
 
-  // Timer effect
+  // Optimized timer effect
   useEffect(() => {
     if (timeLeft > 0 && !isLoading && questions.length > 0) {
-      const timer = setInterval(() => {
+      timerRef.current = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-      return () => clearInterval(timer);
+      
+      return () => {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      };
     } else if (timeLeft === 0) {
       finishQuiz();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, isLoading, questions.length]);
 
-  // Format time display
-  const formatTime = (seconds: number) => {
+  // Format time display - memoized
+  const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  // Calculate progress percentage
-  const progressPercentage = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
-
-  // Handle answer selection
-  const handleAnswerSelect = (answerIndex: number) => {
+  // Optimized answer selection handler
+  const handleAnswerSelect = useCallback((answerIndex: number) => {
     if (isAnswered) return;
     if (isDoubleAnswerActive) {
       if (selectedAnswers.includes(answerIndex)) return;
@@ -196,10 +288,10 @@ const Quiz: React.FC = () => {
         setScore(prev => prev + 1);
       }
     }
-  };
+  }, [isAnswered, isDoubleAnswerActive, selectedAnswers, questions, currentQuestionIndex]);
 
-  // Handle next question
-  const handleNextQuestion = () => {
+  // Optimized next question handler
+  const handleNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedAnswer(null);
@@ -210,7 +302,7 @@ const Quiz: React.FC = () => {
     } else {
       finishQuiz();
     }
-  };
+  }, [currentQuestionIndex, questions.length]);
 
   // Finish quiz
   const finishQuiz = async () => {
@@ -361,8 +453,6 @@ const Quiz: React.FC = () => {
       </div>
     );
   }
-
-  const currentQuestion = questions[currentQuestionIndex];
 
   if (showStats) {
     const successRate = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
