@@ -4,29 +4,10 @@ import Login from './components/auth/Login';
 import Home from './components/home/Home';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import EditProfile from './components/auth/EditProfile';
-import TYTSubjects from './components/subjects/tyt/TYTSubjects';
-import AYTEASubjects from './components/subjects/ayt/AYTEASubjects';
-import AYTSaySubjects from './components/subjects/ayt/AYTSaySubjects';
-import AYTSOZSubjects from './components/subjects/ayt/AYTSOZSubjects';
-import TYTTrAltKonular from './components/subjects/tyt/TYTTrAltKonular';
-import TYTTarihAltKonular from './components/subjects/tyt/TYTTarihAltKonular';
-import TYTCografyaAltKonular from './components/subjects/tyt/TYTCografyaAltKonular';
-import TYTFelsefeAltKonular from './components/subjects/tyt/TYTFelsefeAltKonular';
-import TYTDinAltKonular from './components/subjects/tyt/TYTDinAltKonular';
-import TYTMatematikAltKonular from './components/subjects/tyt/TYTMatematikAltKonular';
-import TYTFizikAltKonular from './components/subjects/tyt/TYTFizikAltKonular';
-import TYTKimyaAltKonular from './components/subjects/tyt/TYTKimyaAltKonular';
-import TYTBiyolojiAltKonular from './components/subjects/tyt/TYTBiyolojiAltKonular';
 import TestSelection from './components/quiz/TestSelection';
-import AYTEdebiyatAltKonular from './components/subjects/ayt/AYTEdebiyatAltKonular';
-import AYTTarihAltKonular from './components/subjects/ayt/AYTTarihAltKonular';
-import AYTCografyaAltKonular from './components/subjects/ayt/AYTCografyaAltKonular';
-import AYTMatematikAltKonular from './components/subjects/ayt/AYTMatematikAltKonular';
-import AYTFizikAltKonular from './components/subjects/ayt/AYTFizikAltKonular';
-import AYTKimyaAltKonular from './components/subjects/ayt/AYTKimyaAltKonular';
-import AYTBiyolojiAltKonular from './components/subjects/ayt/AYTBiyolojiAltKonular';
-import AYTFelsefeAltKonular from './components/subjects/ayt/AYTFelsefeAltKonular';
-import AYTDinAltKonular from './components/subjects/ayt/AYTDinAltKonular';
+import { SubjectSelector, AltKonuSelector } from './components/subjects';
+import Market from './components/market/Market';
+import TestPage from './components/test/TestPage';
 import { FiArrowLeft } from "react-icons/fi";
 import { initializeABTests } from './utils/abTesting';
 
@@ -99,17 +80,17 @@ const App: React.FC = () => {
               {/* Konu Seçimi */}
               {/* Removed: <Route path="/topics" element={<PrivateRoute><TopicSelection /></PrivateRoute>} /> */}
               {/* TYT Ana Konular */}
-              <Route path="/tyt-subjects" element={<PrivateRoute><TYTSubjects /></PrivateRoute>} />
+              <Route path="/tyt-subjects" element={<PrivateRoute><SubjectSelector category="tyt" /></PrivateRoute>} />
               {/* TYT Alt Konular */}
-              <Route path="/tyt-turkce-altkonular" element={<PrivateRoute><TYTTrAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-tarih-altkonular" element={<PrivateRoute><TYTTarihAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-cografya-altkonular" element={<PrivateRoute><TYTCografyaAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-felsefe-altkonular" element={<PrivateRoute><TYTFelsefeAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-din-altkonular" element={<PrivateRoute><TYTDinAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-matematik-altkonular" element={<PrivateRoute><TYTMatematikAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-fizik-altkonular" element={<PrivateRoute><TYTFizikAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-kimya-altkonular" element={<PrivateRoute><TYTKimyaAltKonular /></PrivateRoute>} />
-              <Route path="/tyt-biyoloji-altkonular" element={<PrivateRoute><TYTBiyolojiAltKonular /></PrivateRoute>} />
+              <Route path="/tyt-turkce-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-turkce" subjectName="TYT Türkçe" /></PrivateRoute>} />
+              <Route path="/tyt-tarih-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-tarih" subjectName="TYT Tarih" /></PrivateRoute>} />
+              <Route path="/tyt-cografya-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-cografya" subjectName="TYT Coğrafya" /></PrivateRoute>} />
+              <Route path="/tyt-felsefe-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-felsefe" subjectName="TYT Felsefe" /></PrivateRoute>} />
+              <Route path="/tyt-din-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-din" subjectName="TYT Din" /></PrivateRoute>} />
+              <Route path="/tyt-matematik-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-matematik" subjectName="TYT Matematik" /></PrivateRoute>} />
+              <Route path="/tyt-fizik-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-fizik" subjectName="TYT Fizik" /></PrivateRoute>} />
+              <Route path="/tyt-kimya-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-kimya" subjectName="TYT Kimya" /></PrivateRoute>} />
+              <Route path="/tyt-biyoloji-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-biyoloji" subjectName="TYT Biyoloji" /></PrivateRoute>} />
               {/* TYT Test Seçimi */}
               <Route path="/turkce/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/tarih/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
@@ -121,19 +102,19 @@ const App: React.FC = () => {
               <Route path="/kimya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/biyoloji/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               {/* AYT Ana Konular */}
-              <Route path="/ayt-say-subjects" element={<PrivateRoute><AYTSaySubjects /></PrivateRoute>} />
-              <Route path="/ayt-ea-subjects" element={<PrivateRoute><AYTEASubjects /></PrivateRoute>} />
-              <Route path="/ayt-soz-subjects" element={<PrivateRoute><AYTSOZSubjects /></PrivateRoute>} />
+              <Route path="/ayt-say-subjects" element={<PrivateRoute><SubjectSelector category="ayt-sayisal" /></PrivateRoute>} />
+              <Route path="/ayt-ea-subjects" element={<PrivateRoute><SubjectSelector category="ayt-ea" /></PrivateRoute>} />
+              <Route path="/ayt-soz-subjects" element={<PrivateRoute><SubjectSelector category="ayt-sozel" /></PrivateRoute>} />
               {/* AYT Alt Konular */}
-              <Route path="/ayt-matematik-altkonular" element={<PrivateRoute><AYTMatematikAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-fizik-altkonular" element={<PrivateRoute><AYTFizikAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-kimya-altkonular" element={<PrivateRoute><AYTKimyaAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-biyoloji-altkonular" element={<PrivateRoute><AYTBiyolojiAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-edebiyat-altkonular" element={<PrivateRoute><AYTEdebiyatAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-tarih-altkonular" element={<PrivateRoute><AYTTarihAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-cografya-altkonular" element={<PrivateRoute><AYTCografyaAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-felsefe-altkonular" element={<PrivateRoute><AYTFelsefeAltKonular /></PrivateRoute>} />
-              <Route path="/ayt-din-altkonular" element={<PrivateRoute><AYTDinAltKonular /></PrivateRoute>} />
+              <Route path="/ayt-matematik-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-matematik" subjectName="AYT Matematik" /></PrivateRoute>} />
+              <Route path="/ayt-fizik-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-fizik" subjectName="AYT Fizik" /></PrivateRoute>} />
+              <Route path="/ayt-kimya-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-kimya" subjectName="AYT Kimya" /></PrivateRoute>} />
+              <Route path="/ayt-biyoloji-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-biyoloji" subjectName="AYT Biyoloji" /></PrivateRoute>} />
+              <Route path="/ayt-edebiyat-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-edebiyat" subjectName="AYT Edebiyat" /></PrivateRoute>} />
+              <Route path="/ayt-tarih-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-tarih" subjectName="AYT Tarih" /></PrivateRoute>} />
+              <Route path="/ayt-cografya-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-cografya" subjectName="AYT Coğrafya" /></PrivateRoute>} />
+              <Route path="/ayt-felsefe-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-felsefe" subjectName="AYT Felsefe" /></PrivateRoute>} />
+              <Route path="/ayt-din-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-din" subjectName="AYT Din Kültürü" /></PrivateRoute>} />
               {/* AYT Test Seçimi */}
               <Route path="/ayt-matematik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/ayt-fizik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
@@ -152,6 +133,10 @@ const App: React.FC = () => {
               <Route path="/istatistikler" element={<PrivateRoute><Istatistiklerim /></PrivateRoute>} />
               {/* Performance Dashboard */}
               <Route path="/performance" element={<PrivateRoute><PerformanceDashboard /></PrivateRoute>} />
+              {/* Market Alanı */}
+              <Route path="/market" element={<PrivateRoute><Market /></PrivateRoute>} />
+              {/* Test Sayfası */}
+              <Route path="/test" element={<PrivateRoute><TestPage /></PrivateRoute>} />
               {/* 404 fallback */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

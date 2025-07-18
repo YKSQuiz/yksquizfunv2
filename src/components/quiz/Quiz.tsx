@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { updateXpLevelRank, jokerKullan } from '../../contexts/AuthContext';
@@ -13,7 +13,7 @@ import {
   TYT_TR_ALT_KONULAR, TYT_DIN_ALT_KONULAR, TYT_FIZIK_ALT_KONULAR, TYT_KIMYA_ALT_KONULAR, TYT_BIYOLOJI_ALT_KONULAR, TYT_COGRAFYA_ALT_KONULAR, TYT_TARIH_ALT_KONULAR,
   AYT_EDEBIYAT_ALT_KONULAR, AYT_FELSEFE_ALT_KONULAR, AYT_BIYOLOJI_ALT_KONULAR, AYT_KIMYA_ALT_KONULAR, AYT_FIZIK_ALT_KONULAR, AYT_COGRAFYA_ALT_KONULAR
 } from '../../utils/constants';
-import confetti from 'canvas-confetti';
+import * as confetti from 'canvas-confetti';
 
 // Dynamic imports for heavy components
 const JokerPanel = lazy(() => import("./JokerPanel"));
@@ -73,7 +73,7 @@ function getSubjectNameById(subjectId: string): string {
 const Quiz: React.FC = () => {
   const { subTopic, testNumber } = useParams<{ subTopic: string; testNumber: string }>();
   const navigate = useNavigate();
-  const { updateUserStats, user, updateUser, refreshUser, manualResetJokers } = useAuth();
+  const { updateUserStats, user, updateUser, refreshUser } = useAuth();
   const { measureAsync, measureSync, recordMetric } = usePerformanceMonitor();
   
   // AB Testing
@@ -95,7 +95,10 @@ const Quiz: React.FC = () => {
   const [showStats, setShowStats] = useState(false);
   const [quizDuration, setQuizDuration] = useState(0);
   const [earnedXp, setEarnedXp] = useState(0);
+  const [earnedCoin, setEarnedCoin] = useState(0);
   const [showXpInfo, setShowXpInfo] = useState(false);
+  const [jokerPurchaseLoading, setJokerPurchaseLoading] = useState<string | null>(null);
+  const [jokerPurchaseMessage, setJokerPurchaseMessage] = useState<string | null>(null);
 
   // Timer ref for optimization
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -300,22 +303,20 @@ const Quiz: React.FC = () => {
       setIsDoubleAnswerActive(false);
       setIsAutoCorrectActive(false);
     } else {
-      finishQuiz();
+      finishQuiz(score);
     }
-  }, [currentQuestionIndex, questions.length]);
+  }, [currentQuestionIndex, questions.length, score]);
 
   // Finish quiz
-  const finishQuiz = async () => {
+  const finishQuiz = async (finalScore = score) => {
     try {
       setQuizDuration(600 - timeLeft);
       setShowStats(true);
       // 1. İstatistikleri güncelle
       await updateUserStats(
-        score,
+        finalScore,
         questions.length,
         subTopic || '',
-        getSubjectNameById(subTopic || ''),
-        parseInt(testNumber || '1'),
         600 - timeLeft // duration
       );
       // 2. XP, seviye ve rütbe güncelle
@@ -323,12 +324,16 @@ const Quiz: React.FC = () => {
       if (user) {
         xpResult = await updateXpLevelRank({
           user,
-          correct: score,
+          correct: finalScore,
           total: questions.length,
           testNumber: parseInt(testNumber || '1')
         });
+        if (xpResult) {
+          console.log('XP Sonucu:', xpResult);
+        }
         if (xpResult && typeof xpResult.gainedXp === 'number') {
           setEarnedXp(xpResult.gainedXp);
+          setEarnedCoin(xpResult.gainedXp); // Coin de aynı miktarda kazanılıyor
         }
       }
       // Yönlendirme kaldırıldı, istatistik kartı gösterilecek
@@ -345,6 +350,63 @@ const Quiz: React.FC = () => {
   // Handle go back
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  // Joker satın alma fiyatları
+  const JOKER_PRICES: Record<JokerType, number> = {
+    eliminate: 50,
+    extraTime: 75,
+    doubleAnswer: 100,
+    autoCorrect: 150,
+  };
+
+  // Joker satın alma fonksiyonu
+  const handleJokerPurchase = async (type: JokerType) => {
+    if (!user) return;
+    
+    setJokerPurchaseLoading(type);
+    setJokerPurchaseMessage(null);
+
+    try {
+      const price = JOKER_PRICES[type];
+      
+      // Coin kontrolü
+      if ((user.coins || 0) < price) {
+        setJokerPurchaseMessage('Yetersiz coin! Bu joker için daha fazla coin gerekli.');
+        return;
+      }
+
+      // Joker miktar kontrolü
+      const currentCount = user.jokers?.[type]?.count || 0;
+      if (currentCount >= 3) {
+        setJokerPurchaseMessage(`Bu jokerden zaten maksimum miktarda (3 adet) sahipsiniz!`);
+        return;
+      }
+
+      const userRef = doc(db, 'users', user.id);
+      const updates: any = {
+        coins: increment(-price),
+        [`jokers.${type}.count`]: increment(1)
+      };
+
+      await updateDoc(userRef, updates);
+
+      // Local user state'ini güncelle
+      const updatedUser = { ...user };
+      updatedUser.coins = (user.coins || 0) - price;
+      updatedUser.jokers = { ...user.jokers };
+      updatedUser.jokers[type].count = Math.min(currentCount + 1, 3);
+      updateUser(updatedUser);
+
+      setJokerPurchaseMessage('✅ Joker başarıyla satın alındı!');
+      setTimeout(() => setJokerPurchaseMessage(null), 2000);
+
+    } catch (error) {
+      console.error('Joker satın alma hatası:', error);
+      setJokerPurchaseMessage('❌ Satın alma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setJokerPurchaseLoading(null);
+    }
   };
 
   // Joker kullanımı
@@ -397,12 +459,14 @@ const Quiz: React.FC = () => {
     if (showStats) {
       const successRate = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
       if (successRate >= 70) {
-        confetti({
-          particleCount: 120,
-          spread: 80,
-          origin: { y: 0.6 },
-          zIndex: 9999
-        });
+        if (typeof confetti.default === 'function') {
+          confetti.default({
+            particleCount: 120,
+            spread: 80,
+            origin: { y: 0.6 },
+            zIndex: 9999
+          });
+        }
       }
     }
     // eslint-disable-next-line
@@ -460,40 +524,109 @@ const Quiz: React.FC = () => {
       <div className="quiz-container">
         <div className="quiz-stats-card animated-stats-card"
           style={{
-            maxWidth: 520,
+            maxWidth: 540,
             margin: '64px auto',
             background: 'linear-gradient(120deg, #f8fafc 0%, #e0c3fc 100%)',
-            borderRadius: 36,
+            borderRadius: 40,
             boxShadow: '0 12px 48px #764ba244, 0 2px 12px #fff8',
             padding: 48,
             textAlign: 'center',
             position: 'relative',
-            minHeight: 420,
+            minHeight: 440,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             animation: 'popInStats 1.1s cubic-bezier(.39,.575,.56,1.000)'
           }}>
-          <h2 style={{color: '#764ba2', fontWeight: 900, marginBottom: 24, fontSize: 32, letterSpacing: 1}}>Quiz Sonuçları</h2>
+          <h2 style={{color: '#764ba2', fontWeight: 900, marginBottom: 24, fontSize: 34, letterSpacing: 1}}>🎉 Quiz Sonuçları 🎉</h2>
+          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 28 }}>
+            {/* XP Kutusu */}
+            <div style={{
+              background: 'linear-gradient(90deg, #f59e42 0%, #ffe082 100%)',
+              borderRadius: 18,
+              boxShadow: '0 2px 12px #f59e4255',
+              padding: '18px 32px',
+              fontWeight: 900,
+              fontSize: 28,
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              minWidth: 120,
+              justifyContent: 'center',
+            }}>
+              <span style={{ fontSize: 36, marginRight: 6 }}>⭐</span>
+              <span style={{ fontSize: 32 }}>{earnedXp}</span>
+              <span style={{ fontWeight: 700, fontSize: 18, color: '#fffbe7', marginLeft: 6 }}>XP</span>
+            </div>
+            {/* Coin Kutusu */}
+            <div style={{
+              background: 'linear-gradient(90deg, #ffe082 0%, #ffd54f 100%)',
+              borderRadius: 18,
+              boxShadow: '0 2px 12px #ffecb355',
+              padding: '18px 32px',
+              fontWeight: 900,
+              fontSize: 28,
+              color: '#ffb300',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              minWidth: 120,
+              justifyContent: 'center',
+            }}>
+              <span style={{ fontSize: 36, marginRight: 6 }}>🪙</span>
+              <span style={{ fontSize: 32 }}>{earnedCoin}</span>
+              <span style={{ fontWeight: 700, fontSize: 18, color: '#bfa040', marginLeft: 6 }}>coin</span>
+            </div>
+          </div>
           <div style={{fontSize: 26, fontWeight: 800, marginBottom: 18}}>
             Doğru: <span style={{color: '#22c55e'}}>{score}</span> / Yanlış: <span style={{color: '#ef4444'}}>{questions.length - score}</span>
           </div>
           <div style={{fontSize: 22, marginBottom: 10}}>Başarı Oranı: <b style={{color: '#2563eb'}}>{successRate}%</b></div>
           <div style={{fontSize: 22, marginBottom: 10}}>Toplam Süre: <b style={{color: '#7c3aed'}}>{formatTime(quizDuration)}</b></div>
-          <div style={{fontSize: 22, marginBottom: 10}}>Kazanılan XP: <b style={{color: '#f59e42'}}>{earnedXp}</b></div>
           <button onClick={() => navigate('/')} style={{marginTop: 32, padding: '16px 44px', background: 'linear-gradient(90deg,#667eea,#764ba2)', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 800, fontSize: 22, cursor: 'pointer', boxShadow: '0 6px 24px #764ba244', letterSpacing: 1}}>Ana Sayfaya Dön</button>
           <div style={{marginTop: 28}}>
             <button onClick={() => setShowXpInfo(v => !v)} style={{background: 'none', border: '2px solid #764ba2', color: '#764ba2', borderRadius: 10, padding: '8px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 17, marginBottom: 8, transition: 'all 0.2s'}}>
               XP Kazanma Kuralları {showXpInfo ? '▲' : '▼'}
             </button>
             {showXpInfo && (
-              <div style={{fontSize: 16, color: '#555', marginTop: 8, background: '#f8fafc', borderRadius: 10, padding: 14, textAlign: 'left', boxShadow: '0 2px 12px #764ba211', fontWeight: 500}}>
-                <b>XP Kazanma Kuralları:</b><br/>
-                Her doğru cevap: <b>20 XP</b><br/>
-                %100 başarı: <b>2 katı XP</b><br/>
-                %70 ve üzeri: Standart XP<br/>
-                Daha düşük başarı: Yarı XP
+              <div style={{
+                fontSize: 17,
+                color: '#333',
+                marginTop: 8,
+                background: 'linear-gradient(120deg, #fffbe7 0%, #e0c3fc22 100%)',
+                borderRadius: 14,
+                padding: 18,
+                textAlign: 'left',
+                boxShadow: '0 2px 12px #764ba211',
+                fontWeight: 500,
+                border: '1.5px solid #ffe082',
+                maxWidth: 340,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+              }}>
+                <div style={{ fontWeight: 900, fontSize: 19, color: '#a084ee', marginBottom: 10, textAlign: 'center', letterSpacing: 1 }}>
+                  XP & Coin Kazanma Kuralları
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 22 }}>✅</span>
+                    <span>Her doğru cevap: <b style={{ color: '#f59e42' }}>+20 XP</b> <span style={{ color: '#bfa040', fontWeight: 700 }}>ve</span> <b style={{ color: '#ffb300' }}>+20 coin</b></span>
+                  </li>
+                  <li style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 22 }}>🏆</span>
+                    <span>%100 başarı: <b style={{ color: '#f59e42' }}>2 katı XP</b> <span style={{ color: '#bfa040', fontWeight: 700 }}>ve</span> <b style={{ color: '#ffb300' }}>2 katı coin</b></span>
+                  </li>
+                  <li style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 22 }}>👍</span>
+                    <span>%70 ve üzeri başarı: <b style={{ color: '#f59e42' }}>Standart XP</b> <span style={{ color: '#bfa040', fontWeight: 700 }}>ve</span> <b style={{ color: '#ffb300' }}>standart coin</b></span>
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 22 }}>🟠</span>
+                    <span>Daha düşük başarı: <b style={{ color: '#f59e42' }}>Yarı XP</b> <span style={{ color: '#bfa040', fontWeight: 700 }}>ve</span> <b style={{ color: '#ffb300' }}>yarı coin</b></span>
+                  </li>
+                </ul>
               </div>
             )}
           </div>
@@ -520,53 +653,7 @@ const Quiz: React.FC = () => {
       </div>
       {/* Main quiz card - TÜM İÇERİK BURADA */}
       <div className="quiz-card">
-        {/* Manuel Joker Yenileme Butonu */}
-        {user && user.jokers && user.jokersUsed && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: 16,
-            marginTop: 8,
-          }}>
-            <button
-              onClick={async () => {
-                try {
-                  await manualResetJokers();
-                  await refreshUser();
-                  alert('🎉 Joker hakları yenilendi! Tüm jokerler 3\'e sıfırlandı.');
-                } catch (error) {
-                  console.error('Joker yenileme hatası:', error);
-                  alert('❌ Joker yenileme sırasında bir hata oluştu.');
-                }
-              }}
-              style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '10px 20px',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(118, 75, 162, 0.3)',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(118, 75, 162, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(118, 75, 162, 0.3)';
-              }}
-            >
-              🔄 Joker Haklarını Yenile
-            </button>
-          </div>
-        )}
+
 
         {/* Kompakt ve sade Joker Barı */}
         {user && user.jokers && user.jokersUsed && (
@@ -584,11 +671,13 @@ const Quiz: React.FC = () => {
             border: '1px solid rgba(118, 75, 162, 0.1)',
           }}>
             {JOKER_TYPES.map((type) => {
-              const jokerType = type as JokerType;
-              const isDisabled = user.jokers[jokerType].count === 0;
+              const jokerCount = user.jokers[type].count;
+              const isDisabled = jokerCount === 0;
+              const price = JOKER_PRICES[type];
+              
               return (
                 <div
-                  key={jokerType}
+                  key={type}
                   className={`joker-emoji-box ${isDisabled ? 'disabled' : ''}`}
                   style={{
                     minWidth: 70,
@@ -598,14 +687,19 @@ const Quiz: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     opacity: isDisabled ? 0.6 : 1,
-                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    cursor: isDisabled ? 'pointer' : 'pointer',
+                    position: 'relative',
                   }}
                   title={`${type === 'eliminate' ? '2 Şık Eleme' : 
                           type === 'extraTime' ? 'Ekstra 60sn' :
-                          type === 'doubleAnswer' ? 'Çift Cevap' : 'Doğru Kabul'} - Kullanıldı: ${user.jokersUsed[jokerType] || 0}`}
+                          type === 'doubleAnswer' ? 'Çift Cevap' : 'Doğru Kabul'} - Kullanıldı: ${user.jokersUsed[type] || 0}`}
                   onClick={e => {
-                    if (!isDisabled) {
-                      if (jokerType !== 'autoCorrect') {
+                    if (isDisabled) {
+                      // Joker bittiğinde satın alma
+                      handleJokerPurchase(type);
+                    } else {
+                      // Joker kullanma
+                      if (type !== 'autoCorrect') {
                         const el = e.currentTarget;
                         if (el && el.classList) {
                           el.classList.add('joker-emoji-clicked');
@@ -613,9 +707,9 @@ const Quiz: React.FC = () => {
                             if (el && el.classList) el.classList.remove('joker-emoji-clicked');
                           }, 400);
                         }
-                        handleUseJoker(jokerType);
+                        handleUseJoker(type);
                       } else {
-                        handleUseJoker(jokerType);
+                        handleUseJoker(type);
                       }
                     }
                   }}
@@ -628,39 +722,150 @@ const Quiz: React.FC = () => {
                       filter: isDisabled ? 'grayscale(1)' : 'none'
                     }}
                   >
-                    {JOKER_ICONS[jokerType]}
+                    {JOKER_ICONS[type]}
                   </span>
-                  <span style={{ 
-                    fontSize: 16, 
-                    color: '#764ba2', 
-                    fontWeight: 700, 
-                    marginBottom: 2 
-                  }}>
-                    {user.jokers[jokerType].count}
-                  </span>
-                  <span style={{ 
-                    fontSize: 10, 
-                    color: '#999', 
-                    textAlign: 'center',
-                    lineHeight: 1.2
-                  }}>
-                    Kullanıldı: {user.jokersUsed[jokerType] || 0}
-                  </span>
+                  
+                  {isDisabled ? (
+                    // Joker bittiğinde fiyat butonu göster
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 2
+                    }}>
+                      <span style={{ 
+                        fontSize: 12, 
+                        color: '#ffb300', 
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2
+                      }}>
+                        <span style={{ fontSize: 10 }}>🪙</span>
+                        {price}
+                      </span>
+                      <span style={{ 
+                        fontSize: 10, 
+                        color: '#999', 
+                        textAlign: 'center',
+                        lineHeight: 1.2
+                      }}>
+                        {jokerPurchaseLoading === type ? 'Yükleniyor...' : 'Satın Al'}
+                      </span>
+                    </div>
+                  ) : (
+                    // Normal joker sayısı göster
+                    <>
+                      <span style={{ 
+                        fontSize: 16, 
+                        color: '#764ba2', 
+                        fontWeight: 700, 
+                        marginBottom: 2 
+                      }}>
+                        {jokerCount}
+                      </span>
+                      <span style={{ 
+                        fontSize: 10, 
+                        color: '#999', 
+                        textAlign: 'center',
+                        lineHeight: 1.2
+                      }}>
+                        Kullanıldı: {user.jokersUsed[type] || 0}
+                      </span>
+                    </>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
+        
+        {/* Joker Satın Alma Mesajı */}
+        {jokerPurchaseMessage && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            padding: '12px 24px',
+            borderRadius: '12px',
+            background: jokerPurchaseMessage.includes('✅') ? '#d4edda' : '#f8d7da',
+            color: jokerPurchaseMessage.includes('✅') ? '#155724' : '#721c24',
+            fontWeight: 600,
+            fontSize: '14px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            border: `2px solid ${jokerPurchaseMessage.includes('✅') ? '#c3e6cb' : '#f5c6cb'}`
+          }}>
+            {jokerPurchaseMessage}
+          </div>
+        )}
         {/* Header section */}
         <div className="quiz-header">
-          <h1 className="quiz-title">Quiz</h1>
-          <div className="quiz-meta">
-            <div className="timer">
-              <span className="timer-icon">⏱️</span>
-              <span className="timer-text">{formatTime(timeLeft)}</span>
+          {/* Quiz başlığı ve sayaç */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            marginBottom: 18,
+            position: 'relative',
+          }}>
+            {/* Quiz başlığı */}
+            <h1 style={{
+              flex: 1,
+              textAlign: 'left',
+              fontSize: 32,
+              fontWeight: 900,
+              color: '#7c3aed',
+              margin: 0,
+              letterSpacing: 1,
+            }}>Quiz</h1>
+            {/* Anlık Doğru/Yanlış Sayacı */}
+            <div style={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              background: 'linear-gradient(90deg, #f8fafc 0%, #e0c3fc 100%)',
+              borderRadius: 18,
+              boxShadow: '0 2px 12px #764ba244',
+              padding: '8px 28px',
+              fontWeight: 900,
+              fontSize: 20,
+              color: '#222',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              border: '2px solid #e0c3fc',
+            }}>
+              <span>Doğru: <span style={{ color: '#22c55e', fontWeight: 900 }}>{score}</span></span>
+              <span>/</span>
+              <span>Yanlış: <span style={{ color: '#ef4444', fontWeight: 900 }}>{currentQuestionIndex - score >= 0 ? currentQuestionIndex - score : 0}</span></span>
             </div>
-            <div className="question-counter">
-              Soru {currentQuestionIndex + 1} / {questions.length}
+            {/* Zamanlayıcı ve soru sayacı */}
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              gap: 12,
+            }}>
+              <div style={{
+                background: '#f3e8ff',
+                borderRadius: 12,
+                padding: '6px 18px',
+                fontWeight: 700,
+                color: '#7c3aed',
+                fontSize: 20,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}>
+                <span style={{ fontSize: 20 }}>⏱️</span>
+                <span>{formatTime(timeLeft)}</span>
+              </div>
+              <span style={{ color: '#888', fontWeight: 600, fontSize: 16 }}>Soru {currentQuestionIndex + 1} / {questions.length}</span>
             </div>
           </div>
         </div>
@@ -730,4 +935,4 @@ const Quiz: React.FC = () => {
   );
 };
 
-export default Quiz; 
+export default Quiz;

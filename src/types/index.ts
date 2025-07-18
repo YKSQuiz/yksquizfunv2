@@ -12,6 +12,10 @@ export interface User {
   // Enerji sistemi
   energy?: number; // Kullanıcının mevcut enerjisi (0-100)
   lastEnergyUpdate?: string; // Son enerji güncelleme zamanı (ISO string veya timestamp)
+  energyLimit?: number; // Maksimum enerji (varsayılan: 100)
+  energyRegenSpeed?: number; // Enerji yenilenme hızı (saniye, varsayılan: 300)
+  coins?: number; // Kullanıcının sahip olduğu coin miktarı
+  unlockedTests?: { [subjectTopic: string]: number[] }; // Alt konu bazlı açılan testler {"turkce/sozcukte-anlam": [1,2], "matematik/temel-kavramlar": [1]}
 }
 
 // Kullanıcı istatistikleri
@@ -19,10 +23,6 @@ export interface UserStats {
   totalQuizzes: number;
   correctAnswers: number;
   totalQuestions: number;
-  subjectStats: {
-    [subjectId: string]: SubjectStats;
-  };
-  quizHistory: QuizHistory[];
   dailyActivity: {
     [date: string]: DailyActivity;
   };
@@ -35,31 +35,10 @@ export interface UserStats {
   sessionHistory?: { date: string; seconds: number }[];
 }
 
-// Konu istatistikleri
-export interface SubjectStats {
-  totalQuestions: number;
-  correctAnswers: number;
-  quizzes: number;
-  lastQuizDate?: string;
-}
-
-// Quiz geçmişi
-export interface QuizHistory {
-  id: string;
-  subjectId: string;
-  subjectName: string;
-  testNumber: number;
-  score: number;
-  totalQuestions: number;
-  date: string;
-  duration: number;
-}
-
 // Günlük aktivite
 export interface DailyActivity {
   questionsSolved: number;
   correctAnswers: number;
-  timeSpent: number;
 }
 
 // Soru tipi
@@ -106,4 +85,28 @@ export interface JokersUsed {
   extraTime: number;
   doubleAnswer: number;
   autoCorrect: number;
+}
+
+// Market sistemi tipleri
+export interface MarketItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: 'joker' | 'energy';
+  type: 'single' | 'refill' | 'upgrade';
+  icon: string;
+  isAvailable: boolean;
+  stock?: number;
+  requiredLevel?: number; // Sıralı açılma için gerekli seviye
+}
+
+export interface CoinTransaction {
+  id: string;
+  userId: string;
+  type: 'earn' | 'spend';
+  amount: number;
+  reason: 'quiz' | 'purchase' | 'bonus' | 'test_unlock';
+  itemId?: string;
+  timestamp: string;
 } 

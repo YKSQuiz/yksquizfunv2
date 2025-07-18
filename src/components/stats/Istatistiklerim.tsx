@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
-import { FiArrowLeft, FiTrendingUp, FiClock, FiTarget, FiBarChart, FiCalendar, FiBookOpen, FiAlertTriangle, FiCheckCircle, FiXCircle, FiHelpCircle } from 'react-icons/fi';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area } from 'recharts';
+import { FiArrowLeft, FiTarget, FiClock, FiCheckCircle, FiXCircle, FiBarChart2, FiPercent, FiCalendar } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
-import { db } from '../../services/firebase';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { TYT_SUBJECTS, AYT_SAY_SUBJECTS, AYT_EA_SUBJECTS, AYT_SOZ_SUBJECTS } from '../../utils/constants';
 import { UserStats } from '../../types';
-import { TooltipProps } from 'recharts';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../services/firebase';
 
 interface ChartData {
   date: string;
@@ -21,17 +19,49 @@ interface SubjectData {
   correct: number;
   incorrect: number;
   successRate: number;
-  timeSpent: number;
+}
+
+// Zaman aralığına göre dailyActivity verisini filtreleyen fonksiyon
+function filterDailyActivity(dailyActivity: { [date: string]: any }, range: 'week' | 'month' | '3months') {
+  if (!dailyActivity) return [];
+  const today = new Date();
+  let startDate = new Date();
+  if (range === 'week') {
+    startDate.setDate(today.getDate() - 6);
+  } else if (range === 'month') {
+    startDate.setDate(today.getDate() - 29);
+  } else if (range === '3months') {
+    startDate.setDate(today.getDate() - 89);
+  }
+  // Tarihleri sırala ve filtrele
+  return Object.entries(dailyActivity)
+    .map(([date, stats]) => ({ date, ...stats }))
+    .filter(item => {
+      const d = new Date(item.date);
+      return d >= startDate && d <= today;
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+}
+
+// Yardımcı: Belirli bir aralık için tüm günleri dizi olarak döndür
+function getDateRangeArray(range: 'week' | 'month' | '3months') {
+  const today = new Date();
+  let days = 7;
+  if (range === 'month') days = 30;
+  else if (range === '3months') days = 90;
+  const arr = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    arr.push(d);
+  }
+  return arr;
 }
 
 const Istatistiklerim: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
-  const [timeFilter, setTimeFilter] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
-  const [chartData, setChartData] = useState<ChartData[]>([]);
-  const [subjectData, setSubjectData] = useState<SubjectData[]>([]);
-  const [worstSubject, setWorstSubject] = useState<SubjectData | null>(null);
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [timeData, setTimeData] = useState<{day: string, minutes: number}[]>([
@@ -43,9 +73,13 @@ const Istatistiklerim: React.FC = React.memo(() => {
     { day: 'Cumartesi', minutes: 60 },
     { day: 'Pazar', minutes: 25 },
   ]);
+  const [selectedRange, setSelectedRange] = useState<'week' | 'month' | '3months'>('week');
+
+  // Karanlık mod kontrolü
+  const isDark = typeof window !== 'undefined' && document.body.classList.contains('dark');
 
   // Memoized subjects array
-  const subjects = useMemo(() => [
+  const subjects = React.useMemo(() => [
     { id: 'all', label: 'Tüm Dersler' },
     { id: 'tyt-turkce', label: 'TYT Türkçe' },
     { id: 'tyt-tarih', label: 'TYT Tarih' },
@@ -67,192 +101,51 @@ const Istatistiklerim: React.FC = React.memo(() => {
     { id: 'ayt-din', label: 'AYT Din' },
   ], []);
 
-  // Memoized time filter label
-  const getTimeFilterLabel = useCallback(() => {
-    switch (timeFilter) {
-      case 'daily': return 'Günlük';
-      case 'weekly': return 'Haftalık';
-      case 'monthly': return 'Aylık';
-      default: return 'Haftalık';
-    }
-  }, [timeFilter]);
-
   // Memoized colors array
-  const COLORS = useMemo(() => ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'], []);
+  const COLORS = React.useMemo(() => ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'], []);
 
-  // Tooltip için özel bileşen
-  const CustomChartTooltip = ({ active, payload, label }: TooltipProps<any, string>) => {
+  // Modern ve okunaklı özel tooltip
+  const CustomChartTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      const correct = payload.find((p: any) => p.name === 'Doğru');
-      const incorrect = payload.find((p: any) => p.name === 'Yanlış');
-      const total = payload.find((p: any) => p.name === 'Çözülen Soru');
       return (
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12, boxShadow: '0 2px 8px #0001' }}>
-          <div style={{ marginBottom: 4 }}>{label}</div>
-          {correct && <div style={{ color: '#22c55e' }}>Doğru : {correct.value}</div>}
-          {incorrect && <div style={{ color: '#ef4444' }}>Yanlış : {incorrect.value}</div>}
-          {total && <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '1.25rem' }}>Çözülen Soru : {total.value}</div>}
+        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, boxShadow: '0 2px 12px #2563eb22', minWidth: 120 }}>
+          <div style={{ fontWeight: 700, color: '#2563eb', marginBottom: 6 }}>{label}</div>
+          {payload.map((p: any) => (
+            <div key={p.dataKey} style={{ color: p.stroke, fontWeight: 600, fontSize: 15, marginBottom: 2 }}>
+              {p.name}: {p.value}
+            </div>
+          ))}
         </div>
       );
     }
     return null;
   };
 
-  // Genel istatistikler (her zaman tüm zamanlar)
-  const generalStats = {
-    totalQuizzes: userStats?.totalQuizzes || 0,
-    totalCorrect: userStats?.correctAnswers || 0,
-    totalQuestions: userStats?.totalQuestions || 0,
-    successRate: userStats?.totalQuestions && userStats?.totalQuestions > 0 
-      ? Math.round((userStats?.correctAnswers! / userStats?.totalQuestions!) * 100) 
-      : 0
-  };
+  // Genel istatistik kutuları için değerler
+  const totalCorrect = userStats?.correctAnswers || 0;
+  const totalQuestions = userStats?.totalQuestions || 0;
+  const totalQuizzes = userStats?.totalQuizzes || 0;
+  const experience = userStats?.experience || 0;
+  const level = userStats?.level || 1;
+  const rank = userStats?.rank || '';
+  const totalQuizTime = userStats?.totalQuizTime || 0; // saniye
+  const totalSessionTime = userStats?.totalSessionTime || 0; // dakika
+  const successRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
 
-  // Zaman hesaplamaları - sıfırdan yeniden düzenlendi
+  // Zaman hesaplamaları - quizHistory kaldırıldığı için sadeleştirildi
   const calculateTimeStats = () => {
-    // Quiz süresi: quizHistory'den duration toplamı (saniye -> dakika)
-    const totalQuizSeconds = userStats?.quizHistory?.reduce((total, quiz) => {
-      return total + (quiz.duration || 0);
-    }, 0) || 0;
+    // Quiz süresi: doğrudan totalQuizTime (saniye -> dakika)
+    const totalQuizSeconds = userStats?.totalQuizTime || 0;
     const quizMinutes = Math.floor(totalQuizSeconds / 60);
-    
     // Session süresi: Firebase'den totalSessionTime (dakika cinsinden)
     const sessionMinutes = userStats?.totalSessionTime || 0;
-    
-    // Debug: Zaman hesaplamaları
-    console.log('🕒 Zaman hesaplamaları:', {
-      totalQuizSeconds,
-      quizMinutes,
-      sessionMinutes,
-      totalQuizzes: generalStats.totalQuizzes
-    });
-    
     return {
       quizMinutes,
       sessionMinutes,
       totalQuizSeconds
     };
   };
-  
   const { quizMinutes, sessionMinutes } = calculateTimeStats();
-
-  // Zaman aralığı seçenekleri
-  const TIME_RANGES = [
-    { value: '1d', label: 'Bugün' },
-    { value: '1w', label: 'Son 1 Hafta' },
-    { value: '1m', label: 'Son 1 Ay' },
-    { value: '3m', label: 'Son 3 Ay' },
-  ];
-  const [selectedTimeRange, setSelectedTimeRange] = useState('1w');
-
-  // Grafik için zaman aralığına göre eksiksiz gün listesiyle veri
-  const getFilteredChartData = () => {
-    if (!userStats || !userStats.quizHistory) return [];
-    // Istanbul saatine göre 'now'
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
-    let days = 7;
-    if (selectedTimeRange === '1d') days = 1;
-    if (selectedTimeRange === '1m') days = 30;
-    if (selectedTimeRange === '3m') days = 90;
-    if (selectedTimeRange === '6m') days = 180;
-    if (selectedTimeRange === 'all') days = 365; // 1 yıl sınırı, istenirse artırılabilir
-
-    // Son N günün tarihlerini oluştur
-    const dateList: string[] = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      // Eğer 1 gün ise saat bazında göster
-      if (selectedTimeRange === '1d') {
-        for (let h = 0; h < 24; h++) {
-          const hourLabel = d.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' }) + ' ' + h + ':00';
-          dateList.push(hourLabel);
-        }
-        break;
-      } else {
-        dateList.push(d.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' }));
-      }
-    }
-
-    // Her gün/saat için quizHistory'den veri topla
-    const chartMap: { [date: string]: { correct: number; incorrect: number; total: number } } = {};
-    dateList.forEach(date => {
-      chartMap[date] = { correct: 0, incorrect: 0, total: 0 };
-    });
-    userStats.quizHistory.forEach(q => {
-      // UTC tarihini Istanbul saatine çevir
-      const d = new Date(new Date(q.date).toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
-      if (selectedTimeRange === '1d') {
-        // Sadece bugünün kayıtlarını dahil et
-        const todayStr = now.toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        const dStr = d.toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        if (todayStr !== dStr) return;
-        const hour = d.getHours();
-        const key = d.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' }) + ' ' + hour + ':00';
-        if (!chartMap[key]) chartMap[key] = { correct: 0, incorrect: 0, total: 0 };
-        chartMap[key].correct += q.score;
-        chartMap[key].incorrect += (q.totalQuestions - q.score);
-        chartMap[key].total += q.totalQuestions;
-      } else {
-        if ((now.getTime() - d.getTime()) / (1000*60*60*24) > days - 1) return;
-        const key = d.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' });
-        if (!chartMap[key]) chartMap[key] = { correct: 0, incorrect: 0, total: 0 };
-        chartMap[key].correct += q.score;
-        chartMap[key].incorrect += (q.totalQuestions - q.score);
-        chartMap[key].total += q.totalQuestions;
-      }
-    });
-    return dateList.map(date => ({
-      date,
-      correct: chartMap[date].correct,
-      incorrect: chartMap[date].incorrect,
-      total: chartMap[date].total
-    }));
-  };
-  const filteredChartData = getFilteredChartData();
-
-  // Zaman aralığına göre özet istatistikler hesapla
-  const summaryStats = (() => {
-    const data = filteredChartData;
-    const totalSolved = data.reduce((acc, d) => acc + d.total, 0);
-    const totalCorrect = data.reduce((acc, d) => acc + d.correct, 0);
-    const totalIncorrect = data.reduce((acc, d) => acc + d.incorrect, 0);
-    const avgDaily = data.length > 0 ? Math.round(totalSolved / data.length) : 0;
-    const successRate = totalSolved > 0 ? Math.round((totalCorrect / totalSolved) * 100) : 0;
-    // En aktif gün
-    let mostActiveDay = null;
-    if (data.length > 0) {
-      const max = Math.max(...data.map(d => d.total));
-      const found = data.find(d => d.total === max);
-      if (found && found.total > 0) mostActiveDay = found;
-    }
-    return { totalSolved, totalCorrect, totalIncorrect, avgDaily, successRate, mostActiveDay };
-  })();
-  // İlerleme mesajı (sadece 1w, 1m, 3m için)
-  let progressMsg = null;
-  if (["1w","1m","3m"].includes(selectedTimeRange)) {
-    // Önceki dönemle kıyasla
-    let prevDays = 7;
-    if (selectedTimeRange === "1m") prevDays = 30;
-    if (selectedTimeRange === "3m") prevDays = 90;
-    const now = new Date();
-    const prevStart = new Date(now);
-    prevStart.setDate(now.getDate() - prevDays * 2 + 1);
-    const prevEnd = new Date(now);
-    prevEnd.setDate(now.getDate() - prevDays);
-    // Önceki dönem verisi
-    const prevData = (userStats?.quizHistory || []).filter(q => {
-      const d = new Date(q.date);
-      return d >= prevStart && d < prevEnd;
-    });
-    const prevTotal = prevData.reduce((acc, q) => acc + q.totalQuestions, 0);
-    if (prevTotal > 0) {
-      const diff = summaryStats.totalSolved - prevTotal;
-      if (diff > 0) progressMsg = `Harika! Önceki döneme göre ${diff} daha fazla soru çözdün.`;
-      else if (diff < 0) progressMsg = `Dikkat! Önceki döneme göre ${-diff} daha az soru çözdün.`;
-      else progressMsg = `Aynı sayıda soru çözdün.`;
-    }
-  }
 
   // Motivasyon sözleri
   const MOTIVATION_QUOTES = [
@@ -268,77 +161,29 @@ const Istatistiklerim: React.FC = React.memo(() => {
   const todayIdx = new Date().getDate() % MOTIVATION_QUOTES.length;
   const todayQuote = MOTIVATION_QUOTES[todayIdx];
 
+  // dailyActivity verisini seçilen aralığa göre filtrele
+  const filteredActivity = filterDailyActivity(userStats?.dailyActivity || {}, selectedRange);
 
+  // Grafik için veri hazırlama (eksik günler 0'lı olacak)
+  const dateArray = getDateRangeArray(selectedRange);
+  const chartData = dateArray.map(dateObj => {
+    const dateKey = dateObj.toISOString().split('T')[0];
+    const activity = userStats?.dailyActivity?.[dateKey] || { questionsSolved: 0, correctAnswers: 0 };
+    return {
+      date: dateObj.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }), // örn. 13 Tem
+      solved: activity.questionsSolved || 0,
+      correct: activity.correctAnswers || 0,
+      incorrect: (activity.questionsSolved || 0) - (activity.correctAnswers || 0)
+    };
+  });
 
-  // Zaman analiz bar grafiği için veri hazırlama
-  const getTimeSpentData = () => {
-    if (!userStats || !userStats.quizHistory) return [];
-    const now = new Date();
-    let days = 7;
-    if (selectedTimeRange === '1d') days = 1;
-    if (selectedTimeRange === '1m') days = 30;
-    if (selectedTimeRange === '3m') days = 90;
-    // Bugün için saatlik, diğerleri için günlük
-    if (selectedTimeRange === '1d') {
-      const hours = Array.from({length: 24}, (_, h) => h);
-      const data = hours.map(hour => {
-        const totalMinutes = userStats.quizHistory.filter(q => {
-          const d = new Date(q.date);
-          return d.toDateString() === now.toDateString() && d.getHours() === hour;
-        }).reduce((acc, q) => acc + Math.round(q.duration / 60), 0);
-        return { label: `${hour}:00`, minutes: totalMinutes };
-      });
-      return data;
-    } else {
-      const data = [];
-      for (let i = days - 1; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(now.getDate() - i);
-        const label = d.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' });
-        const totalMinutes = userStats.quizHistory.filter(q => {
-          const qd = new Date(q.date);
-          return qd.toDateString() === d.toDateString();
-        }).reduce((acc, q) => acc + Math.round(q.duration / 60), 0);
-        data.push({ label, minutes: totalMinutes });
-      }
-      return data;
-    }
-  };
-  const timeSpentData = getTimeSpentData();
+  // Grafik altı özet istatistikler
+  const chartTotalSolved = chartData.reduce((sum, d) => sum + d.solved, 0);
+  const chartTotalCorrect = chartData.reduce((sum, d) => sum + d.correct, 0);
+  const chartTotalIncorrect = chartData.reduce((sum, d) => sum + d.incorrect, 0);
+  const chartSuccessRate = chartTotalSolved > 0 ? Math.round((chartTotalCorrect / chartTotalSolved) * 100) : 0;
+  const chartAvgDaily = chartData.length > 0 ? Math.round(chartTotalSolved / chartData.length) : 0;
 
-  // totalSessionTime için zaman aralığına göre veri hazırla
-  const getSessionTimeData = () => {
-    if (!userStats) return [];
-    // Eğer sessionHistory yoksa quizHistory'den otomatik oluştur
-    // let sessionHistory = userStats.sessionHistory;
-    // if (!sessionHistory && userStats.quizHistory) {
-    //   sessionHistory = generateSessionHistoryFromQuizHistory(userStats.quizHistory);
-    // }
-    // if (!sessionHistory) {
-    //   // Sadece toplamı göster
-    // }
-    // Günlük kırılım varsa, filtre uygula
-    const now = new Date();
-    let days = 7;
-    if (selectedTimeRange === '1d') days = 1;
-    if (selectedTimeRange === '1m') days = 30;
-    if (selectedTimeRange === '3m') days = 90;
-    const data = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      const label = d.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' });
-      // sessionHistory: [{date: '2024-06-01', seconds: 1234}, ...]
-      const entry = userStats.sessionHistory?.find((s: any) => {
-        const sd = new Date(s.date);
-        return sd.toDateString() === d.toDateString();
-      });
-      const minutes = entry ? Math.floor(entry.seconds / 60) : 0;
-      data.push({ label, minutes });
-    }
-    return data;
-  };
-  const sessionTimeData = getSessionTimeData();
 
   // Sayfa açıldığında Firestore'dan kullanıcı verisini her zaman güncel olarak çek
   useEffect(() => {
@@ -374,7 +219,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
   }
 
   return (
-    <div className="container stats-page">
+    <div className={`container stats-page${isDark ? ' dark' : ''}`}>
       {/* Modern Üst Başlık, Selamlama ve Ana Sayfaya Dön Butonu */}
       <div className="stats-header-modern" style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16}}>
         <button className="btn btn-secondary" onClick={() => navigate('/')}
@@ -388,34 +233,19 @@ const Istatistiklerim: React.FC = React.memo(() => {
       </div>
 
       {/* Genel İstatistikler */}
-      <div className="stats modern-stats-grid">
+      <div className={`stats modern-stats-grid${isDark ? ' dark' : ''}`}>
         <div className="stat-card success-card">
           <div className="stat-icon stat-icon-success"><FiTarget size={32}/></div>
           <h3>Genel Başarı Oranı</h3>
-          <div className="stat-value">{generalStats.successRate}%</div>
-          <div className="stat-detail">{generalStats.totalCorrect} / {generalStats.totalQuestions} doğru</div>
+          <div className="stat-value">{successRate}%</div>
+          <div className="stat-detail">{totalCorrect} / {totalQuestions} doğru</div>
         </div>
         <div className="stat-card test-card">
-          <div className="stat-icon stat-icon-test"><FiBookOpen size={32}/></div>
+          <div className="stat-icon stat-icon-test"><FiClock size={32}/></div>
           <h3>Toplam Test</h3>
-          <div className="stat-value">{generalStats.totalQuizzes}</div>
+          <div className="stat-value">{totalQuizzes}</div>
           <div className="stat-detail">Çözülmüş Test</div>
-          {/* Son çözülen test bilgisi */}
-          {userStats?.quizHistory && userStats.quizHistory.length > 0 ? (
-            (() => {
-              const lastQuiz = userStats.quizHistory.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-              const dateStr = new Date(lastQuiz.date).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' });
-              return (
-                <div className="stat-detail" style={{fontSize: '0.98rem', color: '#7c3aed', marginTop: 6}}>
-                  Son test: <b>{lastQuiz.subjectName}</b>, {dateStr}
-                </div>
-              );
-            })()
-          ) : (
-            <div className="stat-detail" style={{fontSize: '0.98rem', color: '#7c3aed', marginTop: 6}}>
-              Henüz test çözülmedi
-            </div>
-          )}
+          {/* Son çözülen test bilgisi kaldırıldı */}
         </div>
         <div className="stat-card time-card">
           <div className="stat-icon stat-icon-time"><FiClock size={32}/></div>
@@ -467,314 +297,459 @@ const Istatistiklerim: React.FC = React.memo(() => {
           </div>
         </div>
         <div className="stat-card xp-card">
-          <div className="stat-icon stat-icon-xp"><FiTrendingUp size={32}/></div>
+          <div className="stat-icon stat-icon-xp"><FiTarget size={32}/></div>
           <h3>XP & Seviye</h3>
-          <div className="stat-value xp-animated">{userStats?.experience || 0} <span style={{fontSize: '1.1rem', color: '#b45309', fontWeight: 700}}>XP</span></div>
-          <div className="stat-detail xp-level">Seviye: <span style={{color: '#7c3aed', fontWeight: 900}}>{userStats?.level || 1}</span></div>
-          {userStats?.rank && (
-            <div className="stat-detail xp-rank">{userStats.rank}</div>
+          <div className="stat-value xp-animated">{experience} <span style={{fontSize: '1.1rem', color: '#b45309', fontWeight: 700}}>XP</span></div>
+          <div className="stat-detail xp-level">Seviye: <span style={{color: '#7c3aed', fontWeight: 900}}>{level}</span></div>
+          {rank && (
+            <div className="stat-detail xp-rank">{rank}</div>
           )}
         </div>
       </div>
 
-      {/* Filtreler ve Grafik Alanı */}
-      <div className="card stats-graph-summary-modern">
-        <div className="stats-section-title">
-          <FiTrendingUp style={{marginRight: 8}}/> Zamana göre soru çözüm grafiği
-        </div>
-        {/* Zaman filtresi radiobox grubu birleşik kutuda */}
-        <div className="stats-filters-modern" style={{gap: 24, alignItems: 'center', background: 'none', boxShadow: 'none', padding: '0 0 18px 0', marginBottom: 0}}>
-          <div className="filter-group" style={{flexDirection: 'row', gap: 18}}>
-            {TIME_RANGES.map(opt => (
-              <React.Fragment key={opt.value}>
-                <input
-                  type="radio"
-                  name="timeRange"
-                  value={opt.value}
-                  checked={selectedTimeRange === opt.value}
-                  onChange={e => setSelectedTimeRange(e.target.value)}
-                  className="stats-time-range-radio"
-                  id={`time-range-${opt.value}`}
-                />
-                <label
-                  htmlFor={`time-range-${opt.value}`}
-                  className="stats-time-range-label"
-                  style={{marginRight: 0}}
-                >
-                  {opt.label}
-                </label>
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={filteredChartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip content={<CustomChartTooltip />} />
-            <Line type="monotone" dataKey="correct" stroke="#22c55e" strokeWidth={3} dot={{ r: 5 }} name="Doğru" />
-            <Line type="monotone" dataKey="incorrect" stroke="#ef4444" strokeWidth={3} dot={{ r: 5 }} name="Yanlış" />
-            <Line type="monotone" dataKey="total" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} name="Çözülen Soru" />
-          </LineChart>
-        </ResponsiveContainer>
-        <div className="stats-summary-modern" style={{boxShadow: 'none', background: 'none', marginBottom: 0, marginTop: 24}}>
-          <div className="summary-row">
-            <div className="summary-item"><FiBarChart className="summary-icon summary-blue"/> <span className="summary-label">Toplam Çözülen Soru:</span> <span className="summary-value">{summaryStats.totalSolved}</span></div>
-            <div className="summary-item"><FiCheckCircle className="summary-icon summary-green"/> <span className="summary-label">Toplam Doğru:</span> <span className="summary-value">{summaryStats.totalCorrect}</span></div>
-            <div className="summary-item"><FiXCircle className="summary-icon summary-red"/> <span className="summary-label">Toplam Yanlış:</span> <span className="summary-value">{summaryStats.totalIncorrect}</span></div>
-            <div className="summary-item"><FiTrendingUp className="summary-icon summary-purple"/> <span className="summary-label">Başarı Oranı:</span> <span className="summary-value">{summaryStats.successRate}%</span></div>
-          </div>
-          <div className="summary-row">
-            <div className="summary-item"><FiClock className="summary-icon summary-orange"/> <span className="summary-label">Ortalama Günlük Soru:</span> <span className="summary-value">{summaryStats.avgDaily}</span></div>
-            {summaryStats.mostActiveDay && (
-              <div className="summary-item"><FiCalendar className="summary-icon summary-blue"/> <span className="summary-label">En Aktif Gün:</span> <span className="summary-value">{summaryStats.mostActiveDay.date} ({summaryStats.mostActiveDay.total} soru)</span></div>
-            )}
-          </div>
-          {progressMsg && (
-            <div className="summary-progress-msg">{progressMsg}</div>
-          )}
-        </div>
-      </div>
-
-      {/* Gelişmiş Motivasyon Bölümü */}
-      {/* Toplam Joker Kullanımı */}
-      {user?.jokersUsed && (
-        <div style={{
-          margin: '0 auto 32px auto',
-          maxWidth: 1100,
-          background: 'linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%)',
-          borderRadius: 36,
-          padding: '40px 0 40px 0',
-          color: '#3a2500',
-          fontWeight: 700,
-          fontSize: '1rem',
-          boxShadow: '0 12px 48px 0 rgba(80,80,180,0.10)',
-          textAlign: 'center',
-          letterSpacing: 0.2,
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          animation: 'fadeInDown 0.8s cubic-bezier(.23,1.01,.32,1)'
-        }}>
-          <style>{`
-            @keyframes fadeInDown {
-              0% { opacity: 0; transform: translateY(-40px); }
-              100% { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes iconBounce {
-              0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
-              30% { transform: scale(1.18) rotate(-10deg); filter: brightness(1.3); }
-              60% { transform: scale(0.95) rotate(8deg); filter: brightness(1.1); }
-              100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
-            }
-            @media (max-width: 800px) {
-              .joker-cards-row { flex-wrap: wrap !important; gap: 24px !important; }
-              .joker-card { min-width: 120px !important; max-width: 160px !important; margin-bottom: 18px !important; }
-            }
-            @media (max-width: 600px) {
-              .joker-cards-row { flex-direction: column !important; gap: 18px !important; }
-              .joker-card { min-width: 90px !important; max-width: 100% !important; margin-bottom: 12px !important; }
-            }
-          `}</style>
-          <div style={{
-            fontSize: '1.7rem',
+      {/* 1. Grafik ve özet istatistikler bölümü */}
+      <div style={{ marginTop: 32, background: '#f8f9fa', borderRadius: 16, padding: 24 }}>
+        <div style={{ textAlign: 'center', marginBottom: 18, marginTop: 8 }}>
+          <h2 style={{
             fontWeight: 900,
-            marginBottom: 36,
-            background: 'linear-gradient(90deg, #7c3aed 0%, #f7971e 100%)',
+            fontSize: 28,
+            letterSpacing: 1,
+            margin: 0,
+            lineHeight: 1.2,
+            display: 'inline-block',
+            background: 'linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c)',
+            backgroundSize: '300% 300%',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            letterSpacing: 0.5,
-            textShadow: '0 2px 12px #f7971e22',
-            transition: 'all 0.3s',
+            backgroundClip: 'text',
+            animation: 'gradientShift 4s ease infinite',
+            textShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
           }}>
-            Toplam Kullanılan Joker: <span style={{color:'#b45309', WebkitTextFillColor: '#b45309', textShadow: '0 2px 8px #f7971e33'}}>{Object.values(user.jokersUsed).reduce((a, b) => a + b, 0)}</span>
+            Zamana Göre Soru Çözüm Grafiği
+          </h2>
+          <div style={{ width: 80, height: 3, background: 'linear-gradient(90deg, #2563eb 0%, #764ba2 100%)', borderRadius: 2, margin: '10px auto 0 auto', opacity: 0.25 }}></div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 18, marginTop: 8 }}>
+          <button
+            className={`stats-range-btn${selectedRange === 'week' ? ' active' : ''}`}
+            style={{ transition: 'all 0.22s cubic-bezier(.4,2,.6,1)', transform: selectedRange === 'week' ? 'scale(1.08)' : 'scale(1)', boxShadow: selectedRange === 'week' ? '0 4px 16px #2563eb22' : 'none' }}
+            onClick={() => setSelectedRange('week')}
+          >Son 1 Hafta</button>
+          <button
+            className={`stats-range-btn${selectedRange === 'month' ? ' active' : ''}`}
+            style={{ transition: 'all 0.22s cubic-bezier(.4,2,.6,1)', transform: selectedRange === 'month' ? 'scale(1.08)' : 'scale(1)', boxShadow: selectedRange === 'month' ? '0 4px 16px #2563eb22' : 'none' }}
+            onClick={() => setSelectedRange('month')}
+          >Son 1 Ay</button>
+          <button
+            className={`stats-range-btn${selectedRange === '3months' ? ' active' : ''}`}
+            style={{ transition: 'all 0.22s cubic-bezier(.4,2,.6,1)', transform: selectedRange === '3months' ? 'scale(1.08)' : 'scale(1)', boxShadow: selectedRange === '3months' ? '0 4px 16px #2563eb22' : 'none' }}
+            onClick={() => setSelectedRange('3months')}
+          >Son 3 Ay</button>
+        </div>
+        <div style={{ minHeight: 440, position: 'relative', background: '#fff', borderRadius: 18, boxShadow: '0 4px 24px #2563eb11', padding: 8, margin: '0 auto', maxWidth: 990 }}>
+          {chartData.length === 0 ? (
+            <div style={{
+              position: 'absolute', left: 0, right: 0, top: 120, textAlign: 'center', color: '#888', fontSize: '1.15rem', fontWeight: 500
+            }}>
+              Bu aralıkta gösterilecek veri yok.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={440}>
+              <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="4 4" stroke="#e0e7ef" />
+                <XAxis dataKey="date" tick={{ fontSize: 14, fill: '#64748b' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 14, fill: '#64748b' }} />
+                <Tooltip content={<CustomChartTooltip />} />
+                <Legend iconType="circle" wrapperStyle={{ fontWeight: 700, fontSize: 15, paddingTop: 8 }} />
+                <Area type="monotone" dataKey="solved" stroke="#2563eb" fill="#2563eb22" name="Çözülen Soru" fillOpacity={0.25} />
+                <Line type="monotone" dataKey="solved" name="Çözülen Soru" stroke="#2563eb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="correct" name="Doğru" stroke="#22c55e" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="incorrect" name="Yanlış" stroke="#ef4444" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        {/* Grafik altı özet istatistik kutuları */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, marginTop: 24, justifyContent: 'center' }}>
+          <div style={{ background: '#f1f5ff', borderRadius: 12, padding: '16px 22px', minWidth: 140, textAlign: 'center', boxShadow: '0 1px 6px #2563eb11', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <FiBarChart2 size={28} color="#2563eb" style={{marginBottom: 6}} />
+            <div style={{ fontWeight: 700, color: '#2563eb', fontSize: 15 }}>Çözülen Soru</div>
+            <div style={{ fontWeight: 900, fontSize: 22, color: '#2563eb' }}>{chartTotalSolved}</div>
           </div>
-          <div className="joker-cards-row" style={{
-            display: 'flex',
-            flexWrap: 'nowrap',
-            gap: 48,
-            width: '100%',
-            justifyContent: 'center',
-            alignItems: 'center',
-            transition: 'gap 0.3s',
+          <div style={{ background: '#e0fce7', borderRadius: 12, padding: '16px 22px', minWidth: 140, textAlign: 'center', boxShadow: '0 1px 6px #22c55e11', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <FiCheckCircle size={28} color="#22c55e" style={{marginBottom: 6}} />
+            <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 15 }}>Toplam Doğru</div>
+            <div style={{ fontWeight: 900, fontSize: 22, color: '#22c55e' }}>{chartTotalCorrect}</div>
+          </div>
+          <div style={{ background: '#ffe4e6', borderRadius: 12, padding: '16px 22px', minWidth: 140, textAlign: 'center', boxShadow: '0 1px 6px #ef444411', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <FiXCircle size={28} color="#ef4444" style={{marginBottom: 6}} />
+            <div style={{ fontWeight: 700, color: '#ef4444', fontSize: 15 }}>Toplam Yanlış</div>
+            <div style={{ fontWeight: 900, fontSize: 22, color: '#ef4444' }}>{chartTotalIncorrect}</div>
+          </div>
+          <div style={{ background: '#fef9c3', borderRadius: 12, padding: '16px 22px', minWidth: 140, textAlign: 'center', boxShadow: '0 1px 6px #facc1511', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <FiPercent size={28} color="#facc15" style={{marginBottom: 6}} />
+            <div style={{ fontWeight: 700, color: '#facc15', fontSize: 15 }}>Başarı Oranı</div>
+            <div style={{ fontWeight: 900, fontSize: 22, color: '#facc15' }}>{chartSuccessRate}%</div>
+          </div>
+          <div style={{ background: '#e0e7ff', borderRadius: 12, padding: '16px 22px', minWidth: 140, textAlign: 'center', boxShadow: '0 1px 6px #2563eb11', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <FiCalendar size={28} color="#6366f1" style={{marginBottom: 6}} />
+            <div style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>Ortalama Günlük Soru</div>
+            <div style={{ fontWeight: 900, fontSize: 22, color: '#6366f1' }}>{chartAvgDaily}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Toplam Kullanılan Joker ve joker kartları bölümü */}
+      <div style={{ height: 32 }} />
+      {user?.jokersUsed && (
+        <div className={isDark ? 'dark' : ''}>
+          <style>{`
+            @keyframes hologramShimmer {
+              0% { transform: translateX(-100%) skewX(-15deg); }
+              100% { transform: translateX(200%) skewX(-15deg); }
+            }
+            
+            @keyframes particleFloat {
+              0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+              50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+            }
+            
+            @keyframes gradientShift {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+            
+            @keyframes cardHover {
+              0% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1); }
+              100% { transform: perspective(1000px) rotateX(10deg) rotateY(-10deg) scale(1.05); }
+            }
+            
+            .hologram-card {
+              position: relative;
+              background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+              backdrop-filter: blur(10px);
+              border: 1px solid rgba(255,255,255,0.3);
+              border-radius: 16px;
+              padding: 16px;
+              min-width: 140px;
+              max-width: 180px;
+              min-height: 140px;
+              box-shadow: 
+                0 6px 24px rgba(0,0,0,0.1),
+                0 3px 12px rgba(0,0,0,0.05),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+              transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+              overflow: hidden;
+              cursor: pointer;
+            }
+            
+            .hologram-card::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.6),
+                transparent
+              );
+              animation: hologramShimmer 3s infinite;
+            }
+            
+            .hologram-card::after {
+              content: '';
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              width: 4px;
+              height: 4px;
+              background: rgba(255,255,255,0.8);
+              border-radius: 50%;
+              transform: translate(-50%, -50%);
+              animation: particleFloat 2s infinite;
+            }
+            
+            .hologram-card:hover {
+              animation: cardHover 0.4s ease forwards;
+              box-shadow: 
+                0 20px 60px rgba(0,0,0,0.15),
+                0 8px 32px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            }
+            
+            .hologram-card:hover::before {
+              animation: hologramShimmer 1.5s infinite;
+            }
+            
+            .joker-icon-3d {
+              font-size: 2.5rem;
+              margin-bottom: 12px;
+              filter: drop-shadow(0 3px 10px rgba(0,0,0,0.3));
+              transition: all 0.3s ease;
+              display: block;
+            }
+            
+            .hologram-card:hover .joker-icon-3d {
+              transform: scale(1.2) rotateY(15deg);
+              filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+            }
+            
+            .joker-label-3d {
+              font-weight: 800;
+              font-size: 1rem;
+              margin-bottom: 8px;
+              text-align: center;
+              background: linear-gradient(45deg, #667eea, #764ba2);
+              background-size: 200% 200%;
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+              animation: gradientShift 3s ease infinite;
+            }
+            
+            .joker-value-3d {
+              font-weight: 900;
+              font-size: 1.2rem;
+              text-align: center;
+              color: #f093fb;
+              padding: 6px 12px;
+              border-radius: 10px;
+              background: rgba(255,255,255,0.9);
+              backdrop-filter: blur(5px);
+              box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+              border: 1px solid rgba(240, 147, 251, 0.3);
+              transition: all 0.3s ease;
+            }
+            
+            .hologram-card:hover .joker-value-3d {
+              background: rgba(255,255,255,0.95);
+              box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+              transform: scale(1.05);
+            }
+            
+            .joker-cards-container {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 16px;
+              justify-content: center;
+              align-items: center;
+              max-width: 900px;
+              margin: 0 auto;
+              padding: 16px;
+            }
+            
+            @media (max-width: 768px) {
+              .joker-cards-container {
+                gap: 12px;
+                padding: 12px;
+              }
+              .hologram-card {
+                min-width: 120px;
+                max-width: 140px;
+                min-height: 120px;
+                padding: 14px;
+              }
+              .joker-icon-3d {
+                font-size: 2rem;
+              }
+              .joker-label-3d {
+                font-size: 0.9rem;
+              }
+              .joker-value-3d {
+                font-size: 1rem;
+              }
+            }
+            
+            @media (max-width: 480px) {
+              .joker-cards-container {
+                flex-direction: column;
+                gap: 10px;
+              }
+              .hologram-card {
+                min-width: 100px;
+                max-width: 100%;
+                min-height: 110px;
+                padding: 12px;
+              }
+            }
+          `}</style>
+          
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '20px',
+            padding: '24px',
+            boxShadow: '0 6px 24px rgba(0, 0, 0, 0.1)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            margin: '0 auto',
+            maxWidth: '990px',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            {[{
-              icon: '➗', color: '#7c3aed', label: 'Elenen Şık', labelColor: '#a16207', value: user.jokersUsed.eliminate || 0, valueColor: '#b45309', shadow: '#a78bfa33'
-            }, {
-              icon: '⏰', color: '#f43f5e', label: 'Ekstra Süre', labelColor: '#2563eb', value: user.jokersUsed.extraTime || 0, valueColor: '#1e293b', shadow: '#f43f5e33'
-            }, {
-              icon: '2️⃣', color: '#0ea5e9', label: 'Çift Cevap', labelColor: '#0ea5e9', value: user.jokersUsed.doubleAnswer || 0, valueColor: '#1e293b', shadow: '#0ea5e933'
-            }, {
-              icon: '✅', color: '#22c55e', label: 'Otomatik Doğru', labelColor: '#22c55e', value: user.jokersUsed.autoCorrect || 0, valueColor: '#16a34a', shadow: '#22c55e33'
-            }].map((joker, i) => (
-              <div
-                key={joker.label}
-                className="joker-card"
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  background: 'radial-gradient(circle at 60% 40%, #fff 80%, #f1f5ff 100%)',
-                  borderRadius: '50%',
-                  padding: 0,
-                  minWidth: 140, maxWidth: 180, width: '100%',
-                  minHeight: 170, height: 170,
-                  boxShadow: `0 4px 24px ${joker.shadow}, 0 1.5px 0 #e0e7ef inset`,
-                  margin: 1,
-                  border: '2.5px solid #f1f5f9',
-                  cursor: 'pointer',
-                  transition: 'box-shadow 0.25s, transform 0.25s, background 0.25s',
-                  willChange: 'transform',
-                  position: 'relative',
-                  animation: `fadeInDown 0.7s ${0.1 + i * 0.1}s cubic-bezier(.23,1.01,.32,1) both`,
-                  filter: 'drop-shadow(0 2px 8px #fff8)',
-                  overflow: 'hidden',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.boxShadow = `0 12px 36px ${joker.shadow}, 0 1.5px 0 #e0e7ef inset`;
-                  e.currentTarget.style.transform = 'scale(1.10)';
-                  const icon = e.currentTarget.querySelector('.joker-icon') as HTMLElement | null;
-                  if (icon) icon.style.animation = 'iconBounce 0.7s';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.boxShadow = `0 4px 24px ${joker.shadow}, 0 1.5px 0 #e0e7ef inset`;
-                  e.currentTarget.style.transform = 'scale(1)';
-                  const icon = e.currentTarget.querySelector('.joker-icon') as HTMLElement | null;
-                  if (icon) icon.style.animation = 'none';
-                }}
-              >
-                <span
-                  className="joker-icon"
-                  style={{
-                    fontSize:'2.7rem', color: joker.color, marginBottom:14, transition: 'filter 0.3s, transform 0.3s', filter: 'drop-shadow(0 2px 8px #7c3aed22)',
-                    display: 'inline-block',
-                  }}
-                >{joker.icon}</span>
-                <span style={{fontWeight:800, color: joker.labelColor, fontSize:'1.18rem', marginBottom:10, letterSpacing:0.1, textShadow: `0 1px 8px ${joker.shadow}`}}>{joker.label}</span>
-                <span style={{fontWeight:900, color: joker.valueColor, fontSize:'1.35rem', letterSpacing:0.2, background: 'rgba(255,255,255,0.7)', borderRadius: 8, padding: '2px 12px', marginTop: 0, boxShadow: `0 1px 6px ${joker.shadow}`}}>{joker.value}</span>
+            {/* Başlık kısmı */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px',
+              paddingBottom: '18px',
+              borderBottom: '2px solid rgba(102, 126, 234, 0.1)',
+              position: 'relative'
+            }}>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 900,
+                background: 'linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c)',
+                backgroundSize: '300% 300%',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                animation: 'gradientShift 4s ease infinite',
+                letterSpacing: 1,
+                textShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
+                marginBottom: '6px'
+              }}>
+                Toplam Kullanılan Joker
               </div>
-            ))}
+              <div style={{
+                fontSize: '2rem',
+                fontWeight: 900,
+                color: '#f7971e',
+                textShadow: '0 2px 8px rgba(247, 151, 30, 0.4)',
+                letterSpacing: 2
+              }}>
+                {Object.values(user.jokersUsed).reduce((a, b) => a + b, 0)}
+              </div>
+            </div>
+            {/* Beyaz kutu içindeki hologram efekti */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent)',
+              animation: 'hologramShimmer 4s infinite',
+              pointerEvents: 'none'
+            }} />
+            
+            <div className="joker-cards-container" style={{
+              background: 'transparent',
+              padding: '0',
+              margin: '0'
+            }}>
+              {[{
+                icon: '➗', 
+                label: '%50 Joker Hakkı', 
+                value: user.jokersUsed.eliminate || 0,
+                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              }, {
+                icon: '⏰', 
+                label: 'Ekstra Süre', 
+                value: user.jokersUsed.extraTime || 0,
+                gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+              }, {
+                icon: '2️⃣', 
+                label: 'Çift Cevap', 
+                value: user.jokersUsed.doubleAnswer || 0,
+                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+              }, {
+                icon: '✅', 
+                label: 'Otomatik Doğru', 
+                value: user.jokersUsed.autoCorrect || 0,
+                gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+              }].map((joker, i) => (
+                <div
+                  key={joker.label}
+                  className="hologram-card"
+                  style={{
+                    animationDelay: `${i * 0.1}s`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'perspective(1000px) rotateX(10deg) rotateY(-10deg) scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+                  }}
+                >
+                  <span
+                    className="joker-icon-3d"
+                    style={{ 
+                      color: joker.gradient.includes('667eea') ? '#667eea' : 
+                              joker.gradient.includes('f093fb') ? '#f093fb' : 
+                              joker.gradient.includes('4facfe') ? '#4facfe' : '#43e97b',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: '100%'
+                    }}
+                  >
+                    {joker.icon}
+                  </span>
+                  <div className="joker-label-3d" style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%'
+                  }}>
+                    {joker.label}
+                  </div>
+                  <div 
+                    className="joker-value-3d"
+                    style={{
+                      color: joker.gradient.includes('667eea') ? '#667eea' : 
+                             joker.gradient.includes('f093fb') ? '#f093fb' : 
+                             joker.gradient.includes('4facfe') ? '#4facfe' : '#43e97b',
+                      borderColor: joker.gradient.includes('667eea') ? 'rgba(102, 126, 234, 0.3)' : 
+                                  joker.gradient.includes('f093fb') ? 'rgba(240, 147, 251, 0.3)' : 
+                                  joker.gradient.includes('4facfe') ? 'rgba(79, 172, 254, 0.3)' : 'rgba(67, 233, 123, 0.3)',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: '100%'
+                    }}
+                  >
+                    {joker.value}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
-      <div style={{
-        marginTop: 32,
-        padding: 0,
-        background: 'none'
-      }}>
-        <div style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-          borderRadius: 32,
-          padding: 44,
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(118, 75, 162, 0.18), 0 8px 32px rgba(102, 126, 234, 0.13)',
-          color: 'white',
-          textAlign: 'center',
-          minHeight: 210,
-          maxWidth: 700,
-          margin: '0 auto',
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
-          border: '1.5px solid #e0e7ef44',
-          animation: 'fadeInMotivation 1.1s cubic-bezier(.23,1.01,.32,1)'
-        }}>
-          <style>{`
-            @keyframes fadeInMotivation {
-              0% { opacity: 0; transform: translateY(40px); }
-              100% { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes shine {
-              0% { filter: brightness(1) drop-shadow(0 0 0 #fff); }
-              50% { filter: brightness(1.5) drop-shadow(0 0 12px #fff6); }
-              100% { filter: brightness(1) drop-shadow(0 0 0 #fff); }
-            }
-            @media (max-width: 600px) {
-              .motivation-title { font-size: 1.1rem !important; }
-              .motivation-quote { font-size: 0.95rem !important; }
-            }
-          `}</style>
-          {/* Dekoratif elemanlar */}
-          <div style={{
-            position: 'absolute',
-            top: -20, right: -20, width: 100, height: 100,
-            background: 'rgba(255, 255, 255, 0.08)', borderRadius: '50%', opacity: 0.5
-          }}></div>
-          <div style={{
-            position: 'absolute',
-            bottom: -30, left: -30, width: 80, height: 80,
-            background: 'rgba(255, 255, 255, 0.10)', borderRadius: '50%', opacity: 0.7
-          }}></div>
-          {/* Ana içerik */}
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            {/* Icon */}
-            <div style={{
-              fontSize: '3rem',
-              marginBottom: 18,
-              filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.18))',
-              animation: 'shine 2.2s infinite',
-              display: 'inline-block',
-              transition: 'transform 0.3s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'rotate(-12deg) scale(1.15)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; }}
-            >✨</div>
-            {/* Başlık */}
-            <h2 className="motivation-title" style={{
-              fontSize: '1.7rem',
-              fontWeight: 900,
-              marginBottom: 18,
-              background: 'linear-gradient(90deg, #fff 0%, #ffe082 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 2px 12px #fff3',
-              letterSpacing: '0.5px',
-              transition: 'all 0.3s',
-              display: 'inline-block',
-            }}>
-              Günün Motivasyonu
-            </h2>
-            {/* Quote */}
-            <div className="motivation-quote" style={{
-              fontSize: '1.15rem',
-              lineHeight: 1.7,
-              fontWeight: 600,
-              marginBottom: 20,
-              fontStyle: 'italic',
-              textShadow: '0 1px 8px rgba(0,0,0,0.13)',
-              maxWidth: '600px',
-              margin: '0 auto 20px',
-              color: '#fff',
-              opacity: 0.95,
-              animation: 'fadeInMotivation 1.5s 0.3s both',
-              position: 'relative',
-              display: 'inline-block',
-            }}>
-              “{todayQuote}”
-              <div style={{
-                width: '60%', height: 3, background: 'linear-gradient(90deg, #fff 0%, #ffe082 100%)',
-                borderRadius: 2, margin: '12px auto 0 auto', opacity: 0.5
-              }}></div>
-            </div>
-            {/* Decorative element */}
-            <div style={{
-              display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16
-            }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.6)' }}></div>
-              <div style={{ width: 24, height: 8, borderRadius: 4, background: 'rgba(255, 255, 255, 0.8)' }}></div>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.6)' }}></div>
-            </div>
-          </div>
-        </div>
-      </div>
       {/* Eğer hiç veri yoksa motive edici mesaj */}
       {(!userStats || userStats.totalQuestions === 0) && (
         <div className="extra-empty-msg">
-          <FiHelpCircle size={28} style={{marginBottom: 8, color: '#2563eb'}}/>
+          <FiTarget size={28} style={{marginBottom: 8, color: '#2563eb'}}/>
           <div className="extra-empty-title">Henüz hiç test çözmedin!</div>
           <div className="extra-empty-desc">Haydi ilk testini çöz, gelişimini buradan takip edebilirsin!</div>
         </div>
       )}
+      <div className="section-spacing" style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{
+          background: 'linear-gradient(90deg, #667eea 0%, #f093fb 100%)',
+          borderRadius: 24,
+          padding: 32,
+          color: '#fff',
+          textAlign: 'center',
+          maxWidth: 600,
+          width: '100%',
+          boxShadow: '0 8px 32px #764ba222',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <div style={{ fontSize: 38, marginBottom: 12, filter: 'drop-shadow(0 2px 8px #fff8)' }}>✨</div>
+          <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 12, letterSpacing: 0.5 }}>Günün Motivasyonu</h3>
+          <div style={{ fontSize: 18, fontStyle: 'italic', fontWeight: 500, opacity: 0.97 }}>{todayQuote}</div>
+        </div>
+      </div>
     </div>
   );
 });

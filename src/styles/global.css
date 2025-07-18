@@ -2384,3 +2384,214 @@ code {
     padding: 14px 28px;
   }
 }
+
+/* Zamana göre soru çözüm grafiği butonları */
+.stats-range-btn {
+  background: #f1f5ff;
+  color: #2563eb;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-right: 2px;
+  cursor: pointer;
+  transition: background 0.22s, color 0.22s, box-shadow 0.22s, transform 0.22s;
+  box-shadow: 0 1px 4px #2563eb11;
+  outline: none;
+}
+.stats-range-btn:hover {
+  background: #e0e7ff;
+  color: #1e40af;
+  transform: scale(1.04);
+}
+.stats-range-btn.active {
+  background: linear-gradient(90deg, #2563eb 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px #2563eb22;
+  transform: scale(1.08);
+}
+@media (max-width: 600px) {
+  .stats-range-btn {
+    font-size: 0.95rem;
+    padding: 8px 10px;
+  }
+}
+
+/* Grafik kutusu için modern stil */
+.stats-graph-box {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #2563eb11;
+  padding: 16px;
+  margin: 0 auto;
+  max-width: 700px;
+}
+
+/* Grafik legend'ı */
+.recharts-default-legend {
+  font-weight: 700;
+  font-size: 15px;
+  padding-top: 8px;
+  color: #2563eb;
+  letter-spacing: 0.2px;
+}
+
+/* Tooltip için yumuşak kutu */
+.recharts-tooltip-wrapper {
+  filter: drop-shadow(0 2px 12px #2563eb22);
+}
+
+/* Modern kart ve kutu stili */
+.stats-card, .summary-box, .joker-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #2563eb11;
+  padding: 24px 18px;
+  margin: 0 8px 24px 8px;
+  min-width: 180px;
+  text-align: center;
+  transition: box-shadow 0.2s;
+}
+.stats-card:hover, .summary-box:hover, .joker-card:hover {
+  box-shadow: 0 8px 32px #2563eb22;
+}
+.section-spacing {
+  margin-top: 36px;
+  margin-bottom: 36px;
+}
+@media (max-width: 700px) {
+  .stats-card, .joker-card, .summary-box {
+    min-width: 120px;
+    padding: 14px 6px;
+    font-size: 0.95rem;
+  }
+  .section-spacing {
+    margin-top: 18px;
+    margin-bottom: 18px;
+  }
+}
+
+/* Kartlar arası eşit boşluk */
+.stats-card-row, .summary-row, .joker-cards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  align-items: stretch;
+}
+@media (max-width: 700px) {
+  .stats-card-row, .summary-row, .joker-cards-row {
+    gap: 12px;
+  }
+}
+/* Kartların kendi margin-right veya margin-left'larını kaldır */
+.stats-card, .summary-box, .joker-card {
+  margin: 0;
+}
+
+:root {
+  --color-bg: #f8f9fa;
+  --color-bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color-card-bg: rgba(255,255,255,0.92);
+  --color-text: #22223b;
+  --color-primary: #667eea;
+  --color-secondary: #764ba2;
+  --color-accent: #f093fb;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #facc15;
+  --color-info: #2563eb;
+  /* Dark mode renkleri */
+  --color-bg-dark: #181a20;
+  --color-bg-gradient-dark: linear-gradient(135deg, #23243a 0%, #2d3250 100%);
+  --color-card-bg-dark: rgba(36, 38, 54, 0.98);
+  --color-text-dark: #f3f4f6;
+  --color-primary-dark: #8b9cf7;
+  --color-secondary-dark: #a084e8;
+  --color-accent-dark: #e0aaff;
+  --color-success-dark: #4ade80;
+  --color-error-dark: #f87171;
+  --color-warning-dark: #fde047;
+  --color-info-dark: #60a5fa;
+}
+
+body.dark {
+  background: var(--color-bg-gradient-dark);
+  color: var(--color-text-dark);
+}
+
+.card.dark, .quiz-card.dark, .profile-card.dark, .stat-card.dark, .joker-card.dark {
+  background: var(--color-card-bg-dark);
+  color: var(--color-text-dark);
+  box-shadow: 0 8px 40px rgba(36,38,54,0.18);
+}
+
+.btn-primary.dark {
+  background: linear-gradient(90deg, var(--color-primary-dark) 0%, var(--color-secondary-dark) 100%);
+  color: #fff;
+}
+
+.btn-secondary.dark {
+  background: #23243a;
+  color: var(--color-primary-dark);
+  border: 2px solid var(--color-primary-dark);
+}
+
+.darkmode-toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+.toggle-track {
+  width: 54px;
+  height: 28px;
+  background: var(--color-bg, #f3f4f6);
+  border-radius: 16px;
+  position: relative;
+  transition: background 0.3s;
+  box-shadow: 0 2px 8px #0001;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+.toggle-icon {
+  font-size: 1.1rem;
+  color: #facc15;
+  z-index: 2;
+  transition: color 0.3s;
+}
+.toggle-moon { color: #6366f1; }
+.toggle-sun { color: #facc15; }
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #fff 60%, #e0e7ef 100%);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #0002;
+  transition: left 0.3s, background 0.3s;
+}
+.toggle-thumb.dark {
+  left: 28px;
+  background: linear-gradient(135deg, #23243a 60%, #2d3250 100%);
+}
+.toggle-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text, #22223b);
+  min-width: 90px;
+  transition: color 0.3s;
+}
+body.dark .toggle-track {
+  background: #23243a;
+}
+body.dark .toggle-label {
+  color: #f3f4f6;
+}

@@ -7,9 +7,10 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { User } from '../../types/index';
 import { updateUserEnergy } from '../../services/firebase';
+import { DarkModeSwitch } from '../common/SettingsActions';
 
 const Home: React.FC = React.memo(() => {
-  const { user, logout, updateUser, refreshUser, manualResetJokers } = useAuth();
+  const { user, logout, updateUser, refreshUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showLevelModal, setShowLevelModal] = useState(false);
@@ -49,23 +50,25 @@ const Home: React.FC = React.memo(() => {
   const energyCalculation = useMemo(() => {
     if (!user) return null;
     
-    const ENERGY_MAX = 100;
-    const ENERGY_REGEN_MINUTES = 1;
+    const ENERGY_MAX = user.energyLimit || 100;
+    const ENERGY_REGEN_SPEED = user.energyRegenSpeed || 300; // saniye cinsinden
+    const ENERGY_REGEN_MINUTES = ENERGY_REGEN_SPEED / 60; // dakika cinsinden
     const ENERGY_PER_REGEN = 1;
     const now = new Date();
     const lastUpdate = user.lastEnergyUpdate ? new Date(user.lastEnergyUpdate) : now;
     const diffMs = now.getTime() - lastUpdate.getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
-    const regenCount = Math.floor(diffMinutes / ENERGY_REGEN_MINUTES);
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const regenCount = Math.floor(diffSeconds / ENERGY_REGEN_SPEED);
     
     return {
       ENERGY_MAX,
+      ENERGY_REGEN_SPEED,
       ENERGY_REGEN_MINUTES,
       ENERGY_PER_REGEN,
       now,
       lastUpdate,
       diffMs,
-      diffMinutes,
+      diffSeconds,
       regenCount
     };
   }, [user]);
@@ -88,11 +91,12 @@ const Home: React.FC = React.memo(() => {
     
     const {
       ENERGY_MAX,
+      ENERGY_REGEN_SPEED,
       ENERGY_REGEN_MINUTES,
       ENERGY_PER_REGEN,
       lastUpdate,
       diffMs,
-      diffMinutes,
+      diffSeconds,
       regenCount
     } = energyCalculation;
 
@@ -100,23 +104,22 @@ const Home: React.FC = React.memo(() => {
     
     if (regenCount > 0 && (user.energy ?? 0) < ENERGY_MAX) {
       let newEnergy = Math.min(ENERGY_MAX, (user.energy ?? 0) + regenCount * ENERGY_PER_REGEN);
-      let minutesUsed = regenCount * ENERGY_REGEN_MINUTES;
-      let newLastUpdate = new Date(lastUpdate.getTime() + minutesUsed * 60000);
+      let secondsUsed = regenCount * ENERGY_REGEN_SPEED;
+      let newLastUpdate = new Date(lastUpdate.getTime() + secondsUsed * 1000);
       updateUserEnergy(user.id, newEnergy, newLastUpdate.toISOString());
       updateUser({ ...user, energy: newEnergy, lastEnergyUpdate: newLastUpdate.toISOString() });
-      setEnergyPopup(`${diffMinutes} dakika içinde ${regenCount} enerji kazandınız!`);
+      setEnergyPopup(`${Math.floor(diffSeconds / 60)} dakika içinde ${regenCount} enerji kazandınız!`);
       setTimeout(() => setEnergyPopup(null), 5000);
       
       const now2 = new Date();
       const diffMs2 = now2.getTime() - newLastUpdate.getTime();
       const secondsSinceLast2 = Math.floor(diffMs2 / 1000);
-      const secondsToNext2 = Math.max(0, ENERGY_REGEN_MINUTES * 60 - (secondsSinceLast2 % (ENERGY_REGEN_MINUTES * 60)));
+      const secondsToNext2 = Math.max(0, ENERGY_REGEN_SPEED - (secondsSinceLast2 % ENERGY_REGEN_SPEED));
       setRegenCountdown(secondsToNext2);
       setJustRegenerated(true);
     } else {
-      const minutesSinceLast = Math.floor(diffMs / 60000);
       const secondsSinceLast = Math.floor(diffMs / 1000);
-      const secondsToNext = Math.max(0, ENERGY_REGEN_MINUTES * 60 - (secondsSinceLast % (ENERGY_REGEN_MINUTES * 60)));
+      const secondsToNext = Math.max(0, ENERGY_REGEN_SPEED - (secondsSinceLast % ENERGY_REGEN_SPEED));
       setRegenCountdown(secondsToNext);
       setJustRegenerated(false);
     }
@@ -128,19 +131,19 @@ const Home: React.FC = React.memo(() => {
         if (prev <= 1) {
           if (justRegenerated) {
             setJustRegenerated(false);
-            return ENERGY_REGEN_MINUTES * 60;
+            return ENERGY_REGEN_SPEED;
           }
           
           const currentUser = userRef.current;
-          if (currentUser && (currentUser.energy ?? 0) < ENERGY_MAX) {
-            const newEnergy = Math.min(ENERGY_MAX, (currentUser.energy ?? 0) + 1);
+          if (currentUser && (currentUser.energy ?? 0) < (currentUser.energyLimit || 100)) {
+            const newEnergy = Math.min(currentUser.energyLimit || 100, (currentUser.energy ?? 0) + 1);
             const newLastUpdate = new Date().toISOString();
             updateUserEnergy(currentUser.id, newEnergy, newLastUpdate);
             updateUser({ ...currentUser, energy: newEnergy, lastEnergyUpdate: newLastUpdate });
-            setEnergyPopup('1 dakika geçti, 1 enerji kazandınız!');
+            setEnergyPopup(`${Math.floor(ENERGY_REGEN_SPEED / 60)} dakika geçti, 1 enerji kazandınız!`);
             setTimeout(() => setEnergyPopup(null), 4000);
           }
-          return ENERGY_REGEN_MINUTES * 60;
+          return ENERGY_REGEN_SPEED;
         }
         return prev - 1;
       });
@@ -228,6 +231,7 @@ const Home: React.FC = React.memo(() => {
           `}</style>
         </div>
       )}
+      {/* Profil Kartı */}
       <div style={{
         width: '100%',
         display: 'flex',
@@ -250,6 +254,10 @@ const Home: React.FC = React.memo(() => {
           backdropFilter: 'blur(12px) saturate(1.1)',
           WebkitBackdropFilter: 'blur(12px) saturate(1.1)',
         }}>
+          {/* Sağ üst köşeye sadece darkmode switch */}
+          <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+            <DarkModeSwitch />
+          </div>
           {/* Profil/Seviye Kartı */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
             <div style={{ marginBottom: 12 }}>
@@ -270,11 +278,41 @@ const Home: React.FC = React.memo(() => {
               <span>{user.stats.experience} / {user.stats.experience + user.stats.experienceToNext} XP</span>
               {user.stats.experienceToNext > 0 && <span style={{ color: '#333', fontWeight: 600, fontSize: 14.4 }}>({user.stats.experienceToNext} XP kaldı)</span>}
             </div>
+            {/* Coin Bilgisi - Enerji Barının Üstünde, Ortalanmış */}
+            <div style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '0 0 12px 0',
+              position: 'relative',
+              zIndex: 2,
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8, // %20 küçültüldü
+                background: 'linear-gradient(90deg, #fffbe7cc 0%, #ffe082cc 100%)',
+                borderRadius: 13,
+                boxShadow: '0 2px 10px #ffecb355',
+                padding: '8px 22px', // %20 küçültüldü
+                fontWeight: 900,
+                fontSize: 21,
+                color: '#ffb300',
+                backdropFilter: 'blur(2px)',
+                WebkitBackdropFilter: 'blur(2px)',
+                minWidth: 96,
+                justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 32, marginRight: 6 }}>🪙</span>
+                <span style={{ fontFamily: 'Orbitron, monospace', letterSpacing: 1, fontSize: 44 }}>{user.coins ?? 0}</span>
+                <span style={{ fontWeight: 700, fontSize: 25, color: '#bfa040', marginLeft: 6 }}>coin</span>
+              </div>
+            </div>
           </div>
           {/* Enerji Barı ve motivasyon */}
           <div style={{ width: '100%', height: 25.92, background: 'rgba(35,41,70,0.7)', borderRadius: 14.4, position: 'relative', overflow: 'hidden', boxShadow: '0 0 17.28px #6c63ff22', marginBottom: 5.76 }}>
             <div style={{
-              width: `${user.energy ?? 0}%`,
+              width: `${((user.energy ?? 0) / (user.energyLimit || 100)) * 100}%`,
               height: '100%',
               background: `linear-gradient(90deg, #00fff0 0%, #6c63ff 60%, #a084ee 100%)`,
               borderRadius: 14.4,
@@ -283,8 +321,8 @@ const Home: React.FC = React.memo(() => {
               alignItems: 'center',
               justifyContent: 'flex-end',
               position: 'relative',
-              boxShadow: (user.energy ?? 0) === 100 ? '0 0 28.8px 8.64px #00fff088, 0 0 57.6px 0 #6c63ffcc' : '0 0 14.4px 2.88px #00fff055',
-              animation: (user.energy ?? 0) === 100 ? 'futuristicPulse 1.2s infinite alternate' : 'futuristicBarMove 2.5s linear infinite',
+              boxShadow: (user.energy ?? 0) === (user.energyLimit || 100) ? '0 0 28.8px 8.64px #00fff088, 0 0 57.6px 0 #6c63ffcc' : '0 0 14.4px 2.88px #00fff055',
+              animation: (user.energy ?? 0) === (user.energyLimit || 100) ? 'futuristicPulse 1.2s infinite alternate' : 'futuristicBarMove 2.5s linear infinite',
               zIndex: 2,
             }}>
               {/* Bar ucunda pulse ve glow efekti */}
@@ -322,7 +360,7 @@ const Home: React.FC = React.memo(() => {
           <div style={{ marginTop: 2.88, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
               <span style={{ fontWeight: 900, color: '#e0e0ff', fontSize: 25.92, letterSpacing: 0.72, fontFamily: 'Orbitron, monospace', textShadow: '0 0 8.64px #6c63ff' }}>{user.energy ?? 0}</span>
-              <span style={{ fontWeight: 400, fontSize: 17.28, color: '#e0e0ff', marginLeft: 1.44, fontFamily: 'Orbitron, monospace' }}>/ 100</span>
+              <span style={{ fontWeight: 400, fontSize: 17.28, color: '#e0e0ff', marginLeft: 1.44, fontFamily: 'Orbitron, monospace' }}>/ {user.energyLimit || 100}</span>
             </span>
             <div style={{ fontWeight: 700, color: '#00fff0', fontSize: 14.4, marginTop:2.88, fontFamily: 'Orbitron, monospace', textShadow: '0 0 7.2px #00fff0', display: 'flex', alignItems: 'center', gap: 5.76 }}>
               {/* Dönen saat ikonu */}
@@ -380,56 +418,37 @@ const Home: React.FC = React.memo(() => {
           `}</style>
         </div>
       </div>
-      
-      {/* Manuel Joker Yenileme Butonu */}
-      {user && user.jokers && user.jokersUsed && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: 16,
-          marginTop: 8,
-        }}>
-          <button
-            onClick={async () => {
-              try {
-                await manualResetJokers();
-                await refreshUser();
-                alert('🎉 Joker hakları yenilendi! Tüm jokerler 3\'e sıfırlandı.');
-              } catch (error) {
-                console.error('Joker yenileme hatası:', error);
-                alert('❌ Joker yenileme sırasında bir hata oluştu.');
-              }
-            }}
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '10px 20px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(118, 75, 162, 0.3)',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(118, 75, 162, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(118, 75, 162, 0.3)';
-            }}
-          >
-            🔄 Joker Haklarını Yenile
-          </button>
-        </div>
-      )}
-      
       <SettingsActions onEditProfile={handleEditProfile} onLogout={logout} />
+      
+      {/* MARKET Butonu */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12, marginBottom: 8 }}>
+        <button
+          onClick={() => navigate('/market')}
+          style={{
+            background: 'linear-gradient(90deg, #ffb347 0%, #ffcc33 100%)',
+            color: '#764ba2',
+            border: 'none',
+            borderRadius: 16,
+            padding: '12px 36px',
+            fontSize: 20,
+            fontWeight: 800,
+            boxShadow: '0 4px 18px #ffb34744, 0 1px 8px #fff2',
+            cursor: 'pointer',
+            letterSpacing: 1,
+            transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s',
+            marginBottom: 0,
+            outline: 'none',
+            textShadow: '0 1px 6px #fff8',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(90deg, #ffcc33 0%, #ffb347 100%)'; e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.boxShadow = '0 8px 28px #ffb34766, 0 0 0 8px #fff4'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(90deg, #ffb347 0%, #ffcc33 100%)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 18px #ffb34744, 0 1px 8px #fff2'; }}
+        >
+          🛒 MARKET
+        </button>
+      </div>
       <div style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}>
         <div
           style={{
@@ -488,7 +507,7 @@ const Home: React.FC = React.memo(() => {
             <span style={{ position: 'relative', zIndex: 3, display: 'inline-flex', alignItems: 'center', gap: 8.75 }}>
               <span style={{ fontSize: '1.8375rem', marginRight: 5.25, filter: 'drop-shadow(0 1.75px 7px #fff8)' }}>👋</span>
               <span style={{ fontWeight: 900, color: '#5a3399', fontSize: '1.09375em', letterSpacing: '0.875px', textShadow: '0 1.75px 7px #fff8' }}>
-                Hoşgeldin !!!
+                Hoşgeldin,
               </span>
               <span style={{ fontWeight: 900, color: '#ff6b6b', fontSize: '1.09375em', marginLeft: 7, textShadow: '0 1.75px 7px #fff8' }}>
                 {user.displayName || 'Kullanıcı'}

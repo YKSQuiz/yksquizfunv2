@@ -1,180 +1,460 @@
-# YKS Quiz Uygulaması
+# YKS Quiz Uygulaması - Detaylı Dokümantasyon
 
-Modern ve kullanıcı dostu bir YKS (Yükseköğretim Kurumları Sınavı) quiz uygulaması. TYT ve AYT sınavlarına hazırlanan öğrenciler için tasarlanmış kapsamlı bir eğitim platformu.
+## 📋 İçindekiler
+1. [Genel Bakış](#genel-bakış)
+2. [Teknik Mimari](#teknik-mimari)
+3. [Kullanıcı Sistemi](#kullanıcı-sistemi)
+4. [Quiz Sistemi](#quiz-sistemi)
+5. [Joker Sistemi](#joker-sistemi)
+6. [Seviye ve XP Sistemi](#seviye-ve-xp-sistemi)
+7. [Enerji Sistemi](#enerji-sistemi)
+8. [İstatistikler ve Analiz](#istatistikler-ve-analiz)
+9. [Performans Optimizasyonları](#performans-optimizasyonları)
+10. [A/B Testing](#ab-testing)
+11. [Firebase Entegrasyonu](#firebase-entegrasyonu)
+12. [Dosya Yapısı](#dosya-yapısı)
+13. [Geliştirme Rehberi](#geliştirme-rehberi)
 
-## 🚀 Özellikler
+---
 
-### 📚 Kapsamlı Konu Kapsamı
-- **TYT Konuları:** Türkçe, Matematik, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din
-- **AYT Konuları:** Matematik, Fizik, Kimya, Biyoloji, Edebiyat, Tarih, Coğrafya, Felsefe, Din
-- **Alt Konular:** Her ana konu için detaylı alt konular
-- **Test Seçimi:** Her alt konu için 10 farklı test
+## 🎯 Genel Bakış
 
-### 🎯 Quiz Özellikleri
-- **Çoktan Seçmeli Sorular:** 4 seçenekli soru formatı
-- **Joker Sistemi:** 4 farklı joker türü (Eliminate, Extra Time, Double Answer, Auto Correct)
-- **Zaman Sınırı:** Her soru için 10 dakika süre
-- **Anlık Geri Bildirim:** Doğru/yanlış cevap gösterimi
-- **Detaylı Açıklamalar:** Her soru için kapsamlı açıklama
-- **İlerleme Takibi:** Soru numarası ve toplam soru sayısı
+**YKS Quiz**, Yükseköğretim Kurumları Sınavı (YKS) için hazırlanan öğrencilere yönelik modern bir quiz uygulamasıdır. Uygulama, TYT (Temel Yeterlilik Testi) ve AYT (Alan Yeterlilik Testi) konularını kapsayan kapsamlı bir eğitim platformudur.
 
-### 👤 Kullanıcı Sistemi
-- **Kayıt/Giriş:** Email ve şifre ile hesap oluşturma
-- **Google Girişi:** Google hesabı ile hızlı giriş
-- **Profil Yönetimi:** Kullanıcı bilgilerini düzenleme
-- **Seviye Sistemi:** XP kazanarak seviye atlama
-- **Rütbe Sistemi:** Seviyeye göre rütbe kazanma
+### 🎯 Ana Hedefler
+- YKS sınavına hazırlanan öğrencilere interaktif quiz deneyimi sunmak
+- Gamification elementleri ile öğrenmeyi eğlenceli hale getirmek
+- Detaylı istatistikler ile öğrenci performansını takip etmek
+- Modern web teknolojileri ile hızlı ve responsive bir deneyim sağlamak
 
-### 📊 İstatistikler ve Analiz
-- **Detaylı İstatistikler:** Konu bazında başarı oranları
-- **Grafikler:** Başarı trendleri ve performans analizi
-- **Zaman Takibi:** Quiz süreleri ve ortalama çözüm süreleri
-- **Başarı Oranları:** Doğru/yanlış cevap oranları
+### 🌟 Temel Özellikler
+- **Kapsamlı Konu Kapsamı:** TYT ve AYT tüm dersler
+- **Gamification:** Seviye sistemi, XP, rütbeler, jokerler
+- **Performans Takibi:** Detaylı istatistikler ve analizler
+- **Modern UI/UX:** Responsive tasarım ve smooth animasyonlar
+- **Real-time Updates:** Firebase ile gerçek zamanlı güncellemeler
 
-### ⚡ Performans Optimizasyonları
-- **Lazy Loading:** Ağır bileşenlerin ihtiyaç halinde yüklenmesi
-- **Memoization:** React.memo ve useMemo optimizasyonları
-- **Bundle Splitting:** Kod bölme ile hızlı yükleme
-- **Service Worker:** Offline çalışma desteği
-- **A/B Testing:** Performans testleri ve varyant analizi
+---
 
-## 🛠️ Teknolojiler
+## 🏗️ Teknik Mimari
 
-- **Frontend:** React 18 + TypeScript
+### 🛠️ Teknoloji Stack'i
+- **Frontend Framework:** React 18 + TypeScript
 - **Routing:** React Router DOM v6
-- **Styling:** CSS3 (Custom CSS + Animations)
 - **State Management:** React Context API
 - **Database:** Firebase Firestore
 - **Authentication:** Firebase Auth
+- **Styling:** CSS3 (Custom CSS + Animations)
 - **Build Tool:** Create React App
-- **Performance:** Web Vitals, Bundle Analyzer
-- **Testing:** A/B Testing Framework
+- **Performance Monitoring:** Web Vitals, Bundle Analyzer
 
-## 📦 Kurulum
-
-1. Projeyi klonlayın:
-```bash
-git clone <repository-url>
-cd yksquizv14
-```
-
-2. Bağımlılıkları yükleyin:
-```bash
-npm install
-```
-
-3. Firebase yapılandırmasını ayarlayın:
-   - `src/services/firebase.ts` dosyasında Firebase config bilgilerinizi girin
-
-4. Uygulamayı başlatın:
-```bash
-npm start
-```
-
-5. Tarayıcınızda `http://localhost:3000` adresini açın.
-
-## 🎯 Kullanım
-
-### 📱 Ana Özellikler
-1. **Giriş Yapın:** Email/şifre veya Google ile giriş yapın
-2. **Ana Sayfa:** Profil bilgilerinizi, seviyenizi ve enerji durumunuzu görün
-3. **Konu Seçin:** TYT veya AYT konularından birini seçin
-4. **Alt Konu Seçin:** Seçtiğiniz konunun alt konularından birini seçin
-5. **Test Seçin:** 1-10 arası testlerden birini seçin
-6. **Quiz Çözün:** Soruları yanıtlayın, jokerlerinizi kullanın
-7. **Sonuçları Görün:** Quiz sonunda XP kazanın ve seviye atlayın
-
-### 🎮 Joker Sistemi
-- **Eliminate (➗):** İki yanlış seçeneği eleme
-- **Extra Time (⏰):** Ek süre kazanma
-- **Double Answer (2️⃣):** İki cevap seçme hakkı
-- **Auto Correct (✅):** Otomatik doğru cevap
-
-### 📊 İstatistikler
-- **Konu Bazında:** Her konu için ayrı başarı oranları
-- **Zaman Analizi:** Quiz süreleri ve ortalama çözüm süreleri
-- **Grafikler:** Başarı trendleri ve performans analizi
-
-## 📱 Responsive Tasarım
-
-Uygulama tüm cihazlarda mükemmel çalışır:
+### 📱 Responsive Tasarım
 - **Desktop:** Tam özellikli deneyim
 - **Tablet:** Touch-friendly arayüz
 - **Mobile:** Mobil optimizasyonu
 - **Touch:** Dokunmatik ekran desteği
 
-## 🔧 Geliştirme
-
-### Proje Yapısı
+### 🔧 Proje Yapısı
 ```
 src/
 ├── components/          # React bileşenleri
 │   ├── auth/           # Kimlik doğrulama
-│   │   ├── Login.tsx
-│   │   └── EditProfile.tsx
 │   ├── common/         # Ortak bileşenler
-│   │   ├── BackButton.tsx
-│   │   └── SettingsActions.tsx
 │   ├── home/           # Ana sayfa
-│   │   ├── Home.tsx
-│   │   └── ProfileLevelCard.tsx
 │   ├── quiz/           # Quiz bileşenleri
-│   │   ├── Quiz.tsx
-│   │   ├── TestSelection.tsx
-│   │   └── JokerPanel.tsx
 │   ├── stats/          # İstatistikler
-│   │   └── Istatistiklerim.tsx
 │   ├── subjects/       # Konu sayfaları
-│   │   ├── tyt/        # TYT konuları
-│   │   └── ayt/        # AYT konuları
 │   └── admin/          # Yönetim paneli
-│       └── PerformanceDashboard.tsx
 ├── contexts/           # React Context
-│   └── AuthContext.tsx
 ├── services/           # Servisler
-│   └── firebase.ts
 ├── utils/              # Yardımcı fonksiyonlar
-│   ├── constants.ts
-│   ├── performance.ts
-│   └── abTesting.ts
 ├── types/              # TypeScript tipleri
 ├── styles/             # Stil dosyaları
 └── hooks/              # Custom hooks
 ```
 
-### Performans Optimizasyonları
-- **React.memo:** Gereksiz re-render'ları önleme
-- **useCallback:** Fonksiyon memoization
-- **useMemo:** Hesaplama memoization
-- **Lazy Loading:** Dinamik import
-- **Bundle Splitting:** Kod bölme
-- **Service Worker:** Offline cache
+---
 
-### A/B Testing
-- **UI Varyantları:** Farklı arayüz testleri
-- **Loading Stratejileri:** Yükleme optimizasyonları
-- **Performance Monitoring:** Canlı performans izleme
+## 👤 Kullanıcı Sistemi
 
-## 🎨 Tasarım Özellikleri
+### 🔐 Kimlik Doğrulama
+- **Email/Şifre:** Geleneksel giriş sistemi
+- **Google OAuth:** Google hesabı ile hızlı giriş
+- **Otomatik Kayıt:** İlk girişte otomatik profil oluşturma
 
-- **Modern UI:** Gradient renkler ve animasyonlar
-- **Responsive Design:** Tüm cihazlarda uyumlu
-- **Smooth Animations:** CSS transitions ve keyframes
-- **Interactive Elements:** Hover efektleri ve feedback
-- **Accessibility:** Erişilebilirlik standartları
+### 👤 Kullanıcı Profili
+```typescript
+interface User {
+  id: string;
+  displayName: string;
+  email: string;
+  avatar: string;
+  stats: UserStats;
+  jokers: Jokers;
+  jokersUsed: JokersUsed;
+  energy: number;
+  lastEnergyUpdate: string;
+  coins: number;
+}
+```
+
+### 📊 Kullanıcı İstatistikleri
+```typescript
+interface UserStats {
+  totalQuizzes: number;
+  correctAnswers: number;
+  totalQuestions: number;
+  dailyActivity: { [date: string]: DailyActivity };
+  level: number;
+  experience: number;
+  experienceToNext: number;
+  rank?: string;
+  totalQuizTime?: number;
+  totalSessionTime?: number;
+}
+```
+
+---
+
+## 🎮 Quiz Sistemi
+
+### 📚 Konu Yapısı
+- **TYT Konuları:** Türkçe, Matematik, Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din
+- **AYT Konuları:** Matematik, Fizik, Kimya, Biyoloji, Edebiyat, Tarih, Coğrafya, Felsefe, Din
+- **Alt Konular:** Her ana konu için detaylı alt konular
+- **Test Seçimi:** Her alt konu için 10 farklı test
+
+### ❓ Soru Formatı
+```typescript
+interface Question {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+  testNumber: number;
+  topicId: string;
+}
+```
+
+### ⏱️ Quiz Özellikleri
+- **Süre Sınırı:** Her soru için 10 dakika
+- **Çoktan Seçmeli:** 4 seçenekli soru formatı
+- **Anlık Geri Bildirim:** Doğru/yanlış cevap gösterimi
+- **Detaylı Açıklamalar:** Her soru için kapsamlı açıklama
+- **İlerleme Takibi:** Soru numarası ve toplam soru sayısı
+
+### 🎯 Quiz Akışı
+1. **Konu Seçimi:** TYT veya AYT konularından seçim
+2. **Alt Konu Seçimi:** Seçilen konunun alt konuları
+3. **Test Seçimi:** 1-10 arası testlerden seçim
+4. **Quiz Başlatma:** Soruları yanıtlama
+5. **Joker Kullanımı:** Gerektiğinde joker kullanma
+6. **Sonuç Görüntüleme:** XP kazanma ve seviye atlama
+
+---
+
+## 🃏 Joker Sistemi
+
+### 🎯 Joker Türleri
+1. **Eliminate (➗):** İki yanlış seçeneği eleme
+2. **Extra Time (⏰):** Ek süre kazanma
+3. **Double Answer (2️⃣):** İki cevap seçme hakkı
+4. **Auto Correct (✅):** Otomatik doğru cevap
+
+### 📊 Joker Yönetimi
+```typescript
+interface Jokers {
+  eliminate: JokerState;
+  extraTime: JokerState;
+  doubleAnswer: JokerState;
+  autoCorrect: JokerState;
+}
+
+interface JokerState {
+  count: number;
+  lastReset: string; // ISO date
+}
+```
+
+### 🔄 Joker Yenileme
+- **Günlük Reset:** Her gün jokerler yenilenir
+- **Manuel Reset:** Admin panelinden manuel yenileme
+- **Kullanım Takibi:** Her joker türü için ayrı kullanım sayısı
+
+---
+
+## ⭐ Seviye ve XP Sistemi
+
+### 🎯 XP Hesaplama
+- **Doğru Cevap:** 20 XP
+- **%100 Başarı:** 2x XP bonusu
+- **%70+ Başarı:** Normal XP
+- **%70- Başarı:** Yarı XP
+
+### 📈 Seviye Sistemi
+- **Seviye 1-100:** Kullanıcı seviyeleri
+- **XP Formülü:** Her seviye için artan XP gereksinimi
+- **Seviye Atlama:** Yeni özellikler ve bonuslar
+
+### 🏆 Rütbe Sistemi
+```typescript
+const RANKS = [
+  { level: 1, name: "Soru Çömezi" },
+  { level: 5, name: "Cevap Bilmecesi" },
+  { level: 10, name: "Meraklı Beyin" },
+  { level: 15, name: "Son Dakika Kahramanı" },
+  { level: 20, name: "Şıkka Göz Kırpan" },
+  { level: 25, name: "Tabloyla Kavgalı" },
+  { level: 30, name: "Joker Sevdalısı" },
+  { level: 35, name: "Kantin Filozofu" },
+  { level: 40, name: "Ezber Bozan" },
+  { level: 45, name: "Doğru Şık Dedektifi" },
+  { level: 50, name: "Quiz Müptelası" },
+  { level: 55, name: "Yanıt Ustası" },
+  { level: 60, name: "Zihin Cambazı" },
+  { level: 65, name: "Cevap Koleksiyoncusu" },
+  { level: 70, name: "Sınav Samurayı" },
+  { level: 75, name: "Zihin Hacker'ı" },
+  { level: 80, name: "Soru Panteri" },
+  { level: 85, name: "Zeka Juggleri" },
+  { level: 90, name: "Quiz Rockstar'ı" },
+  { level: 95, name: "Sonsuz Bilge" },
+  { level: 100, name: "Quiz'in Efsanevi Patronu" }
+];
+```
+
+---
+
+## ⚡ Enerji Sistemi
+
+### 🔋 Enerji Mekanizması
+- **Maksimum Enerji:** 100 birim
+- **Yenilenme Hızı:** Her dakika 1 enerji
+- **Quiz Maliyeti:** Her quiz 20 enerji
+- **Real-time Updates:** Gerçek zamanlı enerji takibi
+
+### ⏰ Enerji Yenilenme
+```typescript
+const ENERGY_MAX = 100;
+const ENERGY_REGEN_MINUTES = 1;
+const ENERGY_PER_REGEN = 1;
+```
+
+### 🎯 Enerji Kullanımı
+- **Quiz Başlatma:** 20 enerji gerektirir
+- **Enerji Yetersiz:** Quiz başlatılamaz
+- **Otomatik Yenilenme:** Arka planda sürekli yenilenme
+
+---
 
 ## 📊 İstatistikler ve Analiz
 
-Uygulama şu istatistikleri takip eder:
-- **Quiz İstatistikleri:** Tamamlanan quiz sayısı, doğru/yanlış oranları
-- **Zaman Analizi:** Quiz süreleri, ortalama çözüm süreleri
+### 📈 Kullanıcı İstatistikleri
+- **Quiz İstatistikleri:** Tamamlanan quiz sayısı
+- **Başarı Oranları:** Doğru/yanlış cevap oranları
+- **Zaman Analizi:** Quiz süreleri ve ortalama çözüm süreleri
 - **Konu Bazında:** Her konu için ayrı başarı oranları
-- **Seviye Sistemi:** XP kazanma, seviye atlama, rütbe sistemi
+
+### 📊 Günlük Aktivite
+```typescript
+interface DailyActivity {
+  questionsSolved: number;
+  correctAnswers: number;
+  timeSpent: number;
+}
+```
+
+### 📈 Grafikler ve Analiz
+- **Başarı Trendleri:** Zaman içindeki performans değişimi
+- **Konu Karşılaştırması:** Dersler arası performans analizi
+- **Zaman Dağılımı:** Quiz sürelerinin analizi
 - **Joker Kullanımı:** Joker türleri ve kullanım oranları
 
-## 🔮 Gelecek Özellikler
+---
 
-- [ ] Daha fazla soru ve konu ekleme
+## ⚡ Performans Optimizasyonları
+
+### 🚀 React Optimizasyonları
+- **React.memo:** Gereksiz re-render'ları önleme
+- **useCallback:** Fonksiyon memoization
+- **useMemo:** Hesaplama memoization
+- **Lazy Loading:** Dinamik import ile kod bölme
+
+### 📦 Bundle Optimizasyonu
+- **Code Splitting:** Route bazında kod bölme
+- **Dynamic Imports:** Ağır bileşenlerin ihtiyaç halinde yüklenmesi
+- **Bundle Analyzer:** Bundle boyutu analizi
+- **Tree Shaking:** Kullanılmayan kodların elenmesi
+
+### 🔄 Service Worker
+- **Offline Cache:** Offline çalışma desteği
+- **Background Sync:** Arka plan senkronizasyonu
+- **Push Notifications:** Bildirim desteği
+
+### 📊 Performance Monitoring
+- **Web Vitals:** Core Web Vitals takibi
+- **Custom Metrics:** Özel performans metrikleri
+- **Real-time Monitoring:** Canlı performans izleme
+
+---
+
+## 🧪 A/B Testing
+
+### 🎯 Test Kategorileri
+- **UI Varyantları:** Farklı arayüz testleri
+- **Loading Stratejileri:** Yükleme optimizasyonları
+- **Quiz Deneyimi:** Quiz arayüzü varyantları
+
+### 📊 Test Konfigürasyonu
+```typescript
+interface ABTestConfig {
+  variant: string;
+  config: any;
+  trackEvent: (event: string, data: any) => void;
+}
+```
+
+### 📈 Test Sonuçları
+- **Conversion Rates:** Dönüşüm oranları
+- **User Engagement:** Kullanıcı etkileşimi
+- **Performance Metrics:** Performans metrikleri
+
+---
+
+## 🔥 Firebase Entegrasyonu
+
+### 🔐 Authentication
+- **Email/Password:** Geleneksel giriş
+- **Google OAuth:** Google hesabı entegrasyonu
+- **User Management:** Kullanıcı profil yönetimi
+
+### 📊 Firestore Database
+- **Users Collection:** Kullanıcı profilleri
+- **Questions Collection:** Quiz soruları
+- **Stats Collection:** İstatistikler
+- **Real-time Updates:** Gerçek zamanlı güncellemeler
+
+### 🔄 Data Structure
+```typescript
+// Users Collection
+{
+  id: string;
+  displayName: string;
+  email: string;
+  stats: UserStats;
+  jokers: Jokers;
+  energy: number;
+  coins: number;
+}
+
+// Questions Collection
+{
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+  testNumber: number;
+  topicId: string;
+}
+```
+
+---
+
+## 📁 Dosya Yapısı
+
+### 🗂️ Ana Dizinler
+```
+yksquizv18/
+├── public/              # Statik dosyalar
+├── src/                 # Kaynak kodlar
+│   ├── components/      # React bileşenleri
+│   ├── contexts/        # React Context
+│   ├── services/        # Servisler
+│   ├── utils/           # Yardımcı fonksiyonlar
+│   ├── types/           # TypeScript tipleri
+│   └── styles/          # Stil dosyaları
+├── scripts/             # Deployment scriptleri
+└── docs/               # Dokümantasyon
+```
+
+### 📂 Component Yapısı
+```
+components/
+├── auth/               # Kimlik doğrulama
+│   ├── Login.tsx
+│   └── EditProfile.tsx
+├── common/             # Ortak bileşenler
+│   ├── BackButton.tsx
+│   └── SettingsActions.tsx
+├── home/               # Ana sayfa
+│   ├── Home.tsx
+│   └── ProfileLevelCard.tsx
+├── quiz/               # Quiz bileşenleri
+│   ├── Quiz.tsx
+│   ├── TestSelection.tsx
+│   └── JokerPanel.tsx
+├── stats/              # İstatistikler
+│   └── Istatistiklerim.tsx
+├── subjects/           # Konu sayfaları
+│   ├── SubjectSelector.tsx
+│   └── AltKonuSelector.tsx
+└── admin/              # Yönetim paneli
+    └── PerformanceDashboard.tsx
+```
+
+---
+
+## 🛠️ Geliştirme Rehberi
+
+### 🚀 Geliştirme Ortamı Kurulumu
+```bash
+# Projeyi klonla
+git clone <repository-url>
+cd yksquizv18
+
+# Bağımlılıkları yükle
+npm install
+
+# Geliştirme sunucusunu başlat
+npm start
+```
+
+### 🔧 Build ve Deploy
+```bash
+# Production build
+npm run build
+
+# Bundle analizi
+npm run analyze
+
+# Test çalıştırma
+npm test
+```
+
+### 📝 Kod Standartları
+- **TypeScript:** Strict mode kullanımı
+- **ESLint:** Kod kalitesi kontrolü
+- **Prettier:** Kod formatlaması
+- **Component Structure:** Fonksiyonel bileşenler
+
+### 🧪 Testing Stratejisi
+- **Unit Tests:** Bileşen testleri
+- **Integration Tests:** Servis entegrasyonları
+- **E2E Tests:** Kullanıcı senaryoları
+- **Performance Tests:** Yük testleri
+
+### 🔄 CI/CD Pipeline
+- **GitHub Actions:** Otomatik build ve test
+- **Vercel/Netlify:** Otomatik deploy
+- **Firebase Hosting:** Production hosting
+
+---
+
+## 📈 Gelecek Geliştirmeler
+
+### 🎯 Planlanan Özellikler
 - [ ] Video açıklamaları
 - [ ] Sesli soru okuma
 - [ ] Liderlik tablosu
@@ -184,22 +464,34 @@ Uygulama şu istatistikleri takip eder:
 - [ ] Dark mode
 - [ ] Çoklu dil desteği
 
-## 📄 Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır.
-
-## 🤝 Katkıda Bulunma
-
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
-3. Commit yapın (`git commit -m 'Add some AmazingFeature'`)
-4. Push yapın (`git push origin feature/AmazingFeature`)
-5. Pull Request oluşturun
-
-## 📞 İletişim
-
-Herhangi bir sorunuz veya öneriniz için issue açabilirsiniz.
+### 🔮 Teknik İyileştirmeler
+- [ ] PWA desteği
+- [ ] Service Worker optimizasyonu
+- [ ] Bundle size optimizasyonu
+- [ ] Performance monitoring geliştirmeleri
+- [ ] A/B testing framework genişletme
 
 ---
 
-**YKS Quiz** - YKS sınavına hazırlıkta yanınızda! 📚🎯 
+## 📞 Destek ve İletişim
+
+### 🐛 Bug Reports
+- GitHub Issues kullanın
+- Detaylı hata açıklaması ekleyin
+- Ekran görüntüleri ekleyin
+
+### 💡 Feature Requests
+- GitHub Discussions kullanın
+- Özellik önerilerini detaylandırın
+- Kullanım senaryolarını açıklayın
+
+### 📚 Dokümantasyon
+- Bu dokümantasyon güncel tutulacak
+- API değişiklikleri belgelenir
+- Yeni özellikler dokümante edilir
+
+---
+
+**YKS Quiz** - YKS sınavına hazırlıkta yanınızda! 📚🎯
+
+*Son güncelleme: 2025* 

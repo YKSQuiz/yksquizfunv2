@@ -26,11 +26,10 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   logout: () => void;
-  updateUserStats: (correct: number, total: number, subjectId?: string, subjectName?: string, testNumber?: number, duration?: number) => void;
+  updateUserStats: (correct: number, total: number, subjectId?: string, duration?: number) => void;
   clearUserStats: () => Promise<void>;
   updateUser: (updatedUser: User) => void;
   refreshUser: () => Promise<void>;
-  manualResetJokers: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,12 +75,34 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
       userData.lastEnergyUpdate = new Date().toISOString();
       needsUpdate = true;
     }
+    // Coin alanı yoksa ekle
+    if (typeof userData.coins !== 'number') {
+      userData.coins = 0;
+      needsUpdate = true;
+    }
+    // Yeni enerji sistemi alanları yoksa ekle
+    if (typeof userData.energyLimit !== 'number') {
+      userData.energyLimit = 100;
+      needsUpdate = true;
+    }
+    if (typeof userData.energyRegenSpeed !== 'number') {
+      userData.energyRegenSpeed = 300; // 5 dakika
+      needsUpdate = true;
+    }
+    if (!userData.unlockedTests || typeof userData.unlockedTests !== 'object' || Array.isArray(userData.unlockedTests)) {
+      userData.unlockedTests = {}; // Boş obje, her alt konu için ayrı kontrol
+      needsUpdate = true;
+    }
     if (needsUpdate) {
       await updateDoc(userRef, {
         jokers: userData.jokers,
         jokersUsed: userData.jokersUsed,
         energy: userData.energy,
         lastEnergyUpdate: userData.lastEnergyUpdate,
+        coins: userData.coins,
+        energyLimit: userData.energyLimit,
+        energyRegenSpeed: userData.energyRegenSpeed,
+        unlockedTests: userData.unlockedTests,
       });
     }
     return userData;
@@ -96,8 +117,6 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
         totalQuizzes: 0,
         correctAnswers: 0,
         totalQuestions: 0,
-        subjectStats: {},
-        quizHistory: [],
         dailyActivity: {},
         level: 1,
         experience: 0,
@@ -118,6 +137,10 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
       },
       energy: 100,
       lastEnergyUpdate: new Date().toISOString(),
+      energyLimit: 100,
+      energyRegenSpeed: 300, // 5 dakika
+      coins: 0,
+      unlockedTests: {}, // Boş obje, her alt konu için ayrı kontrol
     };
     await setDoc(userRef, newUser, { merge: true });
     return newUser;
@@ -192,16 +215,20 @@ export async function updateXpLevelRank({
   gainedXp: number,
   percent: number
 }> {
+  console.log('updateXpLevelRank çağrıldı', { correct, total });
   // XP hesaplama
   const percent = total > 0 ? (correct / total) * 100 : 0;
-  let gainedXp = 0;
+  // XP ve coin hesaplama (kurallara göre)
+  let baseXp = correct * 20;
+  let gainedXp = baseXp;
   if (percent === 100) {
-    gainedXp = correct * 20 * 2;
+    gainedXp = baseXp * 2;
   } else if (percent >= 70) {
-    gainedXp = correct * 20;
+    gainedXp = baseXp;
   } else {
-    gainedXp = Math.floor((correct * 20) / 2);
+    gainedXp = Math.floor(baseXp / 2);
   }
+  console.log('updateXpLevelRank sonucu', { gainedXp, percent });
 
   let newXp = (user.stats.experience || 0) + gainedXp;
   let newLevel = 1;
@@ -225,7 +252,8 @@ export async function updateXpLevelRank({
     'stats.experience': newXp,
     'stats.level': newLevel,
     'stats.experienceToNext': getXpForLevel(newLevel + 1) - newXp,
-    'stats.rank': newRank
+    'stats.rank': newRank,
+    coins: (user.coins || 0) + gainedXp,
   });
 
   return {
@@ -285,21 +313,7 @@ export async function jokerKullan(
   return { newJokers, newJokersUsed };
 }
 
-// Manuel joker yenileme fonksiyonu
-export async function manualResetJokers(userId: string) {
-  const today = new Date().toISOString().slice(0, 10);
-  const newJokers: Jokers = {
-    eliminate: { count: 3, lastReset: today },
-    extraTime: { count: 3, lastReset: today },
-    doubleAnswer: { count: 3, lastReset: today },
-    autoCorrect: { count: 3, lastReset: today },
-  };
-  
-  const db = getFirestore();
-  await updateDoc(doc(db, 'users', userId), { jokers: newJokers });
-  console.log('Manuel joker yenileme tamamlandı:', newJokers);
-  return newJokers;
-}
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -405,8 +419,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           totalQuizzes: 0,
           correctAnswers: 0,
           totalQuestions: 0,
-          subjectStats: {},
-          quizHistory: [],
           dailyActivity: {},
           level: 1,
           experience: 0,
@@ -427,6 +439,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         energy: 100,
         lastEnergyUpdate: new Date().toISOString(),
+        energyLimit: 100,
+        energyRegenSpeed: 300, // 5 dakika
+        coins: 0,
+        unlockedTests: {}, // Boş obje, her alt konu için ayrı kontrol
       };
       await setDoc(doc(db, 'users', result.user.uid), newUser);
       setUser(newUser);
@@ -472,7 +488,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
   };
 
-  const updateUserStats = async (correct: number, total: number, subjectId?: string, subjectName?: string, testNumber?: number, duration?: number) => {
+  const updateUserStats = async (correct: number, total: number, subjectId?: string, duration?: number) => {
     if (user) {
       const userRef = doc(db, 'users', user.id);
       // Istanbul saatine göre tarih al
@@ -493,38 +509,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updates['stats.totalQuizTime'] = prevQuizTime + duration;
       }
 
-      // Konu bazlı istatistikler
-      if (subjectId) {
-        const subjectKey = `stats.subjectStats.${subjectId}`;
-        updates[`${subjectKey}.totalQuestions`] = increment(total);
-        updates[`${subjectKey}.correctAnswers`] = increment(correct);
-        updates[`${subjectKey}.quizzes`] = increment(1);
-        updates[`${subjectKey}.lastQuizDate`] = istanbulDate.toISOString();
-      }
-
-      // Quiz geçmişi
-      if (subjectId && subjectName && testNumber !== undefined) {
-        const quizRecord = {
-          id: Date.now().toString(),
-          subjectId,
-          subjectName,
-          testNumber,
-          score: correct,
-          totalQuestions: total,
-          date: istanbulDate.toISOString(),
-          duration: duration || 0
-        };
-        
-        updates['stats.quizHistory'] = [...(user.stats.quizHistory || []), quizRecord];
-      }
+      // Konu bazlı istatistikler kodu kaldırıldı
 
       // Günlük aktivite
       const dailyKey = `stats.dailyActivity.${today}`;
-      const currentDaily = user.stats.dailyActivity?.[today] || { questionsSolved: 0, correctAnswers: 0, timeSpent: 0 };
+      const currentDaily = user.stats.dailyActivity?.[today] || { questionsSolved: 0, correctAnswers: 0 };
       updates[dailyKey] = {
         questionsSolved: currentDaily.questionsSolved + total,
-        correctAnswers: currentDaily.correctAnswers + correct,
-        timeSpent: currentDaily.timeSpent + ((duration || 0) / 60) // saniyeyi dakikaya çevir
+        correctAnswers: currentDaily.correctAnswers + correct
       };
 
       // Seviye ve deneyim puanı
@@ -563,8 +555,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'stats.totalQuizzes': 0,
         'stats.correctAnswers': 0,
         'stats.totalQuestions': 0,
-        'stats.subjectStats': {},
-        'stats.quizHistory': [],
+        // subjectStats: {} satırı kaldırıldı
         'stats.dailyActivity': {},
         'stats.level': 1,
         'stats.experience': 0,
