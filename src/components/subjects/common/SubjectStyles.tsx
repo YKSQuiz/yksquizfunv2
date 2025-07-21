@@ -4,7 +4,7 @@ export const subjectStyles = {
   animations: {
     popIn: `
       @keyframes popIn {
-        0% { opacity: 0; transform: scale(0.7) translateY(30px); }
+        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
         100% { opacity: 1; transform: scale(1) translateY(0); }
       }
     `,
