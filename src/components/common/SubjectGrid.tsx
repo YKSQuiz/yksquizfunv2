@@ -36,12 +36,11 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({
         {subjects.map((subject) => (
           <SubjectCard
             key={subject.id}
-            id={subject.id}
             label={subject.label}
             icon={subject.icon}
             color={subject.color}
             route={subject.route}
-            description={subject.description}
+            description={subject.description || undefined}
           />
         ))}
       </div>

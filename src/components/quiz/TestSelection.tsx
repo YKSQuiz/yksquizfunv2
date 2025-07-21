@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import BackButton from '../common/BackButton';
+// import BackButton from '../common/BackButton';
 import SubjectHeader from '../subjects/common/SubjectHeader';
 import { useAuth } from '../../contexts/AuthContext';
 import { updateUserEnergy } from '../../services/firebase';
@@ -9,17 +9,17 @@ import { db } from '../../services/firebase';
 import './TestSelection.css';
 
 // Test sonuçları için tip tanımları
-interface TestResult {
-  score: number;
-  total: number;
-  percentage: number;
-  completed: boolean;
-  attempts: number;
-}
+// interface TestResult {
+//   score: number;
+//   total: number;
+//   percentage: number;
+//   completed: boolean;
+//   attempts: number;
+// }
 
-interface TestResults {
-  [testId: string]: TestResult;
-}
+// interface TestResults {
+//   [testId: string]: TestResult;
+// }
 
 const TEST_COUNT = 10;
 
@@ -738,7 +738,7 @@ const TestSelection: React.FC = React.memo(() => {
     test1Completed: testResults['1']?.completed,
     test1Percentage: testResults['1']?.percentage,
     test2Price: TEST_PRICES[2],
-    hasEnoughCoins: (user?.coins || 0) >= TEST_PRICES[2],
+    hasEnoughCoins: (user?.coins || 0) >= (TEST_PRICES[2] || 0),
     isPreviousTestSuccessful: checkPreviousTestSuccess(2)
   });
 

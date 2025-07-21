@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { usePerformanceMonitor } from '../../utils/performance';
 import { getMemoryUsage, getNetworkInfo } from '../../utils/performance';
 import { useABTest } from '../../utils/abTesting';
@@ -77,11 +77,11 @@ const PerformanceDashboard: React.FC = () => {
     const avgCacheHitRate = performanceData.reduce((sum, data) => sum + data.cacheHitRate, 0) / performanceData.length;
 
     return {
-      currentMemory: latest.memoryUsage,
+      currentMemory: latest?.memoryUsage || 0,
       averageMemory: avgMemory,
-      currentLoadTime: latest.loadTime,
+      currentLoadTime: latest?.loadTime || 0,
       averageLoadTime: avgLoadTime,
-      currentCacheHitRate: latest.cacheHitRate,
+      currentCacheHitRate: latest?.cacheHitRate || 0,
       averageCacheHitRate: avgCacheHitRate,
       dataPoints: performanceData.length
     };
@@ -96,7 +96,7 @@ const PerformanceDashboard: React.FC = () => {
     };
   }, [refreshInterval]);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
     <div className="performance-dashboard">

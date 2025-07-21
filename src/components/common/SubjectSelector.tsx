@@ -8,17 +8,16 @@ interface SubjectSelectorProps {
 }
 
 const SubjectSelector: React.FC<SubjectSelectorProps> = ({
-  examType,
-  onSubjectSelect
+  examType
 }) => {
   const subjectCategory = subjectsConfig[examType];
   const subjects = subjectCategory?.subjects || [];
 
-  const handleSubjectClick = (subjectId: string) => {
-    if (onSubjectSelect) {
-      onSubjectSelect(subjectId);
-    }
-  };
+  // const handleSubjectClick = (subjectId: string) => {
+  //   if (onSubjectSelect) {
+  //     onSubjectSelect(subjectId);
+  //   }
+  // };
 
   return (
     <SubjectGrid

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SubjectCard, SubjectHeader, subjectStyles, themeConfig } from './common';
+import { SubjectCard, SubjectHeader, subjectStyles } from './common';
 import { altKonularConfig, AltKonu } from '../../data/subjects/altKonularConfig';
 import './AltKonuSelector.css';
 
@@ -46,28 +46,28 @@ const AltKonuSelector: React.FC<AltKonuSelectorProps> = ({ subjectId, subjectNam
   };
 
   // Tema belirleme (subjectId'ye göre)
-  const getTheme = (): 'tyt' | 'aytSayisal' | 'aytEa' | 'aytSozel' => {
-    if (subjectId.startsWith('tyt-')) return 'tyt';
-    if (subjectId.startsWith('ayt-')) {
-      // AYT derslerinin hangi kategoride olduğunu belirle
-      const aytSubjects: Record<string, 'aytSayisal' | 'aytEa' | 'aytSozel'> = {
-        'ayt-matematik': 'aytSayisal',
-        'ayt-fizik': 'aytSayisal',
-        'ayt-kimya': 'aytSayisal',
-        'ayt-biyoloji': 'aytSayisal',
-        'ayt-edebiyat': 'aytEa',
-        'ayt-tarih': 'aytEa',
-        'ayt-cografya': 'aytEa',
-        'ayt-din': 'aytSozel',
-        'ayt-felsefe': 'aytSozel'
-      };
-      return aytSubjects[subjectId] || 'aytSayisal';
-    }
-    return 'tyt';
-  };
+  // const getTheme = (): 'tyt' | 'aytSayisal' | 'aytEa' | 'aytSozel' => {
+  //   if (subjectId.startsWith('tyt-')) return 'tyt';
+  //   if (subjectId.startsWith('ayt-')) {
+  //     // AYT derslerinin hangi kategoride olduğunu belirle
+  //     const aytSubjects: Record<string, 'aytSayisal' | 'aytEa' | 'aytSozel'> = {
+  //       'ayt-matematik': 'aytSayisal',
+  //       'ayt-fizik': 'aytSayisal',
+  //       'ayt-kimya': 'aytSayisal',
+  //       'ayt-biyoloji': 'aytSayisal',
+  //       'ayt-edebiyat': 'aytEa',
+  //       'ayt-tarih': 'aytEa',
+  //       'ayt-cografya': 'aytEa',
+  //       'ayt-din': 'aytSozel',
+  //       'ayt-felsefe': 'aytSozel'
+  //     };
+  //     return aytSubjects[subjectId] || 'aytSayisal';
+  //   }
+  //   return 'tyt';
+  // };
 
-  const theme = getTheme();
-  const themeData = themeConfig[theme];
+  // const theme = getTheme();
+  // const themeData = themeConfig[theme];
 
   return (
     <div className="alt-konu-selection-container">

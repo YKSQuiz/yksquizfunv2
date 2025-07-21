@@ -1,5 +1,5 @@
 import React from 'react';
-import { subjectStyles, subjectClasses } from './SubjectStyles';
+import { subjectClasses } from './SubjectStyles';
 import AutoResizeText from './AutoResizeText';
 
 interface SubjectCardProps {

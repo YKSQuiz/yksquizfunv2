@@ -1,6 +1,7 @@
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, getDocs, updateDoc, doc } = require('firebase/firestore');
+const { getFirestore, collection, getDocs, updateDoc, doc, writeBatch } = require('firebase/firestore');
 
+// Firebase konfigürasyonu
 const firebaseConfig = {
   apiKey: "AIzaSyDd6PxsqNMZGDMvOhS4lqeE4AOGDPP1BIQ",
   authDomain: "yksquizv2.firebaseapp.com",
@@ -14,7 +15,58 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function fixSessionTimeLocation() {
+/**
+ * Quiz history'den toplam süreyi hesaplar
+ * @param {Array} quizHistory - Quiz geçmişi
+ * @returns {number} Toplam süre (dakika)
+ */
+function calculateSessionTimeFromHistory(quizHistory) {
+  if (!Array.isArray(quizHistory)) return 0;
+  
+  const totalSeconds = quizHistory.reduce((acc, quiz) => {
+    return acc + (quiz.duration || 0);
+  }, 0);
+  
+  return Math.floor(totalSeconds / 60); // Saniyeyi dakikaya çevir
+}
+
+/**
+ * Kullanıcının session time verilerini düzeltir
+ * @param {Object} userData - Kullanıcı verisi
+ * @returns {number} Doğru session time değeri
+ */
+function fixUserSessionTime(userData) {
+  const currentRootSessionTime = userData.totalSessionTime || 0;
+  const currentStatsSessionTime = userData.stats?.totalSessionTime || 0;
+  
+  console.log(`  📊 Root level totalSessionTime: ${currentRootSessionTime}`);
+  console.log(`  📊 Stats level totalSessionTime: ${currentStatsSessionTime}`);
+  
+  let correctSessionTime = 0;
+  
+  if (currentRootSessionTime > 0) {
+    // Root level'da değer varsa onu kullan
+    correctSessionTime = currentRootSessionTime;
+    console.log(`  ✅ Root level değeri kullanılıyor: ${correctSessionTime}`);
+  } else if (currentStatsSessionTime > 0) {
+    // Stats level'da değer varsa onu root'a taşı
+    correctSessionTime = currentStatsSessionTime;
+    console.log(`  🔄 Stats level değeri root'a taşınıyor: ${correctSessionTime}`);
+  } else {
+    // Her ikisi de yoksa quiz history'den hesapla
+    const quizSeconds = calculateSessionTimeFromHistory(userData.stats?.quizHistory);
+    correctSessionTime = Math.floor(quizSeconds / 60); // Saniyeyi dakikaya çevir
+    console.log(`  🧮 Quiz history'den hesaplandı: ${quizSeconds} saniye = ${correctSessionTime} dakika`);
+  }
+  
+  return correctSessionTime;
+}
+
+/**
+ * Session time verilerini düzeltir
+ * @param {boolean} dryRun - Gerçek güncelleme yapmadan önce kontrol
+ */
+async function fixSessionTimeLocation(dryRun = false) {
   try {
     console.log('🔄 Session Time verilerini düzeltme başlatılıyor...');
     
@@ -23,58 +75,87 @@ async function fixSessionTimeLocation() {
     
     console.log(`📊 Toplam ${usersSnap.size} kullanıcı bulundu.`);
     
-    for (const userDoc of usersSnap.docs) {
-      const userData = userDoc.data();
-      const userId = userDoc.id;
+    let updatedCount = 0;
+    let processedCount = 0;
+    const batchSize = 500;
+    const userDocs = usersSnap.docs;
+    
+    // Kullanıcıları batch'ler halinde işle
+    for (let i = 0; i < userDocs.length; i += batchSize) {
+      const batch = writeBatch(db);
+      const batchDocs = userDocs.slice(i, i + batchSize);
+      let batchUpdates = 0;
       
-      console.log(`\n👤 Kullanıcı işleniyor: ${userId}`);
-      
-      // Mevcut veri durumunu kontrol et
-      const currentRootSessionTime = userData.totalSessionTime || 0;
-      const currentStatsSessionTime = userData.stats?.totalSessionTime || 0;
-      
-      console.log(`  📊 Root level totalSessionTime: ${currentRootSessionTime}`);
-      console.log(`  📊 Stats level totalSessionTime: ${currentStatsSessionTime}`);
-      
-      // Doğru değeri belirle
-      let correctSessionTime = 0;
-      
-      if (currentRootSessionTime > 0) {
-        // Root level'da değer varsa onu kullan
-        correctSessionTime = currentRootSessionTime;
-        console.log(`  ✅ Root level değeri kullanılıyor: ${correctSessionTime}`);
-      } else if (currentStatsSessionTime > 0) {
-        // Stats level'da değer varsa onu root'a taşı
-        correctSessionTime = currentStatsSessionTime;
-        console.log(`  🔄 Stats level değeri root'a taşınıyor: ${correctSessionTime}`);
-      } else {
-        // Her ikisi de yoksa quiz history'den hesapla
-        if (userData.stats?.quizHistory && Array.isArray(userData.stats.quizHistory)) {
-          const quizSeconds = userData.stats.quizHistory.reduce((acc, q) => acc + (q.duration || 0), 0);
-          correctSessionTime = Math.floor(quizSeconds / 60); // Saniyeyi dakikaya çevir
-          console.log(`  🧮 Quiz history'den hesaplandı: ${quizSeconds} saniye = ${correctSessionTime} dakika`);
-        } else {
-          console.log(`  ⚠️ Hiç veri yok, 0 olarak ayarlanıyor`);
+      for (const userDoc of batchDocs) {
+        const userData = userDoc.data();
+        const userId = userDoc.id;
+        processedCount++;
+        
+        console.log(`\n👤 Kullanıcı işleniyor: ${userId} (${processedCount}/${userDocs.length})`);
+        
+        const correctSessionTime = fixUserSessionTime(userData);
+        
+        if (!dryRun) {
+          batch.update(doc(db, 'users', userId), {
+            totalSessionTime: correctSessionTime
+          });
+          batchUpdates++;
         }
+        
+        updatedCount++;
+        console.log(`  ✅ Güncellendi: totalSessionTime = ${correctSessionTime} dk`);
       }
       
-      // Firebase'i güncelle
-      const updates = {
-        totalSessionTime: correctSessionTime
-      };
+      if (!dryRun && batchUpdates > 0) {
+        await batch.commit();
+        console.log(`💾 Batch kaydedildi: ${batchUpdates} güncelleme`);
+      }
       
-      await updateDoc(doc(db, 'users', userId), updates);
-      console.log(`  ✅ Güncellendi: totalSessionTime = ${correctSessionTime} dk`);
+      // Progress göster
+      const progress = ((i + batchSize) / userDocs.length * 100).toFixed(1);
+      console.log(`📈 İlerleme: %${Math.min(progress, 100)}`);
     }
     
     console.log('\n🎉 Tüm kullanıcılar için session time düzeltmeleri tamamlandı!');
-    process.exit(0);
+    console.log(`📊 Toplam işlenen kullanıcı: ${updatedCount}`);
+    
+    if (dryRun) {
+      console.log(`🔍 DRY RUN MODU - Gerçek güncelleme yapılmadı`);
+    }
     
   } catch (error) {
-    console.error('❌ Hata oluştu:', error);
+    console.error('❌ Hata oluştu:', error.message);
+    throw error;
+  }
+}
+
+// Ana fonksiyon
+async function main() {
+  try {
+    const args = process.argv.slice(2);
+    const dryRun = args.includes('--dry-run');
+    
+    if (args.includes('--help') || args.includes('-h')) {
+      console.log('📖 Kullanım:');
+      console.log('  node fix-session-time-location.js [--dry-run]');
+      console.log('');
+      console.log('Seçenekler:');
+      console.log('  --dry-run    Gerçek güncelleme yapmadan önce kontrol et');
+      console.log('  --help, -h   Bu yardımı göster');
+      return;
+    }
+    
+    await fixSessionTimeLocation(dryRun);
+    
+  } catch (error) {
+    console.error('❌ Kritik hata:', error.message);
     process.exit(1);
+  } finally {
+    process.exit(0);
   }
 }
 
 // Script'i çalıştır
-fixSessionTimeLocation(); 
+if (require.main === module) {
+  main();
+} 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import ProfileLevelCard from './ProfileLevelCard';
+// import ProfileLevelCard from './ProfileLevelCard';
 import SettingsActions from '../common/SettingsActions';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../services/firebase';
-import { User } from '../../types/index';
+// import { doc, getDoc } from 'firebase/firestore';
+// import { db } from '../../services/firebase';
+// import { User } from '../../types/index';
 import { updateUserEnergy } from '../../services/firebase';
-import { DarkModeSwitch } from '../common/SettingsActions';
+// import { DarkModeSwitch } from '../common/SettingsActions';
 
 const Home: React.FC = React.memo(() => {
   const { user, logout, updateUser, refreshUser } = useAuth();
@@ -15,7 +15,7 @@ const Home: React.FC = React.memo(() => {
   const location = useLocation();
   const [showLevelModal, setShowLevelModal] = useState(false);
   const [levelModalData, setLevelModalData] = useState<any>(null);
-  const [energyPopup, setEnergyPopup] = useState<string | null>(null);
+  // const [energyPopup, setEnergyPopup] = useState<string | null>(null);
   const [energyTimer, setEnergyTimer] = useState<NodeJS.Timeout | null>(null);
   const [regenCountdown, setRegenCountdown] = useState<number>(0);
   const [justRegenerated, setJustRegenerated] = useState(false);
@@ -92,24 +92,24 @@ const Home: React.FC = React.memo(() => {
     const {
       ENERGY_MAX,
       ENERGY_REGEN_SPEED,
-      ENERGY_REGEN_MINUTES,
+      // ENERGY_REGEN_MINUTES,
       ENERGY_PER_REGEN,
       lastUpdate,
       diffMs,
-      diffSeconds,
+      // diffSeconds,
       regenCount
     } = energyCalculation;
 
     let interval: NodeJS.Timeout | null = null;
     
     if (regenCount > 0 && (user.energy ?? 0) < ENERGY_MAX) {
-      let newEnergy = Math.min(ENERGY_MAX, (user.energy ?? 0) + regenCount * ENERGY_PER_REGEN);
-      let secondsUsed = regenCount * ENERGY_REGEN_SPEED;
-      let newLastUpdate = new Date(lastUpdate.getTime() + secondsUsed * 1000);
+      const newEnergy = Math.min(ENERGY_MAX, (user.energy ?? 0) + regenCount * ENERGY_PER_REGEN);
+      const secondsUsed = regenCount * ENERGY_REGEN_SPEED;
+      const newLastUpdate = new Date(lastUpdate.getTime() + secondsUsed * 1000);
       updateUserEnergy(user.id, newEnergy, newLastUpdate.toISOString());
       updateUser({ ...user, energy: newEnergy, lastEnergyUpdate: newLastUpdate.toISOString() });
-      setEnergyPopup(`${Math.floor(diffSeconds / 60)} dakika içinde ${regenCount} enerji kazandınız!`);
-      setTimeout(() => setEnergyPopup(null), 5000);
+      // setEnergyPopup(`${Math.floor(diffSeconds / 60)} dakika içinde ${regenCount} enerji kazandınız!`);
+      // setTimeout(() => setEnergyPopup(null), 5000);
       
       const now2 = new Date();
       const diffMs2 = now2.getTime() - newLastUpdate.getTime();
@@ -140,8 +140,8 @@ const Home: React.FC = React.memo(() => {
             const newLastUpdate = new Date().toISOString();
             updateUserEnergy(currentUser.id, newEnergy, newLastUpdate);
             updateUser({ ...currentUser, energy: newEnergy, lastEnergyUpdate: newLastUpdate });
-            setEnergyPopup(`${Math.floor(ENERGY_REGEN_SPEED / 60)} dakika geçti, 1 enerji kazandınız!`);
-            setTimeout(() => setEnergyPopup(null), 4000);
+            // setEnergyPopup(`${Math.floor(ENERGY_REGEN_SPEED / 60)} dakika geçti, 1 enerji kazandınız!`);
+            // setTimeout(() => setEnergyPopup(null), 4000);
           }
           return ENERGY_REGEN_SPEED;
         }
@@ -164,7 +164,7 @@ const Home: React.FC = React.memo(() => {
   useEffect(() => {
     if (refreshUser) {
       refreshUser().then(() => {
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env['NODE_ENV'] === 'development') {
           console.log('Home - Joker hakları güncellendi:', user?.jokers);
         }
       });
@@ -173,14 +173,14 @@ const Home: React.FC = React.memo(() => {
 
   // Joker haklarını kontrol et
   useEffect(() => {
-    if (user?.jokers && process.env.NODE_ENV === 'development') {
+    if (user?.jokers && process.env['NODE_ENV'] === 'development') {
       console.log('Home - Mevcut joker hakları:', user.jokers);
       console.log('Home - Joker kullanım sayıları:', user.jokersUsed);
     }
   }, [user?.jokers, user?.jokersUsed]);
 
   const handleEditProfile = useCallback(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       console.log("Profil düzenleme sayfasına git...");
     }
     navigate('/edit-profile');
@@ -256,7 +256,7 @@ const Home: React.FC = React.memo(() => {
         }}>
           {/* Sağ üst köşeye sadece darkmode switch */}
           <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
-            <DarkModeSwitch />
+            {/* <DarkModeSwitch /> */}
           </div>
           {/* Profil/Seviye Kartı */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>

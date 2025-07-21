@@ -1,30 +1,30 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { updateXpLevelRank, jokerKullan } from '../../contexts/AuthContext';
 import './Quiz.css';
-import { User } from '../../types/index';
+// import { User } from '../../types/index';
 import { usePerformanceMonitor } from '../../utils/performance';
 import { useABTest } from '../../utils/abTesting';
-import BackButton from '../common/BackButton';
-import {
-  TYT_SUBJECTS, AYT_SAY_SUBJECTS, AYT_EA_SUBJECTS, AYT_SOZ_SUBJECTS,
-  TYT_TR_ALT_KONULAR, TYT_DIN_ALT_KONULAR, TYT_FIZIK_ALT_KONULAR, TYT_KIMYA_ALT_KONULAR, TYT_BIYOLOJI_ALT_KONULAR, TYT_COGRAFYA_ALT_KONULAR, TYT_TARIH_ALT_KONULAR,
-  AYT_EDEBIYAT_ALT_KONULAR, AYT_FELSEFE_ALT_KONULAR, AYT_BIYOLOJI_ALT_KONULAR, AYT_KIMYA_ALT_KONULAR, AYT_FIZIK_ALT_KONULAR, AYT_COGRAFYA_ALT_KONULAR
-} from '../../utils/constants';
-import * as confetti from 'canvas-confetti';
+// import BackButton from '../common/BackButton';
+// import {
+//   TYT_SUBJECTS, AYT_SAY_SUBJECTS, AYT_EA_SUBJECTS, AYT_SOZ_SUBJECTS,
+//   TYT_TR_ALT_KONULAR, TYT_DIN_ALT_KONULAR, TYT_FIZIK_ALT_KONULAR, TYT_KIMYA_ALT_KONULAR, TYT_BIYOLOJI_ALT_KONULAR, TYT_COGRAFYA_ALT_KONULAR, TYT_TARIH_ALT_KONULAR,
+//   AYT_EDEBIYAT_ALT_KONULAR, AYT_FELSEFE_ALT_KONULAR, AYT_BIYOLOJI_ALT_KONULAR, AYT_KIMYA_ALT_KONULAR, AYT_FIZIK_ALT_KONULAR, AYT_COGRAFYA_ALT_KONULAR
+// } from '../../utils/constants';
+import confetti from 'canvas-confetti';
 
 // Dynamic imports for heavy components
-const JokerPanel = lazy(() => import("./JokerPanel"));
+// const JokerPanel = lazy(() => import("./JokerPanel"));
 
 // Loading component for dynamic imports
-const DynamicComponentLoader = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<div className="loading-spinner">Yükleniyor...</div>}>
-    {children}
-  </Suspense>
-);
+// const DynamicComponentLoader = ({ children }: { children: React.ReactNode }) => (
+//   <Suspense fallback={<div className="loading-spinner">Yükleniyor...</div>}>
+//     {children}
+//   </Suspense>
+// );
 
 interface Question {
   id: string;
@@ -47,35 +47,35 @@ const JOKER_ICONS = {
 };
 
 // Yardımcı fonksiyon: konu ID'sinden konu adını bul
-function getSubjectNameById(subjectId: string): string {
-  const allSubjects = [
-    ...TYT_SUBJECTS,
-    ...AYT_SAY_SUBJECTS,
-    ...AYT_EA_SUBJECTS,
-    ...AYT_SOZ_SUBJECTS,
-    ...TYT_TR_ALT_KONULAR,
-    ...TYT_DIN_ALT_KONULAR,
-    ...TYT_FIZIK_ALT_KONULAR,
-    ...TYT_KIMYA_ALT_KONULAR,
-    ...TYT_BIYOLOJI_ALT_KONULAR,
-    ...TYT_COGRAFYA_ALT_KONULAR,
-    ...TYT_TARIH_ALT_KONULAR,
-    ...AYT_EDEBIYAT_ALT_KONULAR,
-    ...AYT_FELSEFE_ALT_KONULAR,
-    ...AYT_BIYOLOJI_ALT_KONULAR,
-    ...AYT_KIMYA_ALT_KONULAR,
-    ...AYT_FIZIK_ALT_KONULAR,
-    ...AYT_COGRAFYA_ALT_KONULAR
-  ];
-  const found = allSubjects.find(subj => subj.id === subjectId);
-  return found ? found.label : subjectId;
-}
+// function getSubjectNameById(subjectId: string): string {
+//   const allSubjects = [
+//     ...TYT_SUBJECTS,
+//     ...AYT_SAY_SUBJECTS,
+//     ...AYT_EA_SUBJECTS,
+//     ...AYT_SOZ_SUBJECTS,
+//     ...TYT_TR_ALT_KONULAR,
+//     ...TYT_DIN_ALT_KONULAR,
+//     ...TYT_FIZIK_ALT_KONULAR,
+//     ...TYT_KIMYA_ALT_KONULAR,
+//     ...TYT_BIYOLOJI_ALT_KONULAR,
+//     ...TYT_COGRAFYA_ALT_KONULAR,
+//     ...TYT_TARIH_ALT_KONULAR,
+//     ...AYT_EDEBIYAT_ALT_KONULAR,
+//     ...AYT_FELSEFE_ALT_KONULAR,
+//     ...AYT_BIYOLOJI_ALT_KONULAR,
+//     ...AYT_KIMYA_ALT_KONULAR,
+//     ...AYT_FIZIK_ALT_KONULAR,
+//     ...AYT_COGRAFYA_ALT_KONULAR
+//   ];
+//   const found = allSubjects.find(subj => subj.id === subjectId);
+//   return found ? found.label : subjectId;
+// }
 
 const Quiz: React.FC = () => {
   const { subTopic, testNumber } = useParams<{ subTopic: string; testNumber: string }>();
   const navigate = useNavigate();
   const { updateUserStats, user, updateUser, refreshUser } = useAuth();
-  const { measureAsync, measureSync, recordMetric } = usePerformanceMonitor();
+  const { measureAsync, recordMetric } = usePerformanceMonitor();
   
   // AB Testing
   const { variant: uiVariant, config: uiConfig, trackEvent: trackUIEvent } = useABTest('quiz_ui_variant');
@@ -92,7 +92,7 @@ const Quiz: React.FC = () => {
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [isDoubleAnswerActive, setIsDoubleAnswerActive] = useState(false);
-  const [isAutoCorrectActive, setIsAutoCorrectActive] = useState(false);
+  // const [isAutoCorrectActive, setIsAutoCorrectActive] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [quizDuration, setQuizDuration] = useState(0);
   const [earnedXp, setEarnedXp] = useState(0);
@@ -263,6 +263,7 @@ const Quiz: React.FC = () => {
     } else if (timeLeft === 0) {
       finishQuiz();
     }
+    return undefined;
   }, [timeLeft, isLoading, questions.length]);
 
   // Format time display - memoized
@@ -281,14 +282,16 @@ const Quiz: React.FC = () => {
       setSelectedAnswers(newSelected);
       if (newSelected.length === 2) {
         setIsAnswered(true);
-        if (newSelected.includes(questions[currentQuestionIndex].correctAnswer)) {
+        const currentQuestion = questions[currentQuestionIndex];
+        if (currentQuestion && currentQuestion.correctAnswer !== undefined && newSelected.includes(currentQuestion.correctAnswer)) {
           setScore(prev => prev + 1);
         }
       }
     } else {
       setSelectedAnswer(answerIndex);
       setIsAnswered(true);
-      if (answerIndex === questions[currentQuestionIndex].correctAnswer) {
+      const currentQuestion = questions[currentQuestionIndex];
+      if (currentQuestion && currentQuestion.correctAnswer !== undefined && answerIndex === currentQuestion.correctAnswer) {
         setScore(prev => prev + 1);
       }
     }
@@ -302,7 +305,7 @@ const Quiz: React.FC = () => {
       setIsAnswered(false);
       setSelectedAnswers([]);
       setIsDoubleAnswerActive(false);
-      setIsAutoCorrectActive(false);
+      // setIsAutoCorrectActive(false);
     } else {
       finishQuiz(score);
     }
@@ -354,7 +357,7 @@ const Quiz: React.FC = () => {
       
       // Eğer test daha önce çözülmüşse attempts'ı artır
       if (currentTopicResults[testId]) {
-        newTestResult.attempts = currentTopicResults[testId].attempts + 1;
+        newTestResult.attempts = (currentTopicResults[testId]?.attempts || 0) + 1;
       }
 
       // Test sonuçlarını güncelle
@@ -414,7 +417,6 @@ const Quiz: React.FC = () => {
       await updateUserStats(
         finalScore,
         questions.length,
-        subTopic || '',
         600 - timeLeft // duration
       );
       
@@ -425,7 +427,6 @@ const Quiz: React.FC = () => {
           user,
           correct: finalScore,
           total: questions.length,
-          testNumber: parseInt(testNumber || '1')
         });
         if (xpResult) {
           console.log('XP Sonucu:', xpResult);
@@ -539,9 +540,9 @@ const Quiz: React.FC = () => {
         setSelectedAnswers([]);
       }
       if (type === 'autoCorrect') {
-        setIsAutoCorrectActive(true);
+        // setIsAutoCorrectActive(true);
         // Otomatik doğru kabul et ama bir sonraki soruya geçme
-        setSelectedAnswer(questions[currentQuestionIndex].correctAnswer);
+        setSelectedAnswer(questions[currentQuestionIndex]?.correctAnswer || 0);
         setIsAnswered(true);
         setScore(prev => prev + 1);
       }
@@ -555,15 +556,15 @@ const Quiz: React.FC = () => {
     setEliminatedOptions([]);
     setIsDoubleAnswerActive(false);
     setSelectedAnswers([]);
-    setIsAutoCorrectActive(false);
+    // setIsAutoCorrectActive(false);
   }, [currentQuestionIndex]);
 
   useEffect(() => {
     if (showStats) {
       const successRate = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
       if (successRate >= 70) {
-        if (typeof confetti.default === 'function') {
-          confetti.default({
+        if (typeof confetti === 'function') {
+          confetti({
             particleCount: 120,
             spread: 80,
             origin: { y: 0.6 },
@@ -1076,12 +1077,12 @@ const Quiz: React.FC = () => {
             Soru {currentQuestionIndex + 1}
           </div>
           <div className="question-text">
-            {currentQuestion.question}
+            {currentQuestion?.question || 'Soru yükleniyor...'}
           </div>
         </div>
         {/* Answer options */}
         <div className="answer-options">
-          {currentQuestion.options.map((option, index) => (
+          {currentQuestion?.options?.map((option, index) => (
             <button
               key={index}
               className={`answer-button ${
@@ -1106,7 +1107,7 @@ const Quiz: React.FC = () => {
           ))}
         </div>
         {/* Explanation (shown after answering) */}
-        {isAnswered && currentQuestion.explanation && (
+        {isAnswered && currentQuestion?.explanation && (
           <div className="explanation">
             <h4>Açıklama:</h4>
             <p>{currentQuestion.explanation}</p>

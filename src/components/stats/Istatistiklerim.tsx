@@ -7,41 +7,41 @@ import { UserStats } from '../../types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
-interface ChartData {
-  date: string;
-  correct: number;
-  incorrect: number;
-  successRate: number;
-}
+// interface ChartData {
+//   date: string;
+//   correct: number;
+//   incorrect: number;
+//   successRate: number;
+// }
 
-interface SubjectData {
-  name: string;
-  correct: number;
-  incorrect: number;
-  successRate: number;
-}
+// interface SubjectData {
+//   name: string;
+//   correct: number;
+//   incorrect: number;
+//   successRate: number;
+// }
 
 // Zaman aralığına göre dailyActivity verisini filtreleyen fonksiyon
-function filterDailyActivity(dailyActivity: { [date: string]: any }, range: 'week' | 'month' | '3months') {
-  if (!dailyActivity) return [];
-  const today = new Date();
-  let startDate = new Date();
-  if (range === 'week') {
-    startDate.setDate(today.getDate() - 6);
-  } else if (range === 'month') {
-    startDate.setDate(today.getDate() - 29);
-  } else if (range === '3months') {
-    startDate.setDate(today.getDate() - 89);
-  }
-  // Tarihleri sırala ve filtrele
-  return Object.entries(dailyActivity)
-    .map(([date, stats]) => ({ date, ...stats }))
-    .filter(item => {
-      const d = new Date(item.date);
-      return d >= startDate && d <= today;
-    })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-}
+// function filterDailyActivity(dailyActivity: { [date: string]: any }, range: 'week' | 'month' | '3months') {
+//   if (!dailyActivity) return [];
+//   const today = new Date();
+//   const startDate = new Date();
+//   if (range === 'week') {
+//     startDate.setDate(today.getDate() - 6);
+//   } else if (range === 'month') {
+//     startDate.setDate(today.getDate() - 29);
+//   } else if (range === '3months') {
+//     startDate.setDate(today.getDate() - 89);
+//   }
+//   // Tarihleri sırala ve filtrele
+//   return Object.entries(dailyActivity)
+//     .map(([date, stats]) => ({ date, ...stats }))
+//     .filter(item => {
+//       const d = new Date(item.date);
+//       return d >= startDate && d <= today;
+//     })
+//     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+// }
 
 // Yardımcı: Belirli bir aralık için tüm günleri dizi olarak döndür
 function getDateRangeArray(range: 'week' | 'month' | '3months') {
@@ -61,48 +61,48 @@ function getDateRangeArray(range: 'week' | 'month' | '3months') {
 const Istatistiklerim: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  // const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [timeData, setTimeData] = useState<{day: string, minutes: number}[]>([
-    { day: 'Pazartesi', minutes: 30 },
-    { day: 'Salı', minutes: 45 },
-    { day: 'Çarşamba', minutes: 20 },
-    { day: 'Perşembe', minutes: 50 },
-    { day: 'Cuma', minutes: 35 },
-    { day: 'Cumartesi', minutes: 60 },
-    { day: 'Pazar', minutes: 25 },
-  ]);
+  // const [timeData, setTimeData] = useState<{day: string, minutes: number}[]>([
+  //   { day: 'Pazartesi', minutes: 30 },
+  //   { day: 'Salı', minutes: 45 },
+  //   { day: 'Çarşamba', minutes: 20 },
+  //   { day: 'Perşembe', minutes: 50 },
+  //   { day: 'Cuma', minutes: 35 },
+  //   { day: 'Cumartesi', minutes: 60 },
+  //   { day: 'Pazar', minutes: 25 },
+  // ]);
   const [selectedRange, setSelectedRange] = useState<'week' | 'month' | '3months'>('week');
 
   // Karanlık mod kontrolü
   const isDark = typeof window !== 'undefined' && document.body.classList.contains('dark');
 
   // Memoized subjects array
-  const subjects = React.useMemo(() => [
-    { id: 'all', label: 'Tüm Dersler' },
-    { id: 'tyt-turkce', label: 'TYT Türkçe' },
-    { id: 'tyt-tarih', label: 'TYT Tarih' },
-    { id: 'tyt-cografya', label: 'TYT Coğrafya' },
-    { id: 'tyt-felsefe', label: 'TYT Felsefe' },
-    { id: 'tyt-din', label: 'TYT Din' },
-    { id: 'tyt-matematik', label: 'TYT Matematik' },
-    { id: 'tyt-fizik', label: 'TYT Fizik' },
-    { id: 'tyt-kimya', label: 'TYT Kimya' },
-    { id: 'tyt-biyoloji', label: 'TYT Biyoloji' },
-    { id: 'ayt-matematik', label: 'AYT Matematik' },
-    { id: 'ayt-fizik', label: 'AYT Fizik' },
-    { id: 'ayt-kimya', label: 'AYT Kimya' },
-    { id: 'ayt-biyoloji', label: 'AYT Biyoloji' },
-    { id: 'ayt-edebiyat', label: 'AYT Edebiyat' },
-    { id: 'ayt-tarih', label: 'AYT Tarih' },
-    { id: 'ayt-cografya', label: 'AYT Coğrafya' },
-    { id: 'ayt-felsefe', label: 'AYT Felsefe' },
-    { id: 'ayt-din', label: 'AYT Din' },
-  ], []);
+  // const subjects = React.useMemo(() => [
+  //   { id: 'all', label: 'Tüm Dersler' },
+  //   { id: 'tyt-turkce', label: 'TYT Türkçe' },
+  //   { id: 'tyt-tarih', label: 'TYT Tarih' },
+  //   { id: 'tyt-cografya', label: 'TYT Coğrafya' },
+  //   { id: 'tyt-felsefe', label: 'TYT Felsefe' },
+  //   { id: 'tyt-din', label: 'TYT Din' },
+  //   { id: 'tyt-matematik', label: 'TYT Matematik' },
+  //   { id: 'tyt-fizik', label: 'TYT Fizik' },
+  //   { id: 'tyt-kimya', label: 'TYT Kimya' },
+  //   { id: 'tyt-biyoloji', label: 'TYT Biyoloji' },
+  //   { id: 'ayt-matematik', label: 'AYT Matematik' },
+  //   { id: 'ayt-fizik', label: 'AYT Fizik' },
+  //   { id: 'ayt-kimya', label: 'AYT Kimya' },
+  //   { id: 'ayt-biyoloji', label: 'AYT Biyoloji' },
+  //   { id: 'ayt-edebiyat', label: 'AYT Edebiyat' },
+  //   { id: 'ayt-tarih', label: 'AYT Tarih' },
+  //   { id: 'ayt-cografya', label: 'AYT Coğrafya' },
+  //   { id: 'ayt-felsefe', label: 'AYT Felsefe' },
+  //   { id: 'ayt-din', label: 'AYT Din' },
+  // ], []);
 
   // Memoized colors array
-  const COLORS = React.useMemo(() => ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'], []);
+  // const COLORS = React.useMemo(() => ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'], []);
 
   // Modern ve okunaklı özel tooltip
   const CustomChartTooltip = ({ active, payload, label }: any) => {
@@ -128,8 +128,8 @@ const Istatistiklerim: React.FC = React.memo(() => {
   const experience = userStats?.experience || 0;
   const level = userStats?.level || 1;
   const rank = userStats?.rank || '';
-  const totalQuizTime = userStats?.totalQuizTime || 0; // saniye
-  const totalSessionTime = userStats?.totalSessionTime || 0; // dakika
+  // const totalQuizTime = userStats?.totalQuizTime || 0; // saniye
+  // const totalSessionTime = userStats?.totalSessionTime || 0; // dakika
   const successRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
 
   // Zaman hesaplamaları - quizHistory kaldırıldığı için sadeleştirildi
@@ -162,13 +162,13 @@ const Istatistiklerim: React.FC = React.memo(() => {
   const todayQuote = MOTIVATION_QUOTES[todayIdx];
 
   // dailyActivity verisini seçilen aralığa göre filtrele
-  const filteredActivity = filterDailyActivity(userStats?.dailyActivity || {}, selectedRange);
+  // const filteredActivity = filterDailyActivity(userStats?.dailyActivity || {}, selectedRange);
 
   // Grafik için veri hazırlama (eksik günler 0'lı olacak)
   const dateArray = getDateRangeArray(selectedRange);
   const chartData = dateArray.map(dateObj => {
     const dateKey = dateObj.toISOString().split('T')[0];
-    const activity = userStats?.dailyActivity?.[dateKey] || { questionsSolved: 0, correctAnswers: 0 };
+    const activity = userStats?.dailyActivity?.[dateKey!] || { questionsSolved: 0, correctAnswers: 0 };
     return {
       date: dateObj.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }), // örn. 13 Tem
       solved: activity.questionsSolved || 0,

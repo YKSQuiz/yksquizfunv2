@@ -26,7 +26,7 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   logout: () => void;
-  updateUserStats: (correct: number, total: number, subjectId?: string, duration?: number) => void;
+  updateUserStats: (correct: number, total: number, duration?: number) => void;
   clearUserStats: () => Promise<void>;
   updateUser: (updatedUser: User) => void;
   refreshUser: () => Promise<void>;
@@ -49,7 +49,7 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
   const userRef = doc(db, 'users', firebaseUser.uid);
   const userSnap = await getDoc(userRef);
   if (userSnap.exists()) {
-    let userData = userSnap.data() as User;
+    const userData = userSnap.data() as User;
     let needsUpdate = false;
     if (!userData.jokers) {
       userData.jokers = {
@@ -115,7 +115,7 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
       id: firebaseUser.uid,
       displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Kullanıcı',
       email: firebaseUser.email || '',
-      avatar: firebaseUser.displayName ? firebaseUser.displayName[0].toUpperCase() : (firebaseUser.email ? firebaseUser.email[0].toUpperCase() : 'K'),
+      avatar: firebaseUser.displayName ? firebaseUser.displayName[0]?.toUpperCase() || 'K' : (firebaseUser.email ? firebaseUser.email[0]?.toUpperCase() || 'K' : 'K'),
       stats: {
         totalQuizzes: 0,
         correctAnswers: 0,
@@ -187,7 +187,9 @@ export function getXpForLevel(level: number): number {
 
 // Seviyeye göre rütbe bulma
 export function getRankForLevel(level: number): string {
-  let rank = RANKS[0].name;
+  if (RANKS.length === 0) return "Bilinmeyen";
+  
+  let rank = RANKS[0]!.name;
   for (const r of RANKS) {
     if (level >= r.level) {
       rank = r.name;
@@ -203,12 +205,10 @@ export async function updateXpLevelRank({
   user,
   correct,
   total,
-  testNumber
 }: {
   user: User,
   correct: number,
   total: number,
-  testNumber: number
 }): Promise<{
   newXp: number,
   newLevel: number,
@@ -222,7 +222,7 @@ export async function updateXpLevelRank({
   // XP hesaplama
   const percent = total > 0 ? (correct / total) * 100 : 0;
   // XP ve coin hesaplama (kurallara göre)
-  let baseXp = correct * 20;
+  const baseXp = correct * 20;
   let gainedXp = baseXp;
   if (percent === 100) {
     gainedXp = baseXp * 2;
@@ -233,9 +233,9 @@ export async function updateXpLevelRank({
   }
   console.log('updateXpLevelRank sonucu', { gainedXp, percent });
 
-  let newXp = (user.stats.experience || 0) + gainedXp;
+  const newXp = (user.stats.experience || 0) + gainedXp;
   let newLevel = 1;
-  let maxLevel = 100;
+  const maxLevel = 100;
   for (let lvl = 1; lvl <= maxLevel; lvl++) {
     if (newXp < getXpForLevel(lvl + 1)) {
       newLevel = lvl;
@@ -321,7 +321,6 @@ export async function jokerKullan(
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const sessionStartRef = React.useRef<number | null>(null);
   const sessionAccumulatedRef = React.useRef<number>(0); // Henüz kaydedilmemiş süre (ms)
   const sessionIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -380,6 +379,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     } else {
       if (sessionIntervalRef.current) clearInterval(sessionIntervalRef.current);
+      return undefined;
     }
   }, [user]);
 
@@ -417,7 +417,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: result.user.uid,
         displayName: name,
         email,
-        avatar: name[0].toUpperCase(),
+        avatar: name && name.length > 0 ? name[0]?.toUpperCase() || 'U' : 'U',
         stats: {
           totalQuizzes: 0,
           correctAnswers: 0,
@@ -491,7 +491,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
   };
 
-  const updateUserStats = async (correct: number, total: number, subjectId?: string, duration?: number) => {
+  const updateUserStats = async (correct: number, total: number, duration?: number) => {
     if (user) {
       const userRef = doc(db, 'users', user.id);
       // Istanbul saatine göre tarih al
@@ -516,7 +516,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Günlük aktivite
       const dailyKey = `stats.dailyActivity.${today}`;
-      const currentDaily = user.stats.dailyActivity?.[today] || { questionsSolved: 0, correctAnswers: 0 };
+      const currentDaily = user.stats.dailyActivity?.[today as string] || { questionsSolved: 0, correctAnswers: 0 };
       updates[dailyKey] = {
         questionsSolved: currentDaily.questionsSolved + total,
         correctAnswers: currentDaily.correctAnswers + correct
@@ -527,7 +527,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newExperience = (user.stats.experience || 0) + expGained;
       // Seviye hesaplama (getXpForLevel ile)
       let newLevel = 1;
-      let maxLevel = 100;
+      const maxLevel = 100;
       for (let lvl = 1; lvl <= maxLevel; lvl++) {
         if (newExperience < getXpForLevel(lvl + 1)) {
           newLevel = lvl;

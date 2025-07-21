@@ -54,9 +54,9 @@ const EditProfile: React.FC = () => {
   const getRandomAvatar = () => {
     const categories = Object.keys(avatarCategories);
     const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-    const avatars = avatarCategories[randomCategory];
-    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
-    setSelectedCategory(randomCategory);
+    const avatars = avatarCategories[randomCategory!] || [];
+    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)] || '👤';
+    setSelectedCategory(randomCategory!);
     setAvatar(randomAvatar);
     setShowAvatarAnimation(true);
     setTimeout(() => setShowAvatarAnimation(false), 500);
@@ -315,10 +315,10 @@ const EditProfile: React.FC = () => {
                 fontWeight: '600',
                 color: '#764ba2'
               }}>
-                {selectedCategory} ({avatarCategories[selectedCategory].length} seçenek)
+                {selectedCategory} ({avatarCategories[selectedCategory]?.length || 0} seçenek)
               </span>
             </div>
-            {avatarCategories[selectedCategory].map((emoji: string, index: number) => (
+            {avatarCategories[selectedCategory]?.map((emoji: string, index: number) => (
               <button
                 key={index}
                 onClick={() => handleAvatarSelect(emoji)}

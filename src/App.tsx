@@ -8,7 +8,7 @@ import TestSelection from './components/quiz/TestSelection';
 import { SubjectSelector, AltKonuSelector } from './components/subjects';
 import Market from './components/market/Market';
 import TestPage from './components/test/TestPage';
-import { FiArrowLeft } from "react-icons/fi";
+// import { FiArrowLeft } from "react-icons/fi";
 import { initializeABTests } from './utils/abTesting';
 
 // Lazy load heavy components

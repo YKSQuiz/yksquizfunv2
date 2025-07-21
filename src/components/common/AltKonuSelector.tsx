@@ -9,23 +9,22 @@ interface AltKonuSelectorProps {
 }
 
 const AltKonuSelector: React.FC<AltKonuSelectorProps> = ({
-  subjectId,
-  onAltKonuSelect
+  subjectId
 }) => {
   const altKonular = altKonularConfig[subjectId] || [];
 
-  const handleAltKonuClick = (altKonuId: string) => {
-    if (onAltKonuSelect) {
-      onAltKonuSelect(altKonuId);
-    }
-  };
+  // const handleAltKonuClick = (altKonuId: string) => {
+  //   if (onAltKonuSelect) {
+  //     onAltKonuSelect(altKonuId);
+  //   }
+  // };
 
   // Ders adını subjectId'den çıkar
   const getSubjectName = (id: string) => {
     const parts = id.split('-');
     if (parts.length >= 2) {
-      const examType = parts[0].toUpperCase();
-      const subjectName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+      const examType = parts[0]?.toUpperCase() || '';
+      const subjectName = (parts[1]?.charAt(0)?.toUpperCase() || '') + (parts[1]?.slice(1) || '');
       return `${examType} ${subjectName}`;
     }
     return id;

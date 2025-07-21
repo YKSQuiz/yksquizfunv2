@@ -1,59 +1,55 @@
-import React, { useEffect } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../services/firebase';
-import { User } from '../../types/index';
+import React from "react";
 
-const JOKER_ICONS = {
-  eliminate: "➗",
-  extraTime: "⏰",
-  doubleAnswer: "2️⃣",
-  autoCorrect: "✅",
-};
-const JOKER_LABELS = {
-  eliminate: "2 Şık Eleme",
-  extraTime: "Ekstra 60sn",
-  doubleAnswer: "Çift Cevap",
-  autoCorrect: "Doğru Kabul",
-};
+interface JokerPanelProps {
+  jokers: any;
+  onUseJoker: (type: string) => void;
+  onPurchaseJoker: (type: string) => void;
+  isLoading?: boolean;
+}
 
-const JOKER_TYPES = ["eliminate", "extraTime", "doubleAnswer", "autoCorrect"] as const;
-type JokerType = typeof JOKER_TYPES[number];
-
-export default function JokerPanel({ jokers, jokersUsed, onUseJoker }: {
-  jokers: Record<JokerType, { count: number }>;
-  jokersUsed: Record<JokerType, number>;
-  onUseJoker: (type: JokerType) => void;
-}) {
+const JokerPanel: React.FC<JokerPanelProps> = ({ jokers, onUseJoker, onPurchaseJoker, isLoading = false }) => {
   return (
     <div className="joker-panel">
-      {JOKER_TYPES.map((type) => (
-        <div key={type} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <button
-            disabled={jokers[type].count === 0}
-            onClick={() => onUseJoker(type)}
-            title={JOKER_LABELS[type]}
-            style={{
-              fontSize: 24,
-              padding: "10px 18px",
-              borderRadius: 12,
-              border: "2px solid #764ba2",
-              background: jokers[type].count === 0 ? "#eee" : "#fff",
-              cursor: jokers[type].count === 0 ? "not-allowed" : "pointer",
-              position: "relative",
-              minWidth: 60,
-            }}
-          >
-            <span>{JOKER_ICONS[type]}</span>
-            <span style={{
-              position: "absolute", top: 2, right: 8, fontSize: 14, color: "#764ba2", fontWeight: 700
-            }}>{jokers[type].count}</span>
-          </button>
-          <span style={{ fontSize: 12, color: "#764ba2", marginTop: 2 }}>
-            Kullanıldı: {jokersUsed[type] || 0}
-          </span>
-        </div>
-      ))}
+      <h3>Joker Hakları</h3>
+      <div className="joker-grid">
+        {Object.entries(jokers).map(([type, joker]: [string, any]) => (
+          <div key={type} className="joker-item">
+            <div className="joker-icon">
+              {type === 'eliminate' && '➗'}
+              {type === 'extraTime' && '⏰'}
+              {type === 'doubleAnswer' && '2️⃣'}
+              {type === 'autoCorrect' && '✅'}
+            </div>
+            <div className="joker-info">
+              <span className="joker-name">
+                {type === 'eliminate' && 'Elimine Et'}
+                {type === 'extraTime' && 'Ekstra Süre'}
+                {type === 'doubleAnswer' && 'Çift Cevap'}
+                {type === 'autoCorrect' && 'Otomatik Düzelt'}
+              </span>
+              <span className="joker-count">{joker.count}</span>
+            </div>
+            <div className="joker-actions">
+              <button 
+                onClick={() => onUseJoker(type)}
+                disabled={joker.count <= 0 || isLoading}
+                className="joker-use-btn"
+              >
+                Kullan
+              </button>
+              <button 
+                onClick={() => onPurchaseJoker(type)}
+                disabled={isLoading}
+                className="joker-purchase-btn"
+              >
+                Satın Al
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
-} 
+};
+
+export default JokerPanel; 

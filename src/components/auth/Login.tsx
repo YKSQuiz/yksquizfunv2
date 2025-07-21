@@ -70,9 +70,9 @@ const Login: React.FC = () => {
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
-          const userData = userDoc.data();
+          const userData = userDoc?.data();
           // Root level totalSessionTime'ı kontrol et, yoksa stats içindekini al
-          const sessionTime = userData.totalSessionTime || userData.stats?.totalSessionTime || 0;
+          const sessionTime = userData?.['totalSessionTime'] || userData?.['stats']?.totalSessionTime || 0;
           setTotalSessionTime(sessionTime);
         } else {
           setTotalSessionTime(null);

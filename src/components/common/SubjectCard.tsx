@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import './SubjectStyles.css';
 
 interface SubjectCardProps {
-  id: string;
   label: string;
   icon: string;
   color: string;
@@ -12,7 +11,6 @@ interface SubjectCardProps {
 }
 
 const SubjectCard: React.FC<SubjectCardProps> = ({
-  id,
   label,
   icon,
   color,

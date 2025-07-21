@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import BackButton from '../common/BackButton';
 import { useAuth } from '../../contexts/AuthContext';
 import { MarketItem } from '../../types';
@@ -88,7 +88,7 @@ const SegmentedProgressBar: React.FC<{
   unit: string;
 }> = React.memo(({ upgrades, currentValue, maxValue, onUpgrade, title, subtitle, unit }) => {
   // Progress hesaplamasını düzelt
-  const minValue = upgrades[0].value;
+  const minValue = upgrades[0]?.value || 0;
   const progress = Math.min(((currentValue - minValue) / (maxValue - minValue)) * 100, 100);
 
   return (
@@ -103,7 +103,7 @@ const SegmentedProgressBar: React.FC<{
       
       <div className="segmented-progress-container">
         <div className="segmented-progress-bar">
-          {upgrades.map((upgrade, index) => (
+          {upgrades.map((upgrade) => (
             <div
               key={upgrade.level}
               className={`progress-segment ${
@@ -147,7 +147,7 @@ const SegmentedProgressBar: React.FC<{
 });
 
 const Market: React.FC = React.memo(() => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'joker' | 'energy'>('joker');
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
