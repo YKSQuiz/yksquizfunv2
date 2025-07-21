@@ -8,6 +8,7 @@ import './Quiz.css';
 import { User } from '../../types/index';
 import { usePerformanceMonitor } from '../../utils/performance';
 import { useABTest } from '../../utils/abTesting';
+import BackButton from '../common/BackButton';
 import {
   TYT_SUBJECTS, AYT_SAY_SUBJECTS, AYT_EA_SUBJECTS, AYT_SOZ_SUBJECTS,
   TYT_TR_ALT_KONULAR, TYT_DIN_ALT_KONULAR, TYT_FIZIK_ALT_KONULAR, TYT_KIMYA_ALT_KONULAR, TYT_BIYOLOJI_ALT_KONULAR, TYT_COGRAFYA_ALT_KONULAR, TYT_TARIH_ALT_KONULAR,
@@ -307,19 +308,117 @@ const Quiz: React.FC = () => {
     }
   }, [currentQuestionIndex, questions.length, score]);
 
+  // Test sonucu kaydetme fonksiyonu - Sıfırdan yazıldı
+  const saveTestResult = async (finalScore: number, totalQuestions: number) => {
+    if (!user || !subTopic || !testNumber) {
+      console.error('❌ Test sonucu kaydedilemedi: Gerekli parametreler eksik');
+      return;
+    }
+
+    try {
+      // Konu anahtarı oluştur - Anahtar uyumsuzluğunu düzelt
+      const mainTopic = window.location.pathname.split('/')[1];
+      let subjectTopicKey = `${mainTopic}_${subTopic}`;
+      
+      // Eğer mainTopic "turkce" ise, Firestore'daki "quiz" anahtarını kullan
+      if (mainTopic === 'turkce') {
+        subjectTopicKey = `quiz_${subTopic}`;
+      }
+      const testId = testNumber;
+      
+      // Başarı hesaplama (7/10 = %70)
+      const percentage = Math.round((finalScore / totalQuestions) * 100);
+      const completed = finalScore >= 7; // 7 doğru kesin eşik
+
+      console.log('🎯 Test Sonucu Kaydediliyor:', {
+        finalScore,
+        totalQuestions,
+        percentage,
+        completed,
+        subjectTopicKey,
+        testId
+      });
+
+      // Yeni test sonucu
+      const newTestResult = {
+        score: finalScore,
+        total: totalQuestions,
+        percentage: percentage,
+        completed: completed,
+        attempts: 1
+      };
+
+      // Mevcut test sonuçlarını al
+      const currentTestResults = user.testResults || {};
+      const currentTopicResults = currentTestResults[subjectTopicKey] || {};
+      
+      // Eğer test daha önce çözülmüşse attempts'ı artır
+      if (currentTopicResults[testId]) {
+        newTestResult.attempts = currentTopicResults[testId].attempts + 1;
+      }
+
+      // Test sonuçlarını güncelle
+      const updatedTopicResults = {
+        ...currentTopicResults,
+        [testId]: newTestResult
+      };
+
+      const updatedTestResults = {
+        ...currentTestResults,
+        [subjectTopicKey]: updatedTopicResults
+      };
+
+      // Firestore'a kaydet (ana veri kaynağı)
+      try {
+        const userRef = doc(db, 'users', user.id);
+        await updateDoc(userRef, {
+          testResults: updatedTestResults
+        });
+        console.log('✅ Firestore\'a test sonuçları kaydedildi');
+      } catch (firestoreError) {
+        console.error('❌ Firestore hatası (testResults):', firestoreError);
+        throw new Error('Test sonucu kaydedilemedi');
+      }
+
+      // Local user state'ini güncelle
+      updateUser({
+        ...user,
+        testResults: updatedTestResults
+      });
+
+      console.log('✅ Local state güncellendi');
+      console.log('🎉 Test sonucu başarıyla kaydedildi:', newTestResult);
+
+      // Artık otomatik test açma sistemi kaldırıldı
+      // Test 2 ve sonrası için coin ile satın alma gerekli
+      if (completed) {
+        console.log('✅ Test başarıyla tamamlandı! Bir sonraki test için coin ile satın alma gerekli.');
+      } else {
+        console.log('❌ Test başarısız, bir sonraki test için önce bu testi başarıyla tamamlamanız gerekli.');
+      }
+    } catch (error) {
+      console.error('❌ Test sonucu kaydetme hatası:', error);
+    }
+  };
+
   // Finish quiz
   const finishQuiz = async (finalScore = score) => {
     try {
       setQuizDuration(600 - timeLeft);
       setShowStats(true);
-      // 1. İstatistikleri güncelle
+      
+      // 1. Test sonuçlarını kaydet
+      await saveTestResult(finalScore, questions.length);
+      
+      // 2. İstatistikleri güncelle
       await updateUserStats(
         finalScore,
         questions.length,
         subTopic || '',
         600 - timeLeft // duration
       );
-      // 2. XP, seviye ve rütbe güncelle
+      
+      // 3. XP, seviye ve rütbe güncelle
       let xpResult = null;
       if (user) {
         xpResult = await updateXpLevelRank({
@@ -342,9 +441,13 @@ const Quiz: React.FC = () => {
     }
   };
 
-  // Handle retry
+  // Handle retry - aynı test sayfasına yönlendir
   const handleRetry = () => {
-    window.location.reload();
+    if (subTopic && testNumber) {
+      navigate(`/quiz/${window.location.pathname.split('/')[1]}/${subTopic}/${testNumber}`);
+    } else {
+      navigate(-1); // Eğer parametreler yoksa geri dön
+    }
   };
 
   // Handle go back
@@ -520,6 +623,8 @@ const Quiz: React.FC = () => {
 
   if (showStats) {
     const successRate = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+    const isSuccessful = score >= 7; // 7 doğru kesin eşik
+    
     return (
       <div className="quiz-container">
         <div className="quiz-stats-card animated-stats-card"
@@ -540,6 +645,33 @@ const Quiz: React.FC = () => {
             animation: 'popInStats 1.1s cubic-bezier(.39,.575,.56,1.000)'
           }}>
           <h2 style={{color: '#764ba2', fontWeight: 900, marginBottom: 24, fontSize: 34, letterSpacing: 1}}>🎉 Quiz Sonuçları 🎉</h2>
+          
+          {/* Başarı Durumu Mesajı */}
+          <div style={{
+            padding: '16px 24px',
+            borderRadius: 16,
+            marginBottom: 24,
+            fontWeight: 800,
+            fontSize: 20,
+            background: isSuccessful 
+              ? 'linear-gradient(90deg, #d4edda 0%, #c3e6cb 100%)'
+              : 'linear-gradient(90deg, #f8d7da 0%, #f5c6cb 100%)',
+            color: isSuccessful ? '#155724' : '#721c24',
+            border: `3px solid ${isSuccessful ? '#28a745' : '#dc3545'}`,
+            boxShadow: `0 4px 16px ${isSuccessful ? '#28a74533' : '#dc354533'}`
+          }}>
+            {isSuccessful ? (
+              <>
+                <span style={{ fontSize: 24, marginRight: 8 }}>✅</span>
+                Başarı Sağlandı! (%{successRate})
+              </>
+            ) : (
+              <>
+                <span style={{ fontSize: 24, marginRight: 8 }}>❌</span>
+                Başarı Sağlanamadı! (%{successRate})
+              </>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 28 }}>
             {/* XP Kutusu */}
             <div style={{
@@ -585,7 +717,67 @@ const Quiz: React.FC = () => {
           </div>
           <div style={{fontSize: 22, marginBottom: 10}}>Başarı Oranı: <b style={{color: '#2563eb'}}>{successRate}%</b></div>
           <div style={{fontSize: 22, marginBottom: 10}}>Toplam Süre: <b style={{color: '#7c3aed'}}>{formatTime(quizDuration)}</b></div>
-          <button onClick={() => navigate('/')} style={{marginTop: 32, padding: '16px 44px', background: 'linear-gradient(90deg,#667eea,#764ba2)', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 800, fontSize: 22, cursor: 'pointer', boxShadow: '0 6px 24px #764ba244', letterSpacing: 1}}>Ana Sayfaya Dön</button>
+          
+          {/* Yönlendirme Butonları */}
+          <div style={{ display: 'flex', gap: 16, marginTop: 32, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {isSuccessful ? (
+              // Başarı sağlandıysa - Test seçim sayfasına dön
+              <button 
+                onClick={() => navigate(-1)} 
+                style={{
+                  padding: '16px 44px', 
+                  background: 'linear-gradient(90deg,#28a745,#20c997)', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: 16, 
+                  fontWeight: 800, 
+                  fontSize: 22, 
+                  cursor: 'pointer', 
+                  boxShadow: '0 6px 24px #28a74544', 
+                  letterSpacing: 1
+                }}
+              >
+                ✅ Testi Seçimine Dön
+              </button>
+            ) : (
+              // Başarı sağlanamadıysa - Test seçim ekranına dön
+              <button 
+                onClick={() => navigate(-1)} 
+                style={{
+                  padding: '16px 44px', 
+                  background: 'linear-gradient(90deg,#dc3545,#fd7e14)', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: 16, 
+                  fontWeight: 800, 
+                  fontSize: 22, 
+                  cursor: 'pointer', 
+                  boxShadow: '0 6px 24px #dc354544', 
+                  letterSpacing: 1
+                }}
+              >
+                🔄 Test Seçimine Dön
+              </button>
+            )}
+            
+            <button 
+              onClick={() => navigate('/')} 
+              style={{
+                padding: '16px 44px', 
+                background: 'linear-gradient(90deg,#667eea,#764ba2)', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 16, 
+                fontWeight: 800, 
+                fontSize: 22, 
+                cursor: 'pointer', 
+                boxShadow: '0 6px 24px #764ba244', 
+                letterSpacing: 1
+              }}
+            >
+              🏠 Ana Sayfaya Dön
+            </button>
+          </div>
           <div style={{marginTop: 28}}>
             <button onClick={() => setShowXpInfo(v => !v)} style={{background: 'none', border: '2px solid #764ba2', color: '#764ba2', borderRadius: 10, padding: '8px 24px', fontWeight: 700, cursor: 'pointer', fontSize: 17, marginBottom: 8, transition: 'all 0.2s'}}>
               XP Kazanma Kuralları {showXpInfo ? '▲' : '▼'}

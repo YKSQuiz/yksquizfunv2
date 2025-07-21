@@ -30,6 +30,9 @@ interface AuthContextType {
   clearUserStats: () => Promise<void>;
   updateUser: (updatedUser: User) => void;
   refreshUser: () => Promise<void>;
+  manualResetJokers: () => Promise<void>;
+  getTestResults: (subjectTopicKey: string) => any;
+  getUnlockedTests: (subjectTopicKey: string) => number[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -627,6 +630,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Test sonuçlarını alma fonksiyonu (Sadece Firestore)
+  const getTestResults = (subjectTopicKey: string) => {
+    if (!user?.id) return {};
+    
+    // Sadece Firestore'dan al
+    const firestoreResults = user.testResults?.[subjectTopicKey] || {};
+    console.log('📊 Firestore\'dan test sonuçları alındı:', {
+      subjectTopicKey,
+      firestoreResults
+    });
+    return firestoreResults;
+  };
+
+  // Açılan testleri alma fonksiyonu (Sadece Firestore)
+  const getUnlockedTests = (subjectTopicKey: string): number[] => {
+    if (!user?.id) return [];
+    
+    // Sadece Firestore'dan al
+    const firestoreUnlocked = user.unlockedTests?.[subjectTopicKey] || [];
+    console.log('🔓 Firestore\'dan açılan testler alındı:', {
+      subjectTopicKey,
+      firestoreUnlocked
+    });
+    return firestoreUnlocked;
+  };
+
   // Optimized context value
   const contextValue = useMemo(() => ({
     user,
@@ -639,7 +668,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearUserStats,
     updateUser,
     refreshUser,
-    manualResetJokers
+    manualResetJokers,
+    getTestResults,
+    getUnlockedTests
   }), [
     user, 
     isAuthenticated, 
@@ -651,7 +682,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearUserStats, 
     updateUser, 
     refreshUser, 
-    manualResetJokers
+    manualResetJokers,
+    getTestResults,
+    getUnlockedTests
   ]);
 
   return (

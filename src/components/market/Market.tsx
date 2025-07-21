@@ -392,6 +392,53 @@ const Market: React.FC = React.memo(() => {
     }
   }, [user, updateUser]);
 
+  // Enerji doldurma fonksiyonu
+  const handleEnergyRefill = useCallback(async () => {
+    if (!user) return;
+    
+    setPurchaseLoading('refill_energy');
+    setPurchaseMessage(null);
+
+    try {
+      const price = 100;
+      
+      // Coin kontrolü
+      if ((user.coins || 0) < price) {
+        setPurchaseMessage('Yetersiz coin! Enerjiyi doldurmak için 100 coin gerekli.');
+        return;
+      }
+
+      // Enerji zaten dolu mu kontrolü
+      if ((user.energy || 0) >= (user.energyLimit || 100)) {
+        setPurchaseMessage('Enerjin zaten dolu!');
+        return;
+      }
+
+      const userRef = doc(db, 'users', user.id);
+      const updates: any = {
+        coins: increment(-price),
+        energy: user.energyLimit || 100
+      };
+
+      await updateDoc(userRef, updates);
+
+      // Local user state'ini güncelle
+      const updatedUser = { ...user };
+      updatedUser.coins = (user.coins || 0) - price;
+      updatedUser.energy = user.energyLimit || 100;
+
+      updateUser(updatedUser);
+      setPurchaseMessage('✅ Enerji başarıyla dolduruldu!');
+      setTimeout(() => setPurchaseMessage(null), 3000);
+
+    } catch (error) {
+      console.error('Enerji doldurma hatası:', error);
+      setPurchaseMessage('❌ Enerji doldurma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setPurchaseLoading(null);
+    }
+  }, [user, updateUser]);
+
   if (!user) {
     return <div>Kullanıcı oturumu bulunamadı.</div>;
   }
@@ -495,16 +542,7 @@ const Market: React.FC = React.memo(() => {
                   </div>
                   
                   <button
-                    onClick={() => handleJokerPurchase({
-                      id: 'refill_energy',
-                      name: 'Enerjiyi Fulle',
-                      description: 'Enerjini maksimum seviyeye çıkar',
-                      price: 100,
-                      category: 'energy',
-                      type: 'refill',
-                      icon: '🔋',
-                      isAvailable: true
-                    })}
+                    onClick={handleEnergyRefill}
                     disabled={purchaseLoading === 'refill_energy'}
                     className={`energy-refill-button ${
                       purchaseLoading === 'refill_energy' ? 'loading' :

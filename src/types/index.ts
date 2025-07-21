@@ -16,6 +16,7 @@ export interface User {
   energyRegenSpeed?: number; // Enerji yenilenme hızı (saniye, varsayılan: 300)
   coins?: number; // Kullanıcının sahip olduğu coin miktarı
   unlockedTests?: { [subjectTopic: string]: number[] }; // Alt konu bazlı açılan testler {"turkce/sozcukte-anlam": [1,2], "matematik/temel-kavramlar": [1]}
+  testResults?: { [subjectTopic: string]: { [testId: string]: { score: number; total: number; percentage: number; completed: boolean; attempts: number } } }; // Test sonuçları
 }
 
 // Kullanıcı istatistikleri
