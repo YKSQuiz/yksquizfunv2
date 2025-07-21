@@ -3,6 +3,7 @@ import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 // import ProfileLevelCard from './ProfileLevelCard';
 import SettingsActions from '../common/SettingsActions';
+import '../profile/Profile.css';
 // import { doc, getDoc } from 'firebase/firestore';
 // import { db } from '../../services/firebase';
 // import { User } from '../../types/index';

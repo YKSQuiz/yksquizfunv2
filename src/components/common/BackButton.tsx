@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import './BackButton.css';
 
 interface BackButtonProps {
   variant?: 'default' | 'gradient' | 'minimal' | 'floating' | 'neon' | 'glass' | 'modern';

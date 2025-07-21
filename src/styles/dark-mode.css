@@ -1,0 +1,618 @@
+/* ===== DARK-MODE.CSS - Karanlık Mod Stilleri ===== */
+
+/* ===== GLOBAL.CSS'DEN TAŞINAN DARK MODE STİLLERİ ===== */
+
+/* Dark Mode Variables */
+:root {
+  /* Light Mode Colors (Default) */
+  --color-bg: #f8f9fa;
+  --color-bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color-card-bg: rgba(255,255,255,0.92);
+  --color-text: #22223b;
+  --color-primary: #667eea;
+  --color-secondary: #764ba2;
+  --color-accent: #f093fb;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #facc15;
+  --color-info: #2563eb;
+  /* Dark mode renkleri */
+  --color-bg-dark: #181a20;
+  --color-bg-gradient-dark: linear-gradient(135deg, #23243a 0%, #2d3250 100%);
+  --color-card-bg-dark: rgba(36, 38, 54, 0.98);
+  --color-text-dark: #f3f4f6;
+  --color-primary-dark: #8b9cf7;
+  --color-secondary-dark: #a084e8;
+  --color-accent-dark: #e0aaff;
+  --color-success-dark: #4ade80;
+  --color-error-dark: #f87171;
+  --color-warning-dark: #fde047;
+  --color-info-dark: #60a5fa;
+}
+
+body.dark {
+  background: var(--color-bg-gradient-dark);
+  color: var(--color-text-dark);
+}
+
+.card.dark, .profile-card.dark, .stat-card.dark, .joker-card.dark {
+  background: var(--color-card-bg-dark);
+  color: var(--color-text-dark);
+  box-shadow: 0 8px 40px rgba(36,38,54,0.18);
+}
+
+.btn-primary.dark {
+  background: linear-gradient(90deg, var(--color-primary-dark) 0%, var(--color-secondary-dark) 100%);
+  color: #fff;
+}
+
+.btn-secondary.dark {
+  background: #23243a;
+  color: var(--color-primary-dark);
+  border: 2px solid var(--color-primary-dark);
+}
+
+.darkmode-toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+.toggle-track {
+  width: 54px;
+  height: 28px;
+  background: var(--color-bg, #f3f4f6);
+  border-radius: 16px;
+  position: relative;
+  transition: background 0.3s;
+  box-shadow: 0 2px 8px #0001;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+.toggle-icon {
+  font-size: 1.1rem;
+  color: #facc15;
+  z-index: 2;
+  transition: color 0.3s;
+}
+.toggle-moon { color: #6366f1; }
+.toggle-sun { color: #facc15; }
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #fff 60%, #e0e7ef 100%);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #0002;
+  transition: left 0.3s, background 0.3s;
+}
+.toggle-thumb.dark {
+  left: 28px;
+  background: linear-gradient(135deg, #23243a 60%, #2d3250 100%);
+}
+.toggle-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text, #22223b);
+  min-width: 90px;
+  transition: color 0.3s;
+}
+body.dark .toggle-track {
+  background: #23243a;
+}
+body.dark .toggle-label {
+  color: #f3f4f6;
+}
+
+/* Dark Mode Variables */
+:root {
+  /* Light Mode Colors (Default) */
+  --dm-bg: #f8f9fa;
+  --dm-bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --dm-card-bg: rgba(255,255,255,0.92);
+  --dm-text: #22223b;
+  --dm-text-light: #666;
+  --dm-primary: #667eea;
+  --dm-secondary: #764ba2;
+  --dm-accent: #f093fb;
+  --dm-success: #22c55e;
+  --dm-error: #ef4444;
+  --dm-warning: #facc15;
+  --dm-info: #2563eb;
+  --dm-border: #e5e7eb;
+  --dm-shadow: rgba(102, 126, 234, 0.1);
+  --dm-shadow-hover: rgba(102, 126, 234, 0.2);
+  
+  /* Dark Mode Colors */
+  --dm-bg-dark: #181a20;
+  --dm-bg-gradient-dark: linear-gradient(135deg, #23243a 0%, #2d3250 100%);
+  --dm-card-bg-dark: rgba(36, 38, 54, 0.98);
+  --dm-text-dark: #f3f4f6;
+  --dm-text-light-dark: #d1d5db;
+  --dm-primary-dark: #8b9cf7;
+  --dm-secondary-dark: #a084e8;
+  --dm-accent-dark: #e0aaff;
+  --dm-success-dark: #4ade80;
+  --dm-error-dark: #f87171;
+  --dm-warning-dark: #fde047;
+  --dm-info-dark: #60a5fa;
+  --dm-border-dark: #374151;
+  --dm-shadow-dark: rgba(0, 0, 0, 0.3);
+  --dm-shadow-hover-dark: rgba(0, 0, 0, 0.5);
+}
+
+/* Dark Mode Body */
+body.dark {
+  background: var(--dm-bg-gradient-dark);
+  color: var(--dm-text-dark);
+}
+
+/* Dark Mode Cards */
+.card.dark, 
+.quiz-card.dark, 
+.profile-card.dark, 
+.stat-card.dark, 
+.joker-card.dark,
+.quiz-main-card.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  box-shadow: 0 8px 40px var(--dm-shadow-dark);
+  border-color: var(--dm-border-dark);
+}
+
+/* Dark Mode Buttons */
+.btn-primary.dark {
+  background: linear-gradient(90deg, var(--dm-primary-dark) 0%, var(--dm-secondary-dark) 100%);
+  color: #fff;
+}
+
+.btn-secondary.dark {
+  background: #23243a;
+  color: var(--dm-primary-dark);
+  border: 2px solid var(--dm-primary-dark);
+}
+
+.btn.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+/* Dark Mode Form Elements */
+.form-group input.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.form-group input.dark:focus {
+  border-color: var(--dm-primary-dark);
+  background: rgba(36, 38, 54, 0.8);
+}
+
+.form-group label.dark {
+  color: var(--dm-text-dark);
+}
+
+/* Dark Mode Quiz Elements */
+.quiz-option-btn.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.quiz-option-btn.dark:hover {
+  background: rgba(139, 156, 247, 0.1);
+  border-color: var(--dm-primary-dark);
+}
+
+.quiz-option-btn.dark[aria-selected="true"] {
+  background: linear-gradient(135deg, var(--dm-warning-dark) 0%, #f7a800 100%) !important;
+  color: #FFFFFF !important;
+}
+
+.quiz-timer.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.quiz-progress-bar.dark {
+  background: var(--dm-border-dark);
+}
+
+.quiz-progress-fill.dark {
+  background: linear-gradient(90deg, var(--dm-success-dark) 0%, var(--dm-primary-dark) 100%);
+}
+
+/* Dark Mode Market Elements */
+.market-card.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.market-item.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.market-item.dark:hover {
+  background: rgba(139, 156, 247, 0.1);
+  border-color: var(--dm-primary-dark);
+}
+
+/* Dark Mode Stats Elements */
+.stats-card.dark,
+.summary-card.dark,
+.extra-card.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.stats-card.dark:hover,
+.summary-card.dark:hover,
+.extra-card.dark:hover {
+  box-shadow: 0 8px 32px var(--dm-shadow-hover-dark);
+}
+
+.stat-card.dark {
+  background: linear-gradient(135deg, #2d3250 0%, #23243a 100%);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.stat-card.dark:hover {
+  background: linear-gradient(135deg, #374151 0%, #2d3250 100%);
+  border-color: var(--dm-primary-dark);
+}
+
+.stat-icon.dark {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  color: var(--dm-primary-dark);
+}
+
+.stat-card.dark h3 {
+  color: var(--dm-primary-dark);
+}
+
+.stat-value.dark {
+  color: var(--dm-text-dark);
+}
+
+.stat-detail.dark {
+  color: var(--dm-text-light-dark);
+}
+
+/* Dark Mode Profile Elements */
+.profile-card.dark {
+  background: linear-gradient(120deg, #2d3250 0%, #23243a 100%);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.profile-avatar.dark {
+  background: linear-gradient(135deg, var(--dm-primary-dark) 0%, var(--dm-secondary-dark) 100%);
+  border-color: var(--dm-border-dark);
+}
+
+.profile-name.dark {
+  color: var(--dm-text-dark);
+}
+
+.profile-level.dark {
+  color: var(--dm-primary-dark);
+}
+
+.welcome-panel.dark {
+  background: linear-gradient(90deg, #2d3250 0%, #23243a 100%);
+  color: var(--dm-text-dark);
+}
+
+.welcome-avatar.dark {
+  background: linear-gradient(135deg, var(--dm-primary-dark) 0%, var(--dm-secondary-dark) 100%);
+}
+
+.welcome-text.dark {
+  color: var(--dm-text-dark);
+}
+
+.welcome-name.dark {
+  color: var(--dm-primary-dark);
+}
+
+/* Dark Mode Mini Stats */
+.mini-stat-card.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.mini-stat-card.dark:hover {
+  background: rgba(139, 156, 247, 0.1);
+  border-color: var(--dm-primary-dark);
+}
+
+.mini-stat-label.dark {
+  color: var(--dm-text-light-dark);
+}
+
+.mini-stat-value.dark {
+  color: var(--dm-text-dark);
+}
+
+/* Dark Mode Settings */
+.settings-btn.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.settings-btn.dark:hover {
+  background: rgba(139, 156, 247, 0.1);
+  color: var(--dm-primary-dark);
+  border-color: var(--dm-primary-dark);
+}
+
+.settings-btn-logout.dark {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--dm-error-dark);
+  border-color: var(--dm-error-dark);
+}
+
+.settings-btn-logout.dark:hover {
+  background: var(--dm-error-dark);
+  color: #fff;
+}
+
+/* Dark Mode Progress Bars */
+.progress-bar-bg.dark {
+  background: var(--dm-border-dark);
+}
+
+.progress-bar-fill.dark {
+  background: linear-gradient(90deg, var(--dm-success-dark) 0%, var(--dm-primary-dark) 100%);
+}
+
+.progress-bar-label.dark {
+  color: var(--dm-text-dark);
+}
+
+/* Dark Mode Headers */
+.header.dark {
+  background: rgba(36, 38, 54, 0.1);
+}
+
+.header.dark h1 {
+  color: var(--dm-text-dark);
+  text-shadow: 0 2px 16px var(--dm-primary-dark);
+}
+
+/* Dark Mode Navigation */
+.nav.dark {
+  background: var(--dm-card-bg-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.nav-link.dark {
+  color: var(--dm-text-dark);
+}
+
+.nav-link.dark:hover,
+.nav-link.dark.active {
+  color: var(--dm-primary-dark);
+  background: rgba(139, 156, 247, 0.1);
+}
+
+/* Dark Mode Back Button */
+.back-button.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-primary-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.back-button.dark:hover {
+  background: rgba(139, 156, 247, 0.1);
+  color: var(--dm-primary-dark);
+  border-color: var(--dm-primary-dark);
+}
+
+/* Dark Mode Toggle Switch */
+.darkmode-toggle-switch.dark {
+  color: var(--dm-text-dark);
+}
+
+.toggle-track.dark {
+  background: var(--dm-card-bg-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.toggle-icon.dark {
+  color: var(--dm-warning-dark);
+}
+
+/* Dark Mode Subject Cards */
+.subject-card.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.subject-card.dark:hover {
+  background: rgba(139, 156, 247, 0.1);
+  border-color: var(--dm-primary-dark);
+}
+
+.subject-title.dark {
+  color: var(--dm-text-dark);
+}
+
+.subject-description.dark {
+  color: var(--dm-text-light-dark);
+}
+
+/* Dark Mode Test Selection */
+.test-selection-card.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.test-selection-card.dark:hover {
+  background: rgba(139, 156, 247, 0.1);
+  border-color: var(--dm-primary-dark);
+}
+
+/* Dark Mode Admin Dashboard */
+.admin-card.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+.admin-stat.dark {
+  color: var(--dm-text-dark);
+}
+
+.admin-label.dark {
+  color: var(--dm-text-light-dark);
+}
+
+/* Dark Mode Charts */
+.recharts-default-legend.dark {
+  color: var(--dm-primary-dark);
+}
+
+.recharts-tooltip-wrapper.dark {
+  background: var(--dm-card-bg-dark);
+  color: var(--dm-text-dark);
+  border-color: var(--dm-border-dark);
+}
+
+/* Dark Mode Empty States */
+.empty-state.dark {
+  color: var(--dm-text-light-dark);
+}
+
+.empty-icon.dark {
+  color: var(--dm-text-light-dark);
+}
+
+/* Dark Mode Loading States */
+.loading-spinner.dark {
+  border-color: var(--dm-border-dark);
+  border-top-color: var(--dm-primary-dark);
+}
+
+/* Dark Mode Focus States */
+.dark *:focus {
+  outline-color: var(--dm-primary-dark);
+}
+
+/* Dark Mode Selection */
+.dark ::selection {
+  background: var(--dm-primary-dark);
+  color: #fff;
+}
+
+.dark ::-moz-selection {
+  background: var(--dm-primary-dark);
+  color: #fff;
+}
+
+/* Dark Mode Scrollbars */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--dm-card-bg-dark);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--dm-border-dark);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--dm-primary-dark);
+}
+
+/* Dark Mode Transitions */
+.dark * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dark Mode Print Styles */
+@media print {
+  .dark * {
+    background: white !important;
+    color: black !important;
+    border-color: #ccc !important;
+  }
+}
+
+/* Dark Mode High Contrast */
+@media (prefers-contrast: high) {
+  .dark {
+    --dm-bg-dark: #000;
+    --dm-card-bg-dark: #000;
+    --dm-text-dark: #fff;
+    --dm-border-dark: #fff;
+  }
+}
+
+/* Dark Mode Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .dark * {
+    transition: none !important;
+  }
+}
+
+/* Dark Mode Specific Animations */
+@keyframes darkModeFadeIn {
+  from {
+    opacity: 0;
+    background: var(--dm-bg);
+  }
+  to {
+    opacity: 1;
+    background: var(--dm-bg-dark);
+  }
+}
+
+.dark-mode-transition {
+  animation: darkModeFadeIn 0.3s ease-out;
+}
+
+/* Dark Mode Utility Classes */
+.dark .text-primary { color: var(--dm-primary-dark) !important; }
+.dark .text-secondary { color: var(--dm-secondary-dark) !important; }
+.dark .text-success { color: var(--dm-success-dark) !important; }
+.dark .text-error { color: var(--dm-error-dark) !important; }
+.dark .text-warning { color: var(--dm-warning-dark) !important; }
+.dark .text-info { color: var(--dm-info-dark) !important; }
+.dark .text-light { color: var(--dm-text-light-dark) !important; }
+
+.dark .bg-primary { background: var(--dm-primary-dark) !important; }
+.dark .bg-secondary { background: var(--dm-secondary-dark) !important; }
+.dark .bg-success { background: var(--dm-success-dark) !important; }
+.dark .bg-error { background: var(--dm-error-dark) !important; }
+.dark .bg-warning { background: var(--dm-warning-dark) !important; }
+.dark .bg-info { background: var(--dm-info-dark) !important; }
+
+.dark .border-primary { border-color: var(--dm-primary-dark) !important; }
+.dark .border-secondary { border-color: var(--dm-secondary-dark) !important; }
+.dark .border-success { border-color: var(--dm-success-dark) !important; }
+.dark .border-error { border-color: var(--dm-error-dark) !important; }
+.dark .border-warning { border-color: var(--dm-warning-dark) !important; }
+.dark .border-info { border-color: var(--dm-info-dark) !important; } 

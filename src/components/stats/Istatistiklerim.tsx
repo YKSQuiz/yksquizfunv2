@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { UserStats } from '../../types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import './Stats.css';
 
 // interface ChartData {
 //   date: string;
