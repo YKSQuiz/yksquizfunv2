@@ -47,12 +47,20 @@
     "postbuild": "echo 'Build completed successfully!'",
     "deploy:staging": "npm run build:prod && echo 'Staging deployment ready'",
     "deploy:production": "npm run build:prod && echo 'Production deployment ready'",
-    "db:upload-csv": "node csv-to-firebase.js",
-    "db:delete-questions": "node delete-questions.js",
-    "db:fix-daily-activity": "node fix-daily-activity-decimals-admin.js",
-    "db:fix-session-time": "node fix-session-time-location.js",
-    "db:fix-session-times": "node fixSessionTimes.js",
-    "db:validate-csv": "node validate-csv.js"
+    "db:upload-csv": "node scripts/database/csv-to-firebase.js",
+    "db:delete-questions": "node scripts/database/delete-questions.js",
+    "db:fix-daily-activity": "node scripts/database/fix-daily-activity-decimals-admin.js",
+    "db:fix-session-time": "node scripts/database/fix-session-time-location.js",
+    "db:fix-session-times": "node scripts/database/fixSessionTimes.js",
+    "db:validate-csv": "node scripts/database/validate-csv.js",
+    "deploy:quick": "bash scripts/deployment/quick-deploy.sh",
+    "deploy:full": "bash scripts/deployment/deploy.sh",
+    "health:check": "bash scripts/maintenance/health-check.sh",
+    "dev:setup": "node scripts/dev/setup-dev.js",
+    "test:run": "node scripts/test/run-tests.js",
+    "utils:sitemap": "node scripts/utils/generate-sitemap.js",
+    "utils:analyze-bundle": "node scripts/utils/analyze-bundle.js",
+    "utils:check-deps": "node scripts/utils/check-dependencies.js"
   },
   "eslintConfig": {
     "extends": [

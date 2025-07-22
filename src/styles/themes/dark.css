@@ -1,0 +1,49 @@
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  /* Background Colors */
+  --bg-primary: var(--gray-900);
+  --bg-secondary: var(--gray-800);
+  --bg-tertiary: var(--gray-700);
+  --bg-card: var(--gray-800);
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+  
+  /* Text Colors */
+  --text-primary: var(--gray-100);
+  --text-secondary: var(--gray-300);
+  --text-tertiary: var(--gray-400);
+  --text-muted: var(--gray-500);
+  --text-inverse: var(--gray-900);
+  
+  /* Border Colors */
+  --border-primary: var(--gray-700);
+  --border-secondary: var(--gray-600);
+  --border-focus: var(--primary-light);
+  
+  /* Shadow Colors */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-color-light: rgba(0, 0, 0, 0.2);
+  
+  /* Input Colors */
+  --input-bg: var(--gray-800);
+  --input-border: var(--gray-600);
+  --input-focus-border: var(--primary-light);
+  --input-placeholder: var(--gray-500);
+  
+  /* Button Colors */
+  --btn-primary-bg: var(--primary-color);
+  --btn-primary-text: var(--white);
+  --btn-primary-hover: var(--primary-light);
+  --btn-secondary-bg: var(--gray-700);
+  --btn-secondary-text: var(--gray-300);
+  --btn-secondary-hover: var(--gray-600);
+  
+  /* Status Colors */
+  --success-bg: #064e3b;
+  --success-text: #6ee7b7;
+  --warning-bg: #78350f;
+  --warning-text: #fbbf24;
+  --error-bg: #7f1d1d;
+  --error-text: #fca5a5;
+  --info-bg: #1e3a8a;
+  --info-text: #93c5fd;
+} 

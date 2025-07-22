@@ -56,21 +56,47 @@
 
 ### 🔧 Proje Yapısı
 ```
-src/
-├── components/          # React bileşenleri
-│   ├── auth/           # Kimlik doğrulama
-│   ├── common/         # Ortak bileşenler
-│   ├── home/           # Ana sayfa
-│   ├── quiz/           # Quiz bileşenleri
-│   ├── stats/          # İstatistikler
-│   ├── subjects/       # Konu sayfaları
-│   └── admin/          # Yönetim paneli
-├── contexts/           # React Context
-├── services/           # Servisler
-├── utils/              # Yardımcı fonksiyonlar
-├── types/              # TypeScript tipleri
-├── styles/             # Stil dosyaları
-└── hooks/              # Custom hooks
+yksquizv26/
+├── public/             # Statik dosyalar
+├── scripts/            # Script dosyaları
+│   ├── database/       # Veritabanı işlemleri
+│   ├── deployment/     # Deployment script'leri
+│   ├── maintenance/    # Bakım ve temizlik
+│   ├── utils/          # Yardımcı araçlar
+│   ├── dev/            # Development araçları
+│   ├── test/           # Test script'leri
+│   └── monitoring/     # Performans izleme
+├── src/
+│   ├── components/     # React bileşenleri
+│   │   ├── common/     # Ortak bileşenler
+│   │   │   ├── ui/     # UI bileşenleri
+│   │   │   ├── navigation/ # Navigasyon
+│   │   │   └── subjects/   # Konu bileşenleri
+│   │   ├── features/   # Özellik bazlı bileşenler
+│   │   │   ├── auth/   # Kimlik doğrulama
+│   │   │   ├── quiz/   # Quiz bileşenleri
+│   │   │   ├── profile/ # Profil
+│   │   │   ├── stats/  # İstatistikler
+│   │   │   ├── market/ # Market
+│   │   │   ├── admin/  # Yönetim paneli
+│   │   │   └── home/   # Ana sayfa
+│   │   └── pages/      # Sayfa bileşenleri
+│   ├── contexts/       # React Context
+│   ├── data/           # Veri yapıları
+│   │   └── subjects/   # Konu verileri
+│   ├── hooks/          # Custom hooks
+│   ├── services/       # Servisler
+│   │   └── firebase/   # Firebase servisleri
+│   ├── styles/         # Stil dosyaları
+│   │   ├── base/       # Temel stiller
+│   │   ├── components/ # Bileşen stilleri
+│   │   ├── themes/     # Tema sistemi
+│   │   └── utilities/  # Utility sınıfları
+│   ├── types/          # TypeScript tipleri
+│   └── utils/          # Yardımcı fonksiyonlar
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
 
 ---
@@ -431,6 +457,42 @@ npm run analyze
 
 # Test çalıştırma
 npm test
+
+# Development ortamı kurulumu
+npm run dev:setup
+
+# Performans izleme
+npm run utils:analyze-bundle
+
+# Dependency kontrolü
+npm run utils:check-deps
+
+# Sitemap oluşturma
+npm run utils:sitemap
+```
+
+### 🚀 Script Komutları
+```bash
+# Database işlemleri
+npm run db:upload-csv          # CSV'den Firebase'e veri aktarımı
+npm run db:validate-csv        # CSV doğrulama
+npm run db:delete-questions    # Soru silme
+npm run db:fix-daily-activity  # Günlük aktivite düzeltme
+npm run db:fix-session-time    # Oturum zamanı düzeltme
+
+# Deployment
+npm run deploy:quick           # Hızlı deployment
+npm run deploy:full            # Tam deployment
+npm run health:check           # Sistem sağlık kontrolü
+
+# Test ve geliştirme
+npm run test:run               # Test suite çalıştırma
+npm run dev:setup              # Development ortamı kurulumu
+
+# Utility araçları
+npm run utils:sitemap          # Sitemap oluşturma
+npm run utils:analyze-bundle   # Bundle analizi
+npm run utils:check-deps       # Dependency kontrolü
 ```
 
 ### 📝 Kod Standartları

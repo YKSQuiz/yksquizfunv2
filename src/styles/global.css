@@ -4,6 +4,9 @@
   box-sizing: border-box;
 }
 
+/* Import component styles */
+@import './components/common/index.css';
+
 /* Performance optimizations */
 .card, .profile-card, .stat-card {
   will-change: transform;
@@ -17,11 +20,31 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--gradient-primary);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   min-height: 100vh;
   /* Performance optimizations */
   contain: layout style;
   will-change: auto;
+}
+
+/* Global page container for consistent background */
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  padding: 20px;
+  position: relative;
+}
+
+/* Global content wrapper for glassmorphism effect */
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 code {
@@ -50,7 +73,7 @@ code {
 }
 
 .btn-primary {
-  background: var(--gradient-primary-90);
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   color: white;
   letter-spacing: 0.5px;
 }
@@ -58,7 +81,7 @@ code {
 .btn-primary:hover {
   transform: translateY(-2px) scale(1.04);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.18);
-  background: var(--gradient-primary-reverse);
+  background: linear-gradient(90deg, #f093fb 0%, #764ba2 50%, #667eea 100%);
 }
 
 .btn-secondary {
@@ -117,8 +140,6 @@ code {
   background: #fff;
 }
 
-
-
 .header {
   background: rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(10px);
@@ -135,10 +156,6 @@ code {
   text-shadow: 0 2px 16px #764ba2;
 }
 
-
-
-
-
 .progress-bar {
   background: #f0f0f0;
   height: 10px;
@@ -148,7 +165,7 @@ code {
 }
 
 .progress-bar-inner {
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   height: 100%;
   transition: width 0.3s;
 }
@@ -164,16 +181,13 @@ code {
     padding: 24px 20px;
     margin: 16px 0;
   }
-
-
+  .page-container {
+    padding: 15px;
+  }
+  .content-wrapper {
+    padding: 30px 15px;
+  }
 }
-
-
-
-
-
-
-
 
 .category-grid {
   display: grid;
@@ -182,8 +196,9 @@ code {
   margin-top: 24px;
   margin-bottom: 18px;
 }
+
 .category-card {
-  background: var(--gradient-card-120);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   border-radius: 2rem;
   box-shadow: 0 2px 12px #667eea11;
   padding: 32px 18px 24px 18px;
@@ -197,18 +212,21 @@ code {
   position: relative;
   user-select: none;
 }
+
 .category-card:hover, .category-card:focus {
   box-shadow: 0 8px 32px #667eea22;
   transform: scale(1.045);
   border-color: #667eea44;
-  background: var(--gradient-card-hover);
+  background: linear-gradient(135deg, #f093fb 0%, #764ba2 50%, #667eea 100%);
   z-index: 2;
 }
+
 .category-icon {
   font-size: 2.5rem;
   margin-bottom: 14px;
   filter: drop-shadow(0 2px 8px #667eea22);
 }
+
 .category-title {
   font-size: 1.13rem;
   font-weight: 700;
@@ -217,12 +235,14 @@ code {
   margin-bottom: 2px;
   letter-spacing: 0.1px;
 }
+
 @media (max-width: 900px) {
   .category-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
 }
+
 @media (max-width: 600px) {
   .category-grid {
     grid-template-columns: 1fr;
@@ -241,9 +261,6 @@ code {
   }
 }
 
-
-
-
 .progress-bar-bg {
   width: 100%;
   height: 18px;
@@ -253,17 +270,33 @@ code {
   margin: 10px 0 6px 0;
   box-shadow: 0 1px 4px #667eea11 inset;
 }
+
 .progress-bar-fill {
   height: 100%;
-  background: var(--gradient-success-progress);
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   border-radius: 12px 0 0 12px;
   transition: width 0.4s cubic-bezier(.4,1.4,.6,1);
 }
+
 .progress-bar-label {
   font-size: 0.98rem;
   color: #333;
   text-align: right;
   font-weight: 500;
+}
+
+/* Dark theme support for global background */
+[data-theme="dark"] body {
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+}
+
+[data-theme="dark"] .page-container {
+  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+}
+
+[data-theme="dark"] .content-wrapper {
+  background: rgba(31, 41, 55, 0.95);
+  color: #f9fafb;
 }
 
 
