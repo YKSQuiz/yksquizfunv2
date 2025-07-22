@@ -1,0 +1,182 @@
+.back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 100px;
+  justify-content: center;
+  
+  /* Backdrop blur efekti */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  /* Border efekti */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.back-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.back-button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3), 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Icon ve text stilleri */
+.back-icon {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.back-text {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Tablet boyutu */
+@media (max-width: 1024px) {
+  .back-button {
+    top: 15px;
+    left: 15px;
+    padding: 10px 18px;
+    font-size: 13px;
+    min-width: 90px;
+  }
+  
+  .back-icon {
+    font-size: 15px;
+  }
+  
+  .back-text {
+    font-size: 13px;
+  }
+}
+
+/* Mobil boyut */
+@media (max-width: 768px) {
+  .back-button {
+    top: 12px;
+    left: 12px;
+    padding: 8px 16px;
+    font-size: 12px;
+    min-width: 80px;
+    border-radius: 20px;
+    gap: 4px;
+  }
+  
+  .back-icon {
+    font-size: 14px;
+  }
+  
+  .back-text {
+    font-size: 12px;
+  }
+}
+
+/* Küçük mobil boyut */
+@media (max-width: 480px) {
+  .back-button {
+    top: 10px;
+    left: 10px;
+    padding: 6px 12px;
+    font-size: 11px;
+    min-width: 70px;
+    border-radius: 18px;
+  }
+  
+  .back-icon {
+    font-size: 13px;
+  }
+  
+  .back-text {
+    font-size: 11px;
+  }
+}
+
+/* Çok küçük ekranlar */
+@media (max-width: 360px) {
+  .back-button {
+    top: 8px;
+    left: 8px;
+    padding: 5px 10px;
+    font-size: 10px;
+    min-width: 60px;
+    border-radius: 15px;
+  }
+  
+  .back-icon {
+    font-size: 12px;
+  }
+  
+  .back-text {
+    font-size: 10px;
+  }
+}
+
+/* Landscape modda mobil */
+@media (max-height: 500px) and (orientation: landscape) {
+  .back-button {
+    top: 8px;
+    left: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    min-width: 70px;
+  }
+  
+  .back-icon {
+    font-size: 13px;
+  }
+  
+  .back-text {
+    font-size: 11px;
+  }
+}
+
+/* Yüksek DPI ekranlar için */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .back-button {
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+  }
+  
+  .back-button:hover {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+  }
+}
+
+/* Touch cihazlar için hover efektini devre dışı bırak */
+@media (hover: none) and (pointer: coarse) {
+  .back-button:hover {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+  
+  .back-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+  }
+} 

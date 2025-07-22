@@ -479,7 +479,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await updateSessionTime(user.id, minutes);
         } catch (e) {
-          console.error('Logout sırasında oturum süresi Firestore\'a yazılamadı:', e);
+          // Logout sırasında oturum süresi Firestore'a yazılamadı
         }
       }
       sessionStartRef.current = null;

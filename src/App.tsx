@@ -1,20 +1,19 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/auth/Login';
-import Home from './components/home/Home';
+import { Login, EditProfile } from './components/features/auth';
+import { Home } from './components/features/home';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import EditProfile from './components/auth/EditProfile';
-import TestSelection from './components/quiz/TestSelection';
-import { SubjectSelector, AltKonuSelector } from './components/subjects';
-import Market from './components/market/Market';
-import TestPage from './components/test/TestPage';
+import { TestSelection } from './components/features/quiz';
+import { SubjectSelector, AltKonuSelector } from './components/common/subjects';
+import { Market } from './components/features/market';
+import { TestPage } from './components/pages';
 // import { FiArrowLeft } from "react-icons/fi";
 import { initializeABTests } from './utils/abTesting';
 
 // Lazy load heavy components
-const Quiz = lazy(() => import('./components/quiz/Quiz'));
-const Istatistiklerim = lazy(() => import('./components/stats/Istatistiklerim'));
-const PerformanceDashboard = lazy(() => import('./components/admin/PerformanceDashboard'));
+const Quiz = lazy(() => import('./components/features/quiz/Quiz'));
+const Istatistiklerim = lazy(() => import('./components/features/stats/Istatistiklerim'));
+const PerformanceDashboard = lazy(() => import('./components/features/admin/PerformanceDashboard'));
 
 // Loading component
 const LoadingSpinner = () => (
