@@ -1,5 +1,5 @@
 import React from 'react';
-import { BackButton } from '../navigation';
+import BackButton from '../navigation';
 
 interface SubjectHeaderProps {
   title: string;

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
+import { GradientBackground } from '../../common/ui';
 
 const EditProfile: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -114,14 +115,14 @@ const EditProfile: React.FC = () => {
   }
 
   return (
-    <div className="edit-profile-container" style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}>
+    <GradientBackground variant="auth" showParticles={true} particleCount={6}>
+      <div className="edit-profile-container" style={{
+        minHeight: '100vh',
+        padding: '20px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
       <div className="edit-profile-card" style={{
         background: 'white',
         borderRadius: '24px',
@@ -465,6 +466,7 @@ const EditProfile: React.FC = () => {
         `}
       </style>
     </div>
+    </GradientBackground>
   );
 };
 

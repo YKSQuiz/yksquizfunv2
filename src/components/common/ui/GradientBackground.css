@@ -1,0 +1,327 @@
+/* ===== GRADIENT BACKGROUND COMPONENT ===== */
+
+/* Ana container */
+.gradient-background {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ana gradient arka plan */
+.gradient-bg-base {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Gradient varyantları */
+.gradient-background-default .gradient-bg-base,
+.gradient-background-purple-blue .gradient-bg-base {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Auth sayfaları için özel gradient */
+.gradient-background-auth .gradient-bg-base {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 70%, #f5576c 100%);
+}
+
+/* Quiz sayfası için özel gradient */
+.gradient-background-quiz .gradient-bg-base {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 25%, #667eea 50%, #764ba2 75%, #f093fb 100%);
+}
+
+/* Market sayfası için özel gradient */
+.gradient-background-market .gradient-bg-base {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #ff9a9e 50%, #fecfef 75%, #fecfef 100%);
+}
+
+/* Stats sayfası için özel gradient */
+.gradient-background-stats .gradient-bg-base {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 50%, #ffecd2 100%);
+}
+
+/* Admin sayfası için özel gradient */
+.gradient-background-admin .gradient-bg-base {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+}
+
+/* Test sayfası için özel gradient */
+.gradient-background-test .gradient-bg-base {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%);
+}
+
+.gradient-background-blue-purple .gradient-bg-base {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
+}
+
+.gradient-background-green-blue .gradient-bg-base {
+  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 50%, #0099ff 100%);
+}
+
+/* Ana sayfa için özel gradient */
+.gradient-background-home .gradient-bg-base {
+  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 30%, #0099ff 60%, #667eea 100%);
+}
+
+/* Ders seçim ekranı için özel gradient */
+.gradient-background-subjects .gradient-bg-base {
+  background: linear-gradient(135deg, #ff6b6b 0%, #4facfe 25%, #00f2fe 50%, #667eea 75%, #764ba2 100%);
+}
+
+.gradient-background-orange-red .gradient-bg-base {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ff4500 100%);
+}
+
+/* Particle efektleri */
+.particle-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: float 8s ease-in-out infinite;
+  will-change: transform, opacity;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+.particle:nth-child(1) { animation-delay: 0s; }
+.particle:nth-child(2) { animation-delay: 2s; }
+.particle:nth-child(3) { animation-delay: 4s; }
+.particle:nth-child(4) { animation-delay: 6s; }
+.particle:nth-child(5) { animation-delay: 1s; }
+.particle:nth-child(6) { animation-delay: 3s; }
+.particle:nth-child(7) { animation-delay: 5s; }
+.particle:nth-child(8) { animation-delay: 7s; }
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px); 
+    opacity: 0.4; 
+  }
+  50% { 
+    transform: translateY(-15px); 
+    opacity: 0.8; 
+  }
+}
+
+/* Geometric şekiller */
+.geometric-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.geometric-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  animation: geometricFloat 20s ease-in-out infinite;
+  will-change: transform, opacity;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.shape-1 {
+  width: 120px;
+  height: 120px;
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.shape-2 {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  right: 15%;
+  animation-delay: 5s;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.shape-3 {
+  width: 100px;
+  height: 100px;
+  bottom: 20%;
+  left: 20%;
+  animation-delay: 10s;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@keyframes geometricFloat {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+    opacity: 0.3; 
+  }
+  25% { 
+    transform: translateY(-20px) rotate(90deg); 
+    opacity: 0.6; 
+  }
+  50% { 
+    transform: translateY(-10px) rotate(180deg); 
+    opacity: 0.4; 
+  }
+  75% { 
+    transform: translateY(-30px) rotate(270deg); 
+    opacity: 0.7; 
+  }
+}
+
+/* İçerik alanı */
+.gradient-content {
+  position: relative;
+  z-index: 3;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Shimmer efekti */
+.gradient-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 6s ease-in-out infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Pulse efekti */
+.gradient-background::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  animation: pulse 8s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    transform: translate(-50%, -50%) scale(1); 
+    opacity: 0.3; 
+  }
+  50% { 
+    transform: translate(-50%, -50%) scale(1.2); 
+    opacity: 0.6; 
+  }
+}
+
+/* Responsive tasarım */
+@media (max-width: 768px) {
+  .geometric-shape {
+    transform: scale(0.7);
+  }
+  
+  .shape-1 {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .shape-2 {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .shape-3 {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .particle {
+    width: 2px;
+    height: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .geometric-shape {
+    transform: scale(0.5);
+  }
+  
+  .shape-1 {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .shape-2 {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .shape-3 {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .particle {
+    width: 1px;
+    height: 1px;
+  }
+}
+
+/* Dark mode desteği */
+@media (prefers-color-scheme: dark) {
+  .particle {
+    background: rgba(255, 255, 255, 0.6);
+  }
+  
+  .geometric-shape {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Reduced motion desteği */
+@media (prefers-reduced-motion: reduce) {
+  .particle,
+  .geometric-shape,
+  .gradient-background::before,
+  .gradient-background::after {
+    animation: none;
+  }
+}
+
+/* High contrast desteği */
+@media (prefers-contrast: high) {
+  .particle {
+    background: rgba(255, 255, 255, 0.8);
+  }
+  
+  .geometric-shape {
+    background: rgba(255, 255, 255, 0.2);
+  }
+} 

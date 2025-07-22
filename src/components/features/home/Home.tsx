@@ -2,12 +2,11 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 // import ProfileLevelCard from './ProfileLevelCard';
-import { SettingsActions } from '../../../components/common/ui';
+import { SettingsActions, GradientBackground } from '../../../components/common/ui';
 // import { doc, getDoc } from 'firebase/firestore';
 // import { db } from '../../../services/firebase';
 // import { User } from '../../../types/index';
 import { updateUserEnergy } from '../../../services/firebase';
-// import { DarkModeSwitch } from '../common/SettingsActions';
 import '../../../styles/components/features/home.css';
 
 const Home: React.FC = React.memo(() => {
@@ -192,8 +191,9 @@ const Home: React.FC = React.memo(() => {
   }
 
   return (
-    <div className="page-container">
-      <div className="content-wrapper">
+    <GradientBackground variant="home" showParticles={true} particleCount={6}>
+      <div className="page-container">
+        <div className="content-wrapper">
         {showLevelModal && levelModalData && (
           <div className="levelup-modal-overlay">
             <div className="levelup-modal">
@@ -273,6 +273,8 @@ const Home: React.FC = React.memo(() => {
         </div>
         
         <SettingsActions onEditProfile={handleEditProfile} onLogout={logout} />
+        
+
         
         {/* MARKET Butonu */}
         <div className="market-button">
@@ -371,6 +373,7 @@ const Home: React.FC = React.memo(() => {
         </div>
       </div>
     </div>
+    </GradientBackground>
   );
 });
 

@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { usePerformanceMonitor } from '../../../utils/performance';
 import { getMemoryUsage, getNetworkInfo } from '../../../utils/performance';
 import { useABTest } from '../../../utils/abTesting';
+import { GradientBackground } from '../../common/ui';
 import './PerformanceDashboard.css';
 
 interface PerformanceData {
@@ -99,7 +100,8 @@ const PerformanceDashboard: React.FC = () => {
   // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
-    <div className="performance-dashboard">
+    <GradientBackground variant="admin" showParticles={true} particleCount={6}>
+      <div className="performance-dashboard">
       <div className="dashboard-header">
         <h1>Performance Dashboard</h1>
         <button 
@@ -237,6 +239,7 @@ const PerformanceDashboard: React.FC = () => {
         </button>
       </div>
     </div>
+    </GradientBackground>
   );
 };
 

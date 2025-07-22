@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { GradientBackground } from '../../common/ui';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -90,19 +91,20 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="auth-container">
-      {/* Arka plan SVG Dünya - sağ alt köşe */}
-      <svg
-        viewBox="0 0 800 800"
-        width="350"
-        height="350"
-        className="auth-background"
-      >
+    <GradientBackground variant="auth" showParticles={true} particleCount={8}>
+      <div className="auth-container">
+        {/* Arka plan SVG Dünya - sağ alt köşe */}
+        <svg
+          viewBox="0 0 800 800"
+          width="350"
+          height="350"
+          className="auth-background"
+        >
         <circle cx="400" cy="400" r="350" fill="#fff" />
         <path d="M400,50 Q500,200 400,400 Q300,600 400,750" stroke="#667eea" strokeWidth="18" fill="none" />
         <path d="M400,50 Q300,200 400,400 Q500,600 400,750" stroke="#764ba2" strokeWidth="18" fill="none" />
         <ellipse cx="400" cy="400" rx="320" ry="120" fill="none" stroke="#667eea" strokeWidth="10" />
-      </svg>
+        </svg>
 
       <div className="auth-header">
         <h1>YKS Quiz</h1>
@@ -207,6 +209,7 @@ const Login: React.FC = () => {
         )}
       </div>
     </div>
+    </GradientBackground>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SubjectSelector, AltKonuSelector } from '../common/subjects';
+import { GradientBackground } from '../common/ui';
 import '../../styles/components/pages/test.css';
 
 const TestPage: React.FC = () => {
@@ -8,7 +9,8 @@ const TestPage: React.FC = () => {
   const [selectedSubjectName] = useState<string>('Test Subject');
 
   return (
-    <div className="test-page-container">
+    <GradientBackground variant="test" showParticles={true} particleCount={7}>
+      <div className="test-page-container">
       <h1 className="test-page-title">
         YKS Quiz - Yeni Yapı Test Sayfası
       </h1>
@@ -61,6 +63,7 @@ const TestPage: React.FC = () => {
         <p className="debug-info"><strong>Seçilen Ders:</strong> {selectedSubject || 'Henüz seçilmedi'}</p>
       </div>
     </div>
+    </GradientBackground>
   );
 };
 

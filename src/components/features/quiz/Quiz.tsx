@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, doc, updateDoc, increment } from 'fi
 import { db } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { updateXpLevelRank, jokerKullan } from '../../../contexts/AuthContext';
+import { GradientBackground } from '../../common/ui';
 import './Quiz.css';
 // import { User } from '../../../types/index';
 import { usePerformanceMonitor } from '../../../utils/performance';
@@ -837,13 +838,14 @@ const Quiz: React.FC = () => {
   }
 
   return (
-    <div className="quiz-container">
-      {/* Background gradient and geometric shapes */}
-      <div className="quiz-background">
-        <div className="geometric-shape shape-1"></div>
-        <div className="geometric-shape shape-2"></div>
-        <div className="geometric-shape shape-3"></div>
-      </div>
+    <GradientBackground variant="quiz" showParticles={true} particleCount={12}>
+      <div className="quiz-container">
+        {/* Background gradient and geometric shapes */}
+        <div className="quiz-background">
+          <div className="geometric-shape shape-1"></div>
+          <div className="geometric-shape shape-2"></div>
+          <div className="geometric-shape shape-3"></div>
+        </div>
       {/* Main quiz card - TÜM İÇERİK BURADA */}
       <div className="quiz-card">
 
@@ -1125,6 +1127,7 @@ const Quiz: React.FC = () => {
         </div>
       </div>
     </div>
+    </GradientBackground>
   );
 };
 

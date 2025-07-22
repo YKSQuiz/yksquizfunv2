@@ -6,6 +6,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { UserStats } from '../../../types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
+import { GradientBackground } from '../../common/ui';
 import './Stats.css';
 
 // interface ChartData {
@@ -220,7 +221,8 @@ const Istatistiklerim: React.FC = React.memo(() => {
   }
 
   return (
-    <div className={`container stats-page${isDark ? ' dark' : ''}`}>
+    <GradientBackground variant="stats" showParticles={true} particleCount={10}>
+      <div className={`container stats-page${isDark ? ' dark' : ''}`}>
       {/* Modern Üst Başlık, Selamlama ve Ana Sayfaya Dön Butonu */}
       <div className="stats-header-modern" style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16}}>
         <button className="btn btn-secondary" onClick={() => navigate('/')}
@@ -752,6 +754,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
         </div>
       </div>
     </div>
+    </GradientBackground>
   );
 });
 

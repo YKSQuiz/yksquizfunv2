@@ -138,7 +138,7 @@ const App: React.FC = () => {
               <Route path="/test" element={<PrivateRoute><TestPage /></PrivateRoute>} />
               {/* 404 fallback */}
               <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
+                        </Routes>
           </Suspense>
         </div>
       </Router>

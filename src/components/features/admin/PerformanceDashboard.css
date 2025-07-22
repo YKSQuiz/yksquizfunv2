@@ -1,3 +1,8 @@
+/* ========================================
+   ADMIN COMPONENT STYLES - BİRLEŞTİRİLMİŞ DOSYA
+   ======================================== */
+
+/* Admin Component Styles */
 .performance-dashboard {
   padding: 20px;
   max-width: 1200px;
@@ -19,10 +24,20 @@
   color: white;
   cursor: pointer;
   font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.monitoring-btn:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
 }
 
 .monitoring-btn.active {
   background: #ef4444;
+}
+
+.monitoring-btn.active:hover {
+  background: #dc2626;
 }
 
 .ab-test-section {
@@ -41,6 +56,12 @@
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.ab-test-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
 }
 
 .performance-summary {
@@ -59,6 +80,13 @@
   padding: 20px;
   border-radius: 8px;
   text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
 }
 
 .summary-card .current {
@@ -89,6 +117,12 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
 }
 
 .export-section {
@@ -103,8 +137,60 @@
   background: #28a745;
   color: white;
   cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .export-section button:hover {
   background: #218838;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .performance-dashboard {
+    padding: 10px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .ab-test-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .export-section {
+    flex-direction: column;
+  }
+  
+  .export-section button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ab-test-card,
+  .summary-card,
+  .chart-container {
+    padding: 16px;
+  }
+  
+  .summary-card .current {
+    font-size: 20px;
+  }
+  
+  .summary-card .average {
+    font-size: 12px;
+  }
 } 

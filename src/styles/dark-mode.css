@@ -5,7 +5,7 @@
 /* Dark Mode Variables */
 :root {
   /* Light Mode Colors (Default) */
-  --color-bg: #f8f9fa;
+  --color-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --color-bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --color-card-bg: rgba(255,255,255,0.92);
   --color-text: #22223b;
@@ -113,7 +113,7 @@ body.dark .toggle-label {
 /* Dark Mode Variables */
 :root {
   /* Light Mode Colors (Default) */
-  --dm-bg: #f8f9fa;
+  --dm-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --dm-bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --dm-card-bg: rgba(255,255,255,0.92);
   --dm-text: #22223b;

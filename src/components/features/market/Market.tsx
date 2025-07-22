@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useCallback } from 'react';
 // import { useNavigate } from 'react-router-dom';
-import { BackButton } from '../../../components/common/navigation';
+import BackButton from '../../../components/common/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { MarketItem } from '../../../types';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
+import { GradientBackground } from '../../common/ui';
 import './Market.css';
 
 // Onay Dialog Bileşeni - React.memo ile optimize edildi
@@ -444,8 +445,9 @@ const Market: React.FC = React.memo(() => {
   }
 
   return (
-    <div className="market-container">
-      <div className="market-card">
+    <GradientBackground variant="market" showParticles={true} particleCount={8}>
+      <div className="market-container">
+        <div className="market-card">
         {/* Header */}
         <div className="market-header">
           <BackButton 
@@ -629,6 +631,7 @@ const Market: React.FC = React.memo(() => {
           )}
         </div>
       </div>
+    </div>
 
       {/* Onay Dialog */}
       <ConfirmDialog
@@ -638,7 +641,7 @@ const Market: React.FC = React.memo(() => {
         upgrade={confirmDialog.upgrade}
         userCoins={user.coins || 0}
       />
-    </div>
+    </GradientBackground>
   );
 });
 

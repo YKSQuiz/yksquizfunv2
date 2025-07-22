@@ -7,6 +7,8 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  min-height: 100vh;
+  /* GradientBackground bileşeni kullanıldığı için background kaldırıldı */
 }
 
 /* Header Styles - Ortak Stil */
@@ -14,23 +16,27 @@
 .alt-konu-header {
   text-align: center;
   margin-bottom: 30px;
+  padding: 0 20px;
 }
 
 .subject-grid-title,
 .alt-konu-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #333;
+  color: white;
   margin-bottom: 10px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .subject-grid-subtitle,
 .alt-konu-subtitle {
   font-size: 1.1rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
   font-weight: 500;
+  line-height: 1.4;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 /* Grid Layout - Ortak Stil */
@@ -41,6 +47,7 @@
   gap: 20px;
   margin: 40px 0 20px 0;
   padding: 0 10px;
+  justify-items: center;
 }
 
 /* Card Styles - Ortak Stil */
@@ -54,7 +61,7 @@
   white-space: normal;
   word-break: break-word;
   text-align: center;
-  height: 110px;
+  height: 130px;
   width: 220px;
   font-size: 16px;
   line-height: 1.2;
@@ -63,7 +70,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100px;
+  min-height: 120px;
   transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   cursor: pointer;
@@ -124,11 +131,12 @@
 }
 
 .alt-konu-label {
-  font-size: 16px;
+  font-size: 14px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  line-height: 1.2;
+  line-height: 1.3;
   font-weight: 700;
   text-align: center;
+  padding: 0 4px;
 }
 
 /* Shine Effect - Ortak Stil */
@@ -268,7 +276,7 @@
   .alt-konu-card {
     min-width: 140px;
     max-width: 180px;
-    height: 100px;
+    height: 120px;
     width: 180px;
     font-size: 14px;
   }
@@ -308,7 +316,7 @@
   .alt-konu-card {
     min-width: 120px;
     max-width: 160px;
-    height: 90px;
+    height: 110px;
     width: 160px;
     font-size: 12px;
   }

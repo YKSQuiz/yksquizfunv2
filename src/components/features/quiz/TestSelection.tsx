@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import BackButton from '../../../components/common/BackButton';
+import BackButton from '../../../components/common/navigation';
 import { SubjectHeader } from '../../../components/common/subjects';
+import { GradientBackground } from '../../../components/common/ui';
 import { useAuth } from '../../../contexts/AuthContext';
 import { updateUserEnergy } from '../../../services/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
@@ -743,16 +744,9 @@ const TestSelection: React.FC = React.memo(() => {
   });
 
   return (
-    <div className="test-selection-container">
+    <GradientBackground variant="purple-blue" showParticles={true} particleCount={5}>
       <BackButton />
       
-      {/* Optimize edilmiş Particle Background - sadece 5 particle */}
-      <div className="particle-background">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="particle" style={{ top: `${Math.random() * 100}%` }}></div>
-        ))}
-      </div>
-
       <div className="test-selection-content">
         {/* Header with Back Button */}
         <SubjectHeader 
@@ -787,7 +781,7 @@ const TestSelection: React.FC = React.memo(() => {
         {/* Confetti Animation Container */}
         <div id="confetti-container" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 9999 }}></div>
       </div>
-    </div>
+    </GradientBackground>
   );
 });
 

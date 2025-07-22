@@ -1,48 +1,133 @@
 /* Navigation Components */
 
-/* Back Button */
+/* Back Button - 3. görseldeki banner tasarımına uygun */
 .back-button {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
   border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  border-radius: 16px;
+  width: auto;
+  height: auto;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
   z-index: 10;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.back-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.6s ease;
+  border-radius: inherit;
+}
+
+.back-button:hover::before {
+  left: 100%;
 }
 
 .back-button:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: scale(1.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #a855f7 100%);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .back-button:active {
-  transform: scale(0.95);
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
 }
 
 .back-button-icon {
-  font-size: 20px;
-  color: #333;
+  font-size: 16px;
+  color: white;
+  transition: transform 0.3s ease;
 }
 
-/* Dark theme support */
+.back-button:hover .back-button-icon {
+  transform: translateX(-3px);
+}
+
+/* Dark theme support - Banner ile uyumlu */
 [data-theme="dark"] .back-button {
-  background: rgba(55, 65, 81, 0.9);
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 [data-theme="dark"] .back-button:hover {
-  background: rgba(55, 65, 81, 1);
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #a855f7 100%);
+  color: white;
 }
 
 [data-theme="dark"] .back-button-icon {
-  color: #f9fafb;
+  color: white;
+}
+
+/* Banner tasarımına uygun animasyon */
+@keyframes bannerGlow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.5);
+  }
+}
+
+.back-button {
+  animation: bannerGlow 3s ease-in-out infinite;
+}
+
+.back-button:hover {
+  animation: none;
+}
+
+/* Responsive tasarım */
+@media (max-width: 768px) {
+  .back-button {
+    top: 15px;
+    left: 15px;
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: 14px;
+  }
+  
+  .back-button-icon {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .back-button {
+    top: 12px;
+    left: 12px;
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 12px;
+  }
+  
+  .back-button-icon {
+    font-size: 14px;
+  }
 } 

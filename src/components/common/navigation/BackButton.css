@@ -1,104 +1,141 @@
-/* ===== BACKBUTTON.CSS - Geri Butonu Stilleri ===== */
+/* ===== OPTIMIZED NAVIGATION BACK BUTTON CSS ===== */
 
-/* Back Button Container */
+/* ===== BACK BUTTON CONTAINER ===== */
 .back-button-container {
   position: relative;
   margin-bottom: 24px;
 }
 
-/* Back Button Base */
+/* ===== BASE BACK BUTTON STYLES ===== */
 .back-button {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #667eea;
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+  color: white;
   border: none;
-  border-radius: 12px;
-  padding: 12px 16px;
+  border-radius: 16px;
+  padding: 12px 20px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+  
+  /* Performance optimizations */
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
 }
 
-.back-button:hover {
-  background: rgba(255, 255, 255, 0.95);
-  color: #4a4ad6;
-  transform: translateX(-4px);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+/* Shimmer effect */
+.back-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.6s ease;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.back-button:active {
-  transform: translateX(-2px) scale(0.98);
+.back-button:hover::before {
+  left: 100%;
 }
 
+/* Hover states */
+.back-button:hover:not(.back-button-disabled) {
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #a855f7 100%);
+  color: white;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.back-button:active:not(.back-button-disabled) {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+}
+
+/* Focus states for accessibility */
 .back-button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3), 0 4px 20px rgba(168, 85, 247, 0.3);
 }
 
-/* Back Button Icon */
+/* ===== ICON AND TEXT STYLES ===== */
 .back-button-icon {
   font-size: 18px;
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
-.back-button:hover .back-button-icon {
-  transform: translateX(-2px);
+.back-button:hover:not(.back-button-disabled) .back-button-icon {
+  transform: translateX(-3px);
 }
 
-/* Back Button Text */
 .back-button-text {
   font-weight: 600;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* Back Button Variations */
+/* ===== VARIANT STYLES ===== */
 
 /* Primary Back Button */
 .back-button-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
   color: white;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
 }
 
-.back-button-primary:hover {
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+.back-button-primary:hover:not(.back-button-disabled) {
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #a855f7 100%);
   color: white;
-  transform: translateX(-4px) translateY(-2px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
 }
 
 /* Secondary Back Button */
 .back-button-secondary {
-  background: rgba(255, 255, 255, 0.8);
-  color: #666;
+  background: rgba(255, 255, 255, 0.9);
+  color: #7c3aed;
   border: 2px solid #e5e7eb;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
-.back-button-secondary:hover {
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
+.back-button-secondary:hover:not(.back-button-disabled) {
+  background: rgba(255, 255, 255, 0.95);
+  color: #6366f1;
   border-color: #d1d5db;
+  transform: translateY(-2px) scale(1.02);
 }
 
 /* Ghost Back Button */
 .back-button-ghost {
   background: transparent;
-  color: #667eea;
+  color: #a855f7;
   box-shadow: none;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
-.back-button-ghost:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: #4a4ad6;
-  border-color: rgba(102, 126, 234, 0.3);
+.back-button-ghost:hover:not(.back-button-disabled) {
+  background: rgba(168, 85, 247, 0.1);
+  color: #7c3aed;
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-2px) scale(1.02);
 }
 
 /* Floating Back Button */
@@ -114,7 +151,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  animation: bannerGlow 3s ease-in-out infinite;
+}
+
+.back-button-floating:hover:not(.back-button-disabled) {
+  animation: none;
+  transform: scale(1.1);
 }
 
 .back-button-floating .back-button-text {
@@ -125,15 +168,11 @@
   font-size: 20px;
 }
 
-.back-button-floating:hover {
-  transform: scale(1.1);
-}
-
 /* Compact Back Button */
 .back-button-compact {
-  padding: 8px 12px;
+  padding: 8px 16px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .back-button-compact .back-button-icon {
@@ -142,14 +181,16 @@
 
 /* Large Back Button */
 .back-button-large {
-  padding: 16px 20px;
+  padding: 16px 24px;
   font-size: 18px;
-  border-radius: 16px;
+  border-radius: 20px;
 }
 
 .back-button-large .back-button-icon {
   font-size: 20px;
 }
+
+/* ===== SPECIAL FEATURES ===== */
 
 /* Back Button with Badge */
 .back-button-with-badge {
@@ -197,7 +238,7 @@
 
 .back-button-disabled:hover {
   transform: none;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
 }
 
 /* Back Button with Animation */
@@ -223,15 +264,27 @@
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
   }
   50% {
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15), 0 0 0 10px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3), 0 0 0 10px rgba(168, 85, 247, 0.1);
   }
   100% {
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
   }
 }
+
+/* Banner tasarımına uygun animasyon */
+@keyframes bannerGlow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.5);
+  }
+}
+
+/* ===== GROUP AND TOOLTIP FEATURES ===== */
 
 /* Back Button Group */
 .back-button-group {
@@ -282,48 +335,48 @@
   visibility: visible;
 }
 
-/* Dark Mode Support */
+/* ===== DARK MODE SUPPORT ===== */
 @media (prefers-color-scheme: dark) {
   .back-button {
-    background: rgba(0, 0, 0, 0.8);
-    color: #8b9cf7;
-    border-color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.2);
   }
   
-  .back-button:hover {
-    background: rgba(0, 0, 0, 0.9);
-    color: #a5b4fc;
+  .back-button:hover:not(.back-button-disabled) {
+    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #a855f7 100%);
+    color: white;
   }
   
   .back-button-secondary {
     background: rgba(0, 0, 0, 0.6);
-    color: #d1d5db;
+    color: #a855f7;
     border-color: rgba(255, 255, 255, 0.2);
   }
   
-  .back-button-secondary:hover {
+  .back-button-secondary:hover:not(.back-button-disabled) {
     background: rgba(0, 0, 0, 0.8);
-    color: #f3f4f6;
+    color: #7c3aed;
   }
   
   .back-button-ghost {
     background: transparent;
-    color: #8b9cf7;
-    border-color: rgba(139, 156, 247, 0.3);
+    color: #a855f7;
+    border-color: rgba(168, 85, 247, 0.3);
   }
   
-  .back-button-ghost:hover {
-    background: rgba(139, 156, 247, 0.1);
-    color: #a5b4fc;
+  .back-button-ghost:hover:not(.back-button-disabled) {
+    background: rgba(168, 85, 247, 0.1);
+    color: #7c3aed;
   }
 }
 
-/* Responsive Design */
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .back-button {
-    padding: 10px 14px;
+    padding: 10px 16px;
     font-size: 15px;
-    border-radius: 10px;
+    border-radius: 14px;
   }
   
   .back-button-icon {
@@ -342,7 +395,7 @@
   }
   
   .back-button-large {
-    padding: 14px 18px;
+    padding: 14px 20px;
     font-size: 16px;
   }
   
@@ -358,9 +411,9 @@
 
 @media (max-width: 480px) {
   .back-button {
-    padding: 8px 12px;
+    padding: 8px 14px;
     font-size: 14px;
-    border-radius: 8px;
+    border-radius: 12px;
   }
   
   .back-button-icon {
@@ -383,6 +436,8 @@
   }
 }
 
+/* ===== ACCESSIBILITY FEATURES ===== */
+
 /* Print Styles */
 @media print {
   .back-button {
@@ -400,7 +455,7 @@
     border: 2px solid currentColor;
   }
   
-  .back-button:hover {
+  .back-button:hover:not(.back-button-disabled) {
     background: currentColor;
     color: white;
   }
@@ -412,7 +467,7 @@
     transition: none;
   }
   
-  .back-button:hover {
+  .back-button:hover:not(.back-button-disabled) {
     transform: none;
   }
   
@@ -420,7 +475,7 @@
     transition: none;
   }
   
-  .back-button:hover .back-button-icon {
+  .back-button:hover:not(.back-button-disabled) .back-button-icon {
     transform: none;
   }
   
@@ -435,26 +490,30 @@
   .back-button-pulse {
     animation: none;
   }
-} 
+  
+  .back-button-floating {
+    animation: none;
+  }
+}
 
-/* ===== GLOBAL.CSS'DEN TAŞINAN BACK BUTTON STİLLERİ ===== */
-
-/* Modern Back Button */
+/* ===== MODERN BACK BUTTON STYLES ===== */
 .modern-back-button {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
   color: white;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.3px;
 }
 
 .modern-back-button::before {
@@ -464,42 +523,44 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.6s ease;
+  border-radius: inherit;
 }
 
 .modern-back-button:hover::before {
   left: 100%;
 }
 
-.modern-back-button:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+.modern-back-button:hover:not(.back-button-disabled) {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #a855f7 100%);
 }
 
-.modern-back-button:active {
-  transform: translateY(0) scale(0.98);
+.modern-back-button:active:not(.back-button-disabled) {
+  transform: translateY(-1px) scale(0.98);
 }
 
 .modern-back-button .back-icon {
   transition: transform 0.3s ease;
 }
 
-.modern-back-button:hover .back-icon {
-  transform: translateX(-4px);
+.modern-back-button:hover:not(.back-button-disabled) .back-icon {
+  transform: translateX(-3px);
 }
 
 /* Floating Back Button */
 .floating-back-button {
   animation: float 3s ease-in-out infinite;
   border-radius: 50px;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.4);
 }
 
-.floating-back-button:hover {
+.floating-back-button:hover:not(.back-button-disabled) {
   animation: none;
   transform: translateY(-4px) scale(1.1);
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 12px 40px rgba(168, 85, 247, 0.5);
 }
 
 @keyframes float {
@@ -510,54 +571,54 @@
 /* Minimal Back Button */
 .minimal-back-button {
   background: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #a855f7;
+  border: 2px solid #a855f7;
   box-shadow: none;
 }
 
-.minimal-back-button:hover {
-  background: #667eea;
+.minimal-back-button:hover:not(.back-button-disabled) {
+  background: #a855f7;
   color: white;
   transform: scale(1.05);
 }
 
 /* Gradient Back Button */
 .gradient-back-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
 }
 
-.gradient-back-button:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+.gradient-back-button:hover:not(.back-button-disabled) {
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #a855f7 100%);
 }
 
 /* Success Back Button */
 .success-back-button {
   background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.3);
+  box-shadow: 0 4px 20px rgba(67, 233, 123, 0.3);
 }
 
-.success-back-button:hover {
-  box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+.success-back-button:hover:not(.back-button-disabled) {
+  box-shadow: 0 8px 30px rgba(67, 233, 123, 0.4);
 }
 
 /* Warning Back Button */
 .warning-back-button {
   background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%);
-  box-shadow: 0 4px 16px rgba(255, 106, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 106, 0, 0.3);
 }
 
-.warning-back-button:hover {
-  box-shadow: 0 8px 25px rgba(255, 106, 0, 0.4);
+.warning-back-button:hover:not(.back-button-disabled) {
+  box-shadow: 0 8px 30px rgba(255, 106, 0, 0.4);
 }
 
 /* Danger Back Button */
 .danger-back-button {
   background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-  box-shadow: 0 4px 16px rgba(255, 65, 108, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 65, 108, 0.3);
 }
 
-.danger-back-button:hover {
-  box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4);
+.danger-back-button:hover:not(.back-button-disabled) {
+  box-shadow: 0 8px 30px rgba(255, 65, 108, 0.4);
 }
 
 /* Back Button Sizes */
@@ -578,34 +639,45 @@
 
 /* Back Button Loading State */
 .back-button-loading {
+  pointer-events: none;
   opacity: 0.7;
-  cursor: not-allowed;
 }
 
-.back-button-loading .back-icon {
+.back-button-loading .back-button-icon {
   animation: spin 1s linear infinite;
 }
 
-/* Back Button Pulse Animation */
-.back-button-pulse {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3); }
-  50% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.6); }
-  100% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3); }
-}
-
-/* Responsive Back Button */
+/* Responsive tasarım */
 @media (max-width: 768px) {
   .modern-back-button {
-    padding: 10px 20px;
-    font-size: 14px;
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-back-button {
+    font-size: 13px !important;
+    padding: 8px 16px !important;
+    gap: 6px !important;
+  }
+}
+
+/* High contrast mode desteği */
+@media (prefers-contrast: high) {
+  .modern-back-button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion desteği */
+@media (prefers-reduced-motion: reduce) {
+  .modern-back-button {
+    animation: none !important;
+    transition: none !important;
   }
   
-  .back-button-large {
-    font-size: 16px;
-    padding: 14px 28px;
+  .modern-back-button:hover:not(.back-button-disabled) {
+    transform: none !important;
   }
 } 

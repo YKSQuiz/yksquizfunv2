@@ -1,6 +1,7 @@
 import React from 'react';
 import SubjectCard from './SubjectCard';
-import BackButton from '../BackButton';
+import BackButton from '../navigation';
+import { GradientBackground } from '../ui';
 
 interface Subject {
   id: string;
@@ -27,7 +28,7 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({
   onSubjectClick
 }) => {
   return (
-    <div className="subject-grid-container">
+    <GradientBackground variant="subjects" showParticles={true} particleCount={7}>
       <BackButton />
       
       {title && (
@@ -58,7 +59,7 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({
           />
         ))}
       </div>
-    </div>
+    </GradientBackground>
   );
 };
 
