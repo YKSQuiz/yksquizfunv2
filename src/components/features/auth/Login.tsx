@@ -175,7 +175,7 @@ const Login: React.FC = () => {
             }}
             disabled={isLoading}
           >
-            {registerMode ? 'Zaten hesabın var mı? Giriş Yap' : 'Hesabın yok mu? Kayıt Ol'}
+            {registerMode ? 'Zaten hesabın var mı? Giriş Yap' : 'Hesabınn yok mu? Kayıt Ol'}
           </button>
         </div>
 
