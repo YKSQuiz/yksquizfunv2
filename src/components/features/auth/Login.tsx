@@ -93,31 +93,13 @@ const Login: React.FC = () => {
   return (
     <GradientBackground variant="auth" showParticles={true} particleCount={8}>
       <div className="auth-container">
-        {/* Arka plan SVG Dünya - sağ alt köşe */}
-        <svg
-          viewBox="0 0 800 800"
-          width="350"
-          height="350"
-          className="auth-background"
-        >
-        <circle cx="400" cy="400" r="350" fill="#fff" />
-        <path d="M400,50 Q500,200 400,400 Q300,600 400,750" stroke="#667eea" strokeWidth="18" fill="none" />
-        <path d="M400,50 Q300,200 400,400 Q500,600 400,750" stroke="#764ba2" strokeWidth="18" fill="none" />
-        <ellipse cx="400" cy="400" rx="320" ry="120" fill="none" stroke="#667eea" strokeWidth="10" />
-        </svg>
-
-      <div className="auth-header">
-        <h1>YKS Quiz</h1>
-      </div>
+        
       
       <div className="auth-card">
-        {/* Dünya ikonu */}
+        {/* GIF İkonu */}
         <div className="auth-icon">
-          <span>🌍</span>
+          <img src="/loginekran.gif" alt="Login Animation" style={{ width: '200px', height: '200px', borderRadius: '12px' }} />
         </div>
-        <h2 className="auth-title">
-          {registerMode ? 'Kayıt Ol' : 'Giriş Yap'}
-        </h2>
         
         {error && (
           <div className="auth-error">
@@ -198,7 +180,7 @@ const Login: React.FC = () => {
         </div>
 
         <div className="auth-info">
-          Demo için Google veya e-posta ile giriş/kayıt olabilirsiniz.
+          Google veya e-posta ile giriş/kayıt olabilirsiniz.
         </div>
 
         {isLoading && <div className="auth-loading">Süre yükleniyor...</div>}

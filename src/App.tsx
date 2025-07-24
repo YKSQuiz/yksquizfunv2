@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TestSelection } from './components/features/quiz';
 import { SubjectSelector, AltKonuSelector } from './components/common/subjects';
 import { Market } from './components/features/market';
-import { TestPage } from './components/pages';
+
 // import { FiArrowLeft } from "react-icons/fi";
 import { initializeABTests } from './utils/abTesting';
 
@@ -134,8 +134,7 @@ const App: React.FC = () => {
               <Route path="/performance" element={<PrivateRoute><PerformanceDashboard /></PrivateRoute>} />
               {/* Market Alanı */}
               <Route path="/market" element={<PrivateRoute><Market /></PrivateRoute>} />
-              {/* Test Sayfası */}
-              <Route path="/test" element={<PrivateRoute><TestPage /></PrivateRoute>} />
+
               {/* 404 fallback */}
               <Route path="*" element={<Navigate to="/" />} />
                         </Routes>

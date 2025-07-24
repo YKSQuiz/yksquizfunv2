@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import BackButton from '../../../components/common/navigation';
-import { SubjectHeader } from '../../../components/common/subjects';
-import { GradientBackground } from '../../../components/common/ui';
+// import BackButton from '../common/BackButton';
+import SubjectHeader from '../../common/subjects/SubjectHeader';
 import { useAuth } from '../../../contexts/AuthContext';
 import { updateUserEnergy } from '../../../services/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
@@ -381,7 +380,7 @@ const TestSelection: React.FC = React.memo(() => {
       console.log('🔄 User state yenileniyor...');
       refreshUser().then(() => {
         console.log('✅ User state yenilendi');
-      }).catch((error) => {
+      }).catch((error: any) => {
         console.error('❌ User state yenileme hatası:', error);
       });
     }
@@ -744,9 +743,14 @@ const TestSelection: React.FC = React.memo(() => {
   });
 
   return (
-    <GradientBackground variant="purple-blue" showParticles={true} particleCount={5}>
-      <BackButton />
-      
+    <div className="test-selection-container">
+      {/* Optimize edilmiş Particle Background - sadece 5 particle */}
+      <div className="particle-background">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="particle" style={{ top: `${Math.random() * 100}%` }}></div>
+        ))}
+      </div>
+
       <div className="test-selection-content">
         {/* Header with Back Button */}
         <SubjectHeader 
@@ -781,7 +785,7 @@ const TestSelection: React.FC = React.memo(() => {
         {/* Confetti Animation Container */}
         <div id="confetti-container" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 9999 }}></div>
       </div>
-    </GradientBackground>
+    </div>
   );
 });
 

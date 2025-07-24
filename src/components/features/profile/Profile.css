@@ -480,6 +480,11 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .profile-container {
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
+  }
+  
   .profile-section {
     padding: 16px 12px;
     margin: 8px 0;

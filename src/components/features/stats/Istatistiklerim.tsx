@@ -77,9 +77,6 @@ const Istatistiklerim: React.FC = React.memo(() => {
   // ]);
   const [selectedRange, setSelectedRange] = useState<'week' | 'month' | '3months'>('week');
 
-  // Karanlık mod kontrolü
-  const isDark = typeof window !== 'undefined' && document.body.classList.contains('dark');
-
   // Memoized subjects array
   // const subjects = React.useMemo(() => [
   //   { id: 'all', label: 'Tüm Dersler' },
@@ -222,7 +219,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
 
   return (
     <GradientBackground variant="stats" showParticles={true} particleCount={10}>
-      <div className={`container stats-page${isDark ? ' dark' : ''}`}>
+      <div className="container stats-page">
       {/* Modern Üst Başlık, Selamlama ve Ana Sayfaya Dön Butonu */}
       <div className="stats-header-modern" style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16}}>
         <button className="btn btn-secondary" onClick={() => navigate('/')}
@@ -236,7 +233,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
       </div>
 
       {/* Genel İstatistikler */}
-      <div className={`stats modern-stats-grid${isDark ? ' dark' : ''}`}>
+      <div className="stats modern-stats-grid">
         <div className="stat-card success-card">
           <div className="stat-icon stat-icon-success"><FiTarget size={32}/></div>
           <h3>Genel Başarı Oranı</h3>
@@ -405,7 +402,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
       {/* 2. Toplam Kullanılan Joker ve joker kartları bölümü */}
       <div style={{ height: 32 }} />
       {user?.jokersUsed && (
-        <div className={isDark ? 'dark' : ''}>
+        <div>
           <style>{`
             @keyframes hologramShimmer {
               0% { transform: translateX(-100%) skewX(-15deg); }

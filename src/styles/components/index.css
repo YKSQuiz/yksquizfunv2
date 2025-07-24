@@ -7,14 +7,9 @@
 /* Market Components - Birleştirildi (src/components/features/market/Market.css) */
 /* Stats Components - Birleştirildi (src/components/features/stats/Stats.css) */
 /* Admin Components - Birleştirildi (src/components/features/admin/PerformanceDashboard.css) */
-/* Pages Components */
-@import './pages/index.css';
+
 /* Common Components */
-@import './common/subjects.css';
+@import '../../components/common/subjects/subjects.css';
 /* Common UI Components */
 @import './common/ui.css';
-/* Common Navigation Components */
-@import './common/navigation.css';
-
-/* Dark Mode Styles */
-@import '../dark-mode.css'; 
+/* Common Navigation Components - Removed (BackButton component deleted) */ 

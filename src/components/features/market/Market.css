@@ -628,6 +628,11 @@
 }
 
 @media (max-width: 480px) {
+  .market-container {
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
+  }
+  
   .market-header {
     flex-direction: column;
     gap: 12px;

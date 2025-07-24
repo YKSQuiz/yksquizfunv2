@@ -452,11 +452,6 @@ const Quiz: React.FC = () => {
     }
   };
 
-  // Handle go back
-  const handleGoBack = () => {
-    navigate(-1);
-  };
-
   // Joker satın alma fiyatları
   const JOKER_PRICES: Record<JokerType, number> = {
     eliminate: 50,
@@ -599,9 +594,6 @@ const Quiz: React.FC = () => {
             <button onClick={handleRetry} className="retry-button">
               Tekrar Dene
             </button>
-            <button onClick={handleGoBack} className="back-button">
-              Geri Dön
-            </button>
           </div>
         </div>
       </div>
@@ -615,9 +607,6 @@ const Quiz: React.FC = () => {
           <div className="error-icon">📝</div>
           <h2>Soru Bulunamadı</h2>
           <p>Bu test için henüz soru eklenmemiş.</p>
-          <button onClick={handleGoBack} className="back-button">
-            Geri Dön
-          </button>
         </div>
       </div>
     );

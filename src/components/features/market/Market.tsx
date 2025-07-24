@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
 // import { useNavigate } from 'react-router-dom';
-import BackButton from '../../../components/common/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { MarketItem } from '../../../types';
 import { doc, updateDoc, increment } from 'firebase/firestore';
@@ -450,13 +449,6 @@ const Market: React.FC = React.memo(() => {
         <div className="market-card">
         {/* Header */}
         <div className="market-header">
-          <BackButton 
-            variant="modern" 
-            color="purple" 
-            size="medium" 
-            text="Geri Dön" 
-            showIcon={true} 
-          />
           <h1 className="market-title">
             🛒 MARKET
           </h1>

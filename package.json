@@ -64,8 +64,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ],
     "rules": {
       "no-console": "warn",
@@ -87,18 +86,10 @@
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.0.0",
-    "eslint-config-prettier": "^8.0.0",
-    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-config-react-app": "^7.0.1",
     "prettier": "^2.0.0",
-    "webpack-bundle-analyzer": "^4.9.0",
-    "imagemin": "^8.0.0",
-    "imagemin-pngquant": "^9.0.0",
-    "purgecss": "^5.0.0",
-    "critical": "^5.0.0",
-    "compression-webpack-plugin": "^10.0.0"
+    "webpack-bundle-analyzer": "^4.9.0"
   },
   "prettier": {
     "semi": true,

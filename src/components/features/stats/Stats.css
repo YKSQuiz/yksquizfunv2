@@ -628,6 +628,11 @@
 }
 
 @media (max-width: 900px) {
+  .stats-container {
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
+  }
+  
   .modern-header {
     flex-direction: column;
     text-align: center;
