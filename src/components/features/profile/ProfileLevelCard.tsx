@@ -10,7 +10,29 @@ interface ProfileLevelCardProps {
   rank: string;
 }
 
-const ProfileLevelCard: React.FC<ProfileLevelCardProps> = React.memo(({ avatar, displayName, level, xp, xpToNext, rank }) => {
+// Animation constants
+const ANIMATION_DURATIONS = {
+  RANK_SPIN: 1200,
+  AVATAR_BOUNCE: 900,
+  FADE_IN: 300
+} as const;
+
+// Confetti configuration
+const CONFETTI_CONFIG = {
+  particleCount: 70,
+  spread: 70,
+  origin: { y: 0.5 },
+  zIndex: 9999
+} as const;
+
+const ProfileLevelCard: React.FC<ProfileLevelCardProps> = React.memo(({ 
+  avatar, 
+  displayName, 
+  level, 
+  xp, 
+  xpToNext, 
+  rank 
+}) => {
   const barRef = useRef<HTMLDivElement>(null);
   const prevLevel = useRef(level);
   const rankIconRef = useRef<HTMLSpanElement>(null);
@@ -21,6 +43,24 @@ const ProfileLevelCard: React.FC<ProfileLevelCardProps> = React.memo(({ avatar, 
   const percent = useMemo(() => 
     Math.min(100, Math.round((xpToNext > 0 ? (xp / (xp + xpToNext)) : 1) * 100)),
     [xp, xpToNext]
+  );
+
+  // Memoized XP display text
+  const xpDisplayText = useMemo(() => 
+    `${xp} / ${xp + xpToNext} XP`,
+    [xp, xpToNext]
+  );
+
+  // Memoized XP to next text
+  const xpToNextText = useMemo(() => 
+    `Sonraki seviye için ${xpToNext} XP gerekli`,
+    [xpToNext]
+  );
+
+  // Memoized level display text
+  const levelDisplayText = useMemo(() => 
+    `Seviye ${level}`,
+    [level]
   );
 
   // Intersection Observer for lazy loading
@@ -44,56 +84,59 @@ const ProfileLevelCard: React.FC<ProfileLevelCardProps> = React.memo(({ avatar, 
     return () => observer.disconnect();
   }, []);
 
+  // Update progress bar width
   useEffect(() => {
     if (barRef.current) {
-      barRef.current.style.width = percent + '%';
+      barRef.current.style.width = `${percent}%`;
     }
   }, [percent]);
 
-  // Seviye atlama confetti ve animasyonlar
+  // Level up animations and confetti
   useEffect(() => {
     if (level > prevLevel.current) {
-      confetti({
-        particleCount: 70,
-        spread: 70,
-        origin: { y: 0.5 },
-        zIndex: 9999
-      });
-      // Rank ikonunu döndür
+      // Trigger confetti
+      confetti(CONFETTI_CONFIG);
+      
+      // Rank icon spin animation
       if (rankIconRef.current) {
         rankIconRef.current.classList.add('rank-spin');
-        setTimeout(() => rankIconRef.current?.classList.remove('rank-spin'), 1200);
+        setTimeout(() => {
+          rankIconRef.current?.classList.remove('rank-spin');
+        }, ANIMATION_DURATIONS.RANK_SPIN);
       }
-      // Avatar bounce
+      
+      // Avatar bounce animation
       if (avatarRef.current) {
         avatarRef.current.classList.add('avatar-bounce');
-        setTimeout(() => avatarRef.current?.classList.remove('avatar-bounce'), 900);
+        setTimeout(() => {
+          avatarRef.current?.classList.remove('avatar-bounce');
+        }, ANIMATION_DURATIONS.AVATAR_BOUNCE);
       }
     }
     prevLevel.current = level;
   }, [level]);
 
   return (
-    <div ref={cardRef} className="profile-level-card" style={{ opacity: 0, transform: 'translateY(20px)' }}>
+    <div ref={cardRef} className="profile-level-card">
       <div className="profile-avatar-wrapper" ref={avatarRef}>
         <div className="profile-avatar">{avatar}</div>
       </div>
       <div className="profile-info">
         <h2 className="profile-name">{displayName}</h2>
         <div className="profile-level">
-          <span className="profile-level-badge">Seviye {level}</span>
+          <span className="profile-level-badge">{levelDisplayText}</span>
           <span ref={rankIconRef} className="rank-icon">🏆</span>
           <span className="rank-name">{rank}</span>
         </div>
         <div className="xp-progress">
           <div className="xp-info">
-            <span className="xp-text">{xp} / {xp + xpToNext} XP</span>
+            <span className="xp-text">{xpDisplayText}</span>
           </div>
           <div className="progress-bar">
             <div ref={barRef} className="progress-fill"></div>
           </div>
           <div className="xp-to-next">
-            Sonraki seviye için {xpToNext} XP gerekli
+            {xpToNextText}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 interface SubjectHeaderProps {
   title: string;
@@ -11,15 +11,21 @@ const SubjectHeader: React.FC<SubjectHeaderProps> = ({
   subtitle,
   icon
 }) => {
+  const iconElement = useMemo(() => 
+    icon ? <div className="subject-header-icon">{icon}</div> : null
+  , [icon]);
+
+  const subtitleElement = useMemo(() => 
+    subtitle ? <p className="subject-header-subtitle">{subtitle}</p> : null
+  , [subtitle]);
+
   return (
     <div className="subject-header">
       <div className="subject-header-content">
-        {icon && <div className="subject-header-icon">{icon}</div>}
+        {iconElement}
         <div className="subject-header-text">
           <h1 className="subject-header-title">{title}</h1>
-          {subtitle && (
-            <p className="subject-header-subtitle">{subtitle}</p>
-          )}
+          {subtitleElement}
         </div>
       </div>
     </div>

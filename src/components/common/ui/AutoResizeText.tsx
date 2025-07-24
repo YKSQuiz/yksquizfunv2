@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 interface AutoResizeTextProps {
   text: string;
@@ -18,48 +18,55 @@ const AutoResizeText: React.FC<AutoResizeTextProps> = ({
   const textRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(maxFontSize);
 
-  useEffect(() => {
-    const adjustFontSize = () => {
-      if (!textRef.current) return;
+  const adjustFontSize = useCallback(() => {
+    if (!textRef.current) return;
 
-      const container = textRef.current;
-      const containerWidth = container.offsetWidth;
-      const containerHeight = container.offsetHeight;
+    const container = textRef.current;
+    const containerWidth = container.offsetWidth;
+    const containerHeight = container.offsetHeight;
 
-      let currentFontSize = maxFontSize;
+    let currentFontSize = maxFontSize;
+    container.style.fontSize = `${currentFontSize}px`;
+
+    while (
+      (container.scrollWidth > containerWidth || 
+       container.scrollHeight > containerHeight) && 
+      currentFontSize > minFontSize
+    ) {
+      currentFontSize--;
       container.style.fontSize = `${currentFontSize}px`;
+    }
 
-      while (
-        (container.scrollWidth > containerWidth || 
-         container.scrollHeight > containerHeight) && 
-        currentFontSize > minFontSize
-      ) {
-        currentFontSize--;
-        container.style.fontSize = `${currentFontSize}px`;
-      }
+    setFontSize(currentFontSize);
+  }, [minFontSize, maxFontSize]);
 
-      setFontSize(currentFontSize);
+  useEffect(() => {
+    adjustFontSize();
+    
+    const handleResize = () => {
+      adjustFontSize();
     };
 
-    adjustFontSize();
-    window.addEventListener('resize', adjustFontSize);
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', adjustFontSize);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [text, minFontSize, maxFontSize]);
+  }, [adjustFontSize]);
+
+  const containerStyle = useMemo(() => ({
+    fontSize: `${fontSize}px`,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    ...style
+  }), [fontSize, style]);
 
   return (
     <div
       ref={textRef}
       className={`auto-resize-text ${className}`}
-      style={{
-        fontSize: `${fontSize}px`,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-        ...style
-      }}
+      style={containerStyle}
     >
       {text}
     </div>

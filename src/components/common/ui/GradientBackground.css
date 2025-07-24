@@ -1,5 +1,34 @@
 /* ===== GRADIENT BACKGROUND COMPONENT ===== */
 
+/* CSS Variables */
+:root {
+  --gradient-default: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-auth: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 70%, #f5576c 100%);
+  --gradient-quiz: linear-gradient(135deg, #4facfe 0%, #00f2fe 25%, #667eea 50%, #764ba2 75%, #f093fb 100%);
+  --gradient-market: linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #ff9a9e 50%, #fecfef 75%, #fecfef 100%);
+  --gradient-stats: linear-gradient(135deg, #a8edea 0%, #fed6e3 50%, #ffecd2 100%);
+  --gradient-admin: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  --gradient-test: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%);
+  --gradient-blue-purple: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
+  --gradient-green-blue: linear-gradient(135deg, #00ff88 0%, #00d4ff 50%, #0099ff 100%);
+  --gradient-home: linear-gradient(135deg, #00ff88 0%, #00d4ff 30%, #0099ff 60%, #667eea 100%);
+  --gradient-subjects: linear-gradient(135deg, #ff6b6b 0%, #4facfe 25%, #00f2fe 50%, #667eea 75%, #764ba2 100%);
+  --gradient-orange-red: linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ff4500 100%);
+  
+  --particle-size: 4px;
+  --particle-size-tablet: 2px;
+  --particle-size-mobile: 1px;
+  --shape-size-1: 120px;
+  --shape-size-2: 80px;
+  --shape-size-3: 100px;
+  --shape-size-tablet-1: 80px;
+  --shape-size-tablet-2: 60px;
+  --shape-size-tablet-3: 70px;
+  --shape-size-mobile-1: 60px;
+  --shape-size-mobile-2: 40px;
+  --shape-size-mobile-3: 50px;
+}
+
 /* Ana container */
 .gradient-background {
   min-height: 100vh;
@@ -22,59 +51,51 @@
 /* Gradient varyantları */
 .gradient-background-default .gradient-bg-base,
 .gradient-background-purple-blue .gradient-bg-base {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-default);
 }
 
-/* Auth sayfaları için özel gradient */
 .gradient-background-auth .gradient-bg-base {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 70%, #f5576c 100%);
+  background: var(--gradient-auth);
 }
 
-/* Quiz sayfası için özel gradient */
 .gradient-background-quiz .gradient-bg-base {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 25%, #667eea 50%, #764ba2 75%, #f093fb 100%);
+  background: var(--gradient-quiz);
 }
 
-/* Market sayfası için özel gradient */
 .gradient-background-market .gradient-bg-base {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #ff9a9e 50%, #fecfef 75%, #fecfef 100%);
+  background: var(--gradient-market);
 }
 
-/* Stats sayfası için özel gradient */
 .gradient-background-stats .gradient-bg-base {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 50%, #ffecd2 100%);
+  background: var(--gradient-stats);
 }
 
-/* Admin sayfası için özel gradient */
 .gradient-background-admin .gradient-bg-base {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  background: var(--gradient-admin);
 }
 
-/* Test sayfası için özel gradient */
 .gradient-background-test .gradient-bg-base {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%);
+  background: var(--gradient-test);
 }
 
 .gradient-background-blue-purple .gradient-bg-base {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
+  background: var(--gradient-blue-purple);
 }
 
 .gradient-background-green-blue .gradient-bg-base {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 50%, #0099ff 100%);
+  background: var(--gradient-green-blue);
 }
 
-/* Ana sayfa için özel gradient */
 .gradient-background-home .gradient-bg-base {
-  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 30%, #0099ff 60%, #667eea 100%);
+  background: var(--gradient-home);
 }
 
-/* Ders seçim ekranı için özel gradient */
 .gradient-background-subjects .gradient-bg-base {
-  background: linear-gradient(135deg, #ff6b6b 0%, #4facfe 25%, #00f2fe 50%, #667eea 75%, #764ba2 100%);
+  background: var(--gradient-subjects);
 }
 
 .gradient-background-orange-red .gradient-bg-base {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ff4500 100%);
+  background: var(--gradient-orange-red);
 }
 
 /* Particle efektleri */
@@ -90,8 +111,8 @@
 
 .particle {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: var(--particle-size);
+  height: var(--particle-size);
   background: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   animation: float 8s ease-in-out infinite;
@@ -141,8 +162,8 @@
 }
 
 .shape-1 {
-  width: 120px;
-  height: 120px;
+  width: var(--shape-size-1);
+  height: var(--shape-size-1);
   top: 10%;
   left: 10%;
   animation-delay: 0s;
@@ -150,8 +171,8 @@
 }
 
 .shape-2 {
-  width: 80px;
-  height: 80px;
+  width: var(--shape-size-2);
+  height: var(--shape-size-2);
   top: 60%;
   right: 15%;
   animation-delay: 5s;
@@ -159,8 +180,8 @@
 }
 
 .shape-3 {
-  width: 100px;
-  height: 100px;
+  width: var(--shape-size-3);
+  height: var(--shape-size-3);
   bottom: 20%;
   left: 20%;
   animation-delay: 10s;
@@ -248,23 +269,23 @@
   }
   
   .shape-1 {
-    width: 80px;
-    height: 80px;
+    width: var(--shape-size-tablet-1);
+    height: var(--shape-size-tablet-1);
   }
   
   .shape-2 {
-    width: 60px;
-    height: 60px;
+    width: var(--shape-size-tablet-2);
+    height: var(--shape-size-tablet-2);
   }
   
   .shape-3 {
-    width: 70px;
-    height: 70px;
+    width: var(--shape-size-tablet-3);
+    height: var(--shape-size-tablet-3);
   }
   
   .particle {
-    width: 2px;
-    height: 2px;
+    width: var(--particle-size-tablet);
+    height: var(--particle-size-tablet);
   }
 }
 
@@ -274,27 +295,27 @@
   }
   
   .shape-1 {
-    width: 60px;
-    height: 60px;
+    width: var(--shape-size-mobile-1);
+    height: var(--shape-size-mobile-1);
   }
   
   .shape-2 {
-    width: 40px;
-    height: 40px;
+    width: var(--shape-size-mobile-2);
+    height: var(--shape-size-mobile-2);
   }
   
   .shape-3 {
-    width: 50px;
-    height: 50px;
+    width: var(--shape-size-mobile-3);
+    height: var(--shape-size-mobile-3);
   }
   
   .particle {
-    width: 1px;
-    height: 1px;
+    width: var(--particle-size-mobile);
+    height: var(--particle-size-mobile);
   }
 }
 
-/* Dark mode desteği */
+/* Accessibility ve tema desteği */
 @media (prefers-color-scheme: dark) {
   .particle {
     background: rgba(255, 255, 255, 0.6);
@@ -305,7 +326,6 @@
   }
 }
 
-/* Reduced motion desteği */
 @media (prefers-reduced-motion: reduce) {
   .particle,
   .geometric-shape,
@@ -315,7 +335,6 @@
   }
 }
 
-/* High contrast desteği */
 @media (prefers-contrast: high) {
   .particle {
     background: rgba(255, 255, 255, 0.8);

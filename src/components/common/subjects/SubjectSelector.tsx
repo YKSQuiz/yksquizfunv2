@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubjectGrid } from './index';
-import { subjectsConfig } from '../../../data/subjects';
-import { Subject } from '../../../data/subjects/subjectsConfig';
+import { subjectsConfig, Subject } from '../../../data/subjects';
 
 interface SubjectSelectorProps {
   category: 'tyt' | 'ayt-sayisal' | 'ayt-ea' | 'ayt-sozel';
@@ -11,24 +10,29 @@ interface SubjectSelectorProps {
 const SubjectSelector: React.FC<SubjectSelectorProps> = ({ category }) => {
   const navigate = useNavigate();
   
-  // Konfigürasyondan kategori verilerini al
-  const configKey = category === 'ayt-sayisal' ? 'aytSayisal' : 
-                   category === 'ayt-ea' ? 'aytEa' : 
-                   category === 'ayt-sozel' ? 'aytSozel' : 'tyt';
+  const configKey = useMemo(() => {
+    const categoryMap: Record<string, string> = {
+      'ayt-sayisal': 'aytSayisal',
+      'ayt-ea': 'aytEa',
+      'ayt-sozel': 'aytSozel',
+      'tyt': 'tyt'
+    };
+    return categoryMap[category] || 'tyt';
+  }, [category]);
   
-  const config = subjectsConfig[configKey];
+  const config = useMemo(() => subjectsConfig[configKey], [configKey]);
+
+  const handleSubjectClick = useCallback((subject: Subject) => {
+    navigate(subject.route);
+  }, [navigate]);
   
   if (!config) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
+      <div className="error-container">
         <h2>Kategori bulunamadı: {category}</h2>
       </div>
     );
   }
-
-  const handleSubjectClick = (subject: Subject) => {
-    navigate(subject.route);
-  };
 
   return (
     <SubjectGrid
@@ -36,8 +40,6 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({ category }) => {
       onSubjectClick={handleSubjectClick}
       title={config.subtitle}
       subtitle={config.subtitle}
-      theme={config.theme}
-      headerTitle={config.title}
     />
   );
 };

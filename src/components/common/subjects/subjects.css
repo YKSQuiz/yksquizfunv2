@@ -1,5 +1,18 @@
 /* Subjects Components Styles - Optimize Edilmiş Tasarım */
 
+/* CSS Variables */
+:root {
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --transition-base: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-hover: all 0.1s ease;
+  --shadow-base: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.15);
+  --shadow-active: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --border-radius: 16px;
+  --border-radius-small: 12px;
+}
+
 /* Subject Grid Container - Ortak Stil */
 .subject-grid-container,
 .alt-konu-container {
@@ -10,8 +23,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
-  /* GradientBackground bileşeni kullanıldığı için background kaldırıldı */
+  font-family: var(--font-family) !important;
 }
 
 /* Large Desktop Container */
@@ -48,14 +60,13 @@
 .subject-grid-header,
 .alt-konu-header {
   text-align: center;
-  padding: 0 20px;
   background: rgba(215, 4, 4, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
-  padding: 12px;
+  padding: 12px 20px;
   margin-bottom: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-base);
   animation: slideInDown 0.6s ease-out;
 }
 
@@ -66,59 +77,18 @@
   color: white;
   margin-bottom: 10px;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: var(--font-family) !important;
 }
 
 .subject-grid-subtitle,
 .alt-konu-subtitle {
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.9);
-  margin: 0;
+  margin: 0 auto;
   font-weight: 500;
   line-height: 1.4;
   max-width: 600px;
-  margin: 0 auto;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
-}
-
-/* ===== PLACEHOLDER BUTTON STYLES ===== */
-.placeholder-button-container {
-  position: absolute;
-  top: 155px;
-  left: 550px;
-  z-index: 10;
-}
-
-.placeholder-button {
-  background: rgba(0, 0, 0, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 12px 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
-}
-
-.placeholder-button:hover {
-  background: rgba(0, 0, 0, 0.8);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.placeholder-button:active {
-  transform: translateY(0);
-}
-
-.placeholder-button-text {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: var(--font-family) !important;
 }
 
 /* Header Responsive Adjustments */
@@ -132,19 +102,6 @@
   .subject-grid-title,
   .alt-konu-title {
     font-size: 2rem;
-  }
-  
-  .placeholder-button-container {
-    top: 120px;
-    left: 400px;
-  }
-  
-  .placeholder-button {
-    padding: 10px 16px;
-  }
-  
-  .placeholder-button-text {
-    font-size: 12px;
   }
 }
 
@@ -167,19 +124,6 @@
     padding: 0 3px;
     font-size: 0.9rem;
   }
-  
-  .placeholder-button-container {
-    top: 100px;
-    left: 300px;
-  }
-  
-  .placeholder-button {
-    padding: 8px 12px;
-  }
-  
-  .placeholder-button-text {
-    font-size: 11px;
-  }
 }
 
 @media (max-width: 360px) {
@@ -193,11 +137,6 @@
   .subject-grid-title,
   .alt-konu-title {
     font-size: 1.4rem;
-  }
-  
-  .placeholder-button-container {
-    top: 80px;
-    left: 250px;
   }
 }
 
@@ -230,23 +169,23 @@
 .alt-konu-card {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: var(--transition-base);
   min-height: 160px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  border-radius: 16px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   border: 2px solid transparent;
   -webkit-tap-highlight-color: transparent;
   animation: slideInUp 0.6s ease-out;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-base);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   word-break: break-word;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: var(--font-family) !important;
 }
 
 .subject-card:focus-visible,
@@ -259,38 +198,36 @@
   .subject-card:hover,
   .alt-konu-card:hover {
     transform: translateY(-6px) scale(1.03);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-hover);
     filter: brightness(1.13) saturate(1.15);
     z-index: 2;
   }
-}
-
-.subject-card:focus,
-.alt-konu-card:focus {
-  transform: translateY(-6px) scale(1.03);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-  filter: brightness(1.13) saturate(1.15);
-  z-index: 2;
-}
-
-.subject-card:active,
-.alt-konu-card:active {
-  transform: translateY(-3px) scale(1.01);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  filter: brightness(1.22) saturate(1.2);
-  transition: transform 0.1s, box-shadow 0.1s, filter 0.1s;
-}
-
-@media (hover: hover) {
+  
   .subject-card:hover .subject-icon,
   .alt-konu-card:hover .alt-konu-icon {
     animation: tyt-icon-spin 0.7s cubic-bezier(.39,.575,.56,1.000);
   }
 }
 
+.subject-card:focus,
+.alt-konu-card:focus {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: var(--shadow-hover);
+  filter: brightness(1.13) saturate(1.15);
+  z-index: 2;
+}
+
 .subject-card:focus .subject-icon,
 .alt-konu-card:focus .alt-konu-icon {
   animation: tyt-icon-spin 0.7s cubic-bezier(.39,.575,.56,1.000);
+}
+
+.subject-card:active,
+.alt-konu-card:active {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: var(--shadow-active);
+  filter: brightness(1.22) saturate(1.2);
+  transition: var(--transition-hover);
 }
 
 /* Icon Styles */
@@ -304,9 +241,7 @@
 
 .subject-icon.alt-konu,
 .alt-konu-icon {
-  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.5));
   font-size: 32px;
-  margin-bottom: 10px;
 }
 
 /* Label Styles */
@@ -316,7 +251,7 @@
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   text-align: center;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: var(--font-family) !important;
 }
 
 .alt-konu-label {
@@ -326,7 +261,7 @@
   text-align: center;
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: var(--font-family) !important;
 }
 
 /* Shine Effect */
@@ -379,15 +314,15 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-base);
   z-index: 10;
 }
 
 .back-button:hover {
   background: rgba(255, 255, 255, 1);
   transform: scale(1.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-hover);
 }
 
 .back-button:active {
@@ -420,7 +355,7 @@
   color: #b91d73;
 }
 
-/* Animations - Ortak Stil */
+/* Animations */
 @keyframes slideInDown {
   from {
     opacity: 0;
@@ -455,19 +390,12 @@
   }
 }
 
-@keyframes shine-move {
-  0% {
-    left: -60%;
-    top: -60%;
-  }
-  100% {
-    left: 100%;
-    top: 100%;
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* Responsive Design - Ortak Stil */
-/* Large Desktop - Subject Grid */
+/* Responsive Design - Subject Grid */
 @media (min-width: 1400px) {
   .subject-grid {
     grid-template-columns: repeat(5, 1fr);
@@ -488,7 +416,6 @@
   }
 }
 
-/* Desktop - Subject Grid */
 @media (max-width: 1399px) and (min-width: 1024px) {
   .subject-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -503,7 +430,6 @@
   }
 }
 
-/* Tablet Landscape - Subject Grid */
 @media (max-width: 1023px) and (min-width: 768px) {
   .subject-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -532,7 +458,6 @@
   }
 }
 
-/* Tablet Portrait - Subject Grid */
 @media (max-width: 767px) and (min-width: 481px) {
   .subject-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -566,7 +491,6 @@
   }
 }
 
-/* Mobile Large - Subject Grid */
 @media (max-width: 480px) and (min-width: 361px) {
   .subject-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -612,7 +536,6 @@
   }
 }
 
-/* Mobile Small - Subject Grid */
 @media (max-width: 360px) {
   .subject-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -663,7 +586,7 @@
   .alt-konu-container {
     padding: 15px 10px;
   }
-} 
+}
 
 /* Disabled State */
 .subject-card.disabled,
@@ -704,60 +627,7 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Smooth transitions for all interactive states */
-.subject-card,
-.alt-konu-card {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Better touch feedback */
-@media (hover: none) and (pointer: coarse) {
-  .subject-card:active,
-  .alt-konu-card:active {
-    transform: scale(0.95);
-    filter: brightness(1.1);
-  }
-  
-  /* Mobil kart boyutları iyileştirmeleri */
-.alt-konu-card {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-}
-
-/* Mobil performans iyileştirmeleri */
-
-/* Mobil performans iyileştirmeleri */
-@media (max-width: 768px) {
-  .alt-konu-card {
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  }
-  
-  .alt-konu-grid {
-    will-change: transform;
-    transform: translateZ(0);
-  }
-}
-
-/* Mobil animasyon optimizasyonları */
-@media (prefers-reduced-motion: reduce) {
-  .alt-konu-card {
-    animation: none !important;
-    transition: none !important;
-  }
-} 
-
 /* Alt Konu Grid için Özel Responsive Düzen */
-/* Alt konular genellikle daha fazla olduğu için farklı grid düzeni */
-
-/* Large Desktop - Alt Konular */
 @media (min-width: 1400px) {
   .alt-konu-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -774,7 +644,6 @@
   }
 }
 
-/* Desktop - Alt Konular */
 @media (max-width: 1399px) and (min-width: 1024px) {
   .alt-konu-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -790,7 +659,6 @@
   }
 }
 
-/* Tablet Landscape - Alt Konular */
 @media (max-width: 1023px) and (min-width: 768px) {
   .alt-konu-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -817,7 +685,6 @@
   }
 }
 
-/* Tablet Portrait - Alt Konular */
 @media (max-width: 767px) and (min-width: 481px) {
   .alt-konu-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -844,7 +711,6 @@
   }
 }
 
-/* Mobile Large - Alt Konular */
 @media (max-width: 480px) and (min-width: 361px) {
   .alt-konu-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -874,7 +740,6 @@
   }
 }
 
-/* Mobile Small - Alt Konular */
 @media (max-width: 360px) {
   .alt-konu-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -906,7 +771,6 @@
   }
 }
 
-/* Extra Small Mobile - Alt Konular */
 @media (max-width: 320px) {
   .alt-konu-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -982,12 +846,43 @@
     font-size: 11px;
     line-height: 1.1;
   }
-} 
+}
 
-/* Smooth transitions for all interactive states */
-.subject-card,
-.alt-konu-card {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* Mobil performans iyileştirmeleri */
+@media (max-width: 768px) {
+  .alt-konu-card {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  .alt-konu-grid {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+}
+
+/* Mobil animasyon optimizasyonları */
+@media (prefers-reduced-motion: reduce) {
+  .alt-konu-card {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Error Container */
+.error-container {
+  text-align: center;
+  padding: 50px;
+  color: white;
+  font-family: var(--font-family);
+}
+
+.error-container h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Better touch feedback */
@@ -996,5 +891,10 @@
   .alt-konu-card:active {
     transform: scale(0.95);
     filter: brightness(1.1);
+  }
+  
+  .alt-konu-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 } 

@@ -6,8 +6,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TestSelection } from './components/features/quiz';
 import { SubjectSelector, AltKonuSelector } from './components/common/subjects';
 import { Market } from './components/features/market';
-
-// import { FiArrowLeft } from "react-icons/fi";
 import { initializeABTests } from './utils/abTesting';
 
 // Lazy load heavy components
@@ -72,14 +70,12 @@ const App: React.FC = () => {
         <div className="App">
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
-              {/* Giriş */}
               <Route path="/login" element={<Login />} />
-              {/* Ana Sayfa */}
               <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-              {/* Konu Seçimi */}
-              {/* Removed: <Route path="/topics" element={<PrivateRoute><TopicSelection /></PrivateRoute>} /> */}
+              
               {/* TYT Ana Konular */}
               <Route path="/tyt-subjects" element={<PrivateRoute><SubjectSelector category="tyt" /></PrivateRoute>} />
+              
               {/* TYT Alt Konular */}
               <Route path="/tyt-turkce-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-turkce" subjectName="TYT Türkçe" /></PrivateRoute>} />
               <Route path="/tyt-tarih-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-tarih" subjectName="TYT Tarih" /></PrivateRoute>} />
@@ -90,6 +86,7 @@ const App: React.FC = () => {
               <Route path="/tyt-fizik-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-fizik" subjectName="TYT Fizik" /></PrivateRoute>} />
               <Route path="/tyt-kimya-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-kimya" subjectName="TYT Kimya" /></PrivateRoute>} />
               <Route path="/tyt-biyoloji-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="tyt-biyoloji" subjectName="TYT Biyoloji" /></PrivateRoute>} />
+              
               {/* TYT Test Seçimi */}
               <Route path="/turkce/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/tarih/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
@@ -100,10 +97,12 @@ const App: React.FC = () => {
               <Route path="/fizik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/kimya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/biyoloji/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              
               {/* AYT Ana Konular */}
               <Route path="/ayt-say-subjects" element={<PrivateRoute><SubjectSelector category="ayt-sayisal" /></PrivateRoute>} />
               <Route path="/ayt-ea-subjects" element={<PrivateRoute><SubjectSelector category="ayt-ea" /></PrivateRoute>} />
               <Route path="/ayt-soz-subjects" element={<PrivateRoute><SubjectSelector category="ayt-sozel" /></PrivateRoute>} />
+              
               {/* AYT Alt Konular */}
               <Route path="/ayt-matematik-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-matematik" subjectName="AYT Matematik" /></PrivateRoute>} />
               <Route path="/ayt-fizik-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-fizik" subjectName="AYT Fizik" /></PrivateRoute>} />
@@ -114,6 +113,7 @@ const App: React.FC = () => {
               <Route path="/ayt-cografya-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-cografya" subjectName="AYT Coğrafya" /></PrivateRoute>} />
               <Route path="/ayt-felsefe-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-felsefe" subjectName="AYT Felsefe" /></PrivateRoute>} />
               <Route path="/ayt-din-altkonular" element={<PrivateRoute><AltKonuSelector subjectId="ayt-din" subjectName="AYT Din Kültürü" /></PrivateRoute>} />
+              
               {/* AYT Test Seçimi */}
               <Route path="/ayt-matematik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/ayt-fizik/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
@@ -124,20 +124,19 @@ const App: React.FC = () => {
               <Route path="/ayt-cografya/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/ayt-felsefe/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
               <Route path="/ayt-din/:subTopic" element={<PrivateRoute><TestSelection /></PrivateRoute>} />
+              
               {/* Quiz (TYT ve AYT ortak) */}
               <Route path="/quiz/:mainTopic/:subTopic/:testNumber" element={<PrivateRoute><Quiz /></PrivateRoute>} />
-              {/* Edit Profile */}
+              
+              {/* Diğer Sayfalar */}
               <Route path="/edit-profile" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
-              {/* Istatistiklerim */}
               <Route path="/istatistikler" element={<PrivateRoute><Istatistiklerim /></PrivateRoute>} />
-              {/* Performance Dashboard */}
               <Route path="/performance" element={<PrivateRoute><PerformanceDashboard /></PrivateRoute>} />
-              {/* Market Alanı */}
               <Route path="/market" element={<PrivateRoute><Market /></PrivateRoute>} />
 
               {/* 404 fallback */}
               <Route path="*" element={<Navigate to="/" />} />
-                        </Routes>
+            </Routes>
           </Suspense>
         </div>
       </Router>

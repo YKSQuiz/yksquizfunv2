@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import SubjectCard from './SubjectCard';
 import SubjectHeader from './SubjectHeader';
 import { GradientBackground } from '../ui';
@@ -17,8 +17,6 @@ interface SubjectGridProps {
   title?: string;
   subtitle?: string;
   onSubjectClick?: (subject: Subject) => void;
-  theme?: string;
-  headerTitle?: string;
 }
 
 const SubjectGrid: React.FC<SubjectGridProps> = ({
@@ -27,13 +25,25 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({
   subtitle,
   onSubjectClick
 }) => {
+  const defaultTitle = useMemo(() => title || "Dersler", [title]);
+  const defaultSubtitle = useMemo(() => subtitle || "Alt konuları asd başlayabilirsin", [subtitle]);
+
+  const handleSubjectClick = useCallback((subject: Subject) => {
+    if (onSubjectClick) {
+      onSubjectClick(subject);
+    } else {
+      // Navigate to route
+      window.location.href = subject.route;
+    }
+  }, [onSubjectClick]);
+
   return (
     <GradientBackground variant="subjects" showParticles={true} particleCount={7}>
       <div className="subject-grid-container">
         {/* Header */}
         <SubjectHeader 
-          title={title || "Dersler"}
-          subtitle={subtitle || "Alt konuları asd başlayabilirsin"}
+          title={defaultTitle}
+          subtitle={defaultSubtitle}
         />
         
         <div className="subject-grid-header">
@@ -43,23 +53,14 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({
         
         <div className="subject-grid">
           {subjects.map((subject, index) => (
-            <div key={subject.id} style={{ position: 'relative' }}>
-              <SubjectCard
-                id={subject.id}
-                label={subject.label}
-                icon={subject.icon}
-                color={subject.color}
-                onClick={() => {
-                  if (onSubjectClick) {
-                    onSubjectClick(subject);
-                  } else {
-                    // Navigate to route
-                    window.location.href = subject.route;
-                  }
-                }}
-                index={index}
-              />
-            </div>
+            <SubjectCard
+              key={subject.id}
+              label={subject.label}
+              icon={subject.icon}
+              color={subject.color}
+              onClick={() => handleSubjectClick(subject)}
+              index={index}
+            />
           ))}
         </div>
       </div>

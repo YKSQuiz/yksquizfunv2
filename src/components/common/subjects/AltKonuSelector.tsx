@@ -15,7 +15,6 @@ const AltKonuSelector: React.FC<AltKonuSelectorProps> = ({ subjectId, subjectNam
   const navigate = useNavigate();
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
   
-  // Alt konuları konfigürasyondan al
   const altKonular = altKonularConfig[subjectId];
   
   if (!altKonular || altKonular.length === 0) {
@@ -36,14 +35,13 @@ const AltKonuSelector: React.FC<AltKonuSelectorProps> = ({ subjectId, subjectNam
   const handleAltKonuClick = async (altKonu: AltKonu) => {
     if (loadingStates[altKonu.id]) return;
     
-    setLoadingStates((prev: Record<string, boolean>) => ({ ...prev, [altKonu.id]: true }));
+    setLoadingStates(prev => ({ ...prev, [altKonu.id]: true }));
     
     try {
-      // Simulate loading for better UX
       await new Promise(resolve => setTimeout(resolve, 300));
       navigate(altKonu.route);
     } finally {
-      setLoadingStates((prev: Record<string, boolean>) => ({ ...prev, [altKonu.id]: false }));
+      setLoadingStates(prev => ({ ...prev, [altKonu.id]: false }));
     }
   };
 
@@ -57,16 +55,10 @@ const AltKonuSelector: React.FC<AltKonuSelectorProps> = ({ subjectId, subjectNam
   return (
     <GradientBackground variant="subjects" showParticles={true} particleCount={10}>
       <div className="alt-konu-container">
-        {/* Header */}
         <SubjectHeader 
           title={subjectName}
           subtitle="Alt konuları seçerek başlayabilirsin"
         />
-        
-        <div className="alt-konu-header">
-          <h1 className="alt-konu-title">Alt konuları seçerek başlayabilirsin</h1>
-          <p className="alt-konu-subtitle">Alt konuları çözerek XP ve Coin kazanabilirsin</p>
-        </div>
         
         <div className="alt-konu-grid">
           {altKonular.map((altKonu: AltKonu, index: number) => {

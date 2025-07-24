@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
-// import ProfileLevelCard from './ProfileLevelCard';
 import { SettingsActions, GradientBackground } from '../../../components/common/ui';
-// import { doc, getDoc } from 'firebase/firestore';
-// import { db } from '../../../services/firebase';
-// import { User } from '../../../types/index';
 import { updateUserEnergy } from '../../../services/firebase';
 import '../../../styles/components/features/home.css';
+
+interface CategoryCard {
+  id: string;
+  className: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  route: string;
+  hasEnterKey?: boolean;
+}
 
 const Home: React.FC = React.memo(() => {
   const { user, logout, updateUser, refreshUser } = useAuth();
@@ -15,14 +21,92 @@ const Home: React.FC = React.memo(() => {
   const location = useLocation();
   const [showLevelModal, setShowLevelModal] = useState(false);
   const [levelModalData, setLevelModalData] = useState<any>(null);
-  // const [energyPopup, setEnergyPopup] = useState<string | null>(null);
   const [energyTimer, setEnergyTimer] = useState<NodeJS.Timeout | null>(null);
   const [regenCountdown, setRegenCountdown] = useState<number>(0);
   const [justRegenerated, setJustRegenerated] = useState(false);
   const userRef = useRef(user);
   const cleanupRef = useRef<(() => void) | null>(null);
 
-  // user değiştikçe ref'i güncelle
+  // Memoized category cards configuration
+  const categoryCards: CategoryCard[] = useMemo(() => [
+    {
+      id: 'tyt',
+      className: 'tyt',
+      icon: '📝',
+      title: 'TYT',
+      subtitle: 'Temel Yeterlilik<br />Testi',
+      route: '/tyt-subjects',
+      hasEnterKey: true
+    },
+    {
+      id: 'ayt-ea',
+      className: 'ayt-ea',
+      icon: '⚖️',
+      title: 'AYT',
+      subtitle: 'Eşit Ağırlık',
+      route: '/ayt-ea-subjects',
+      hasEnterKey: true
+    },
+    {
+      id: 'ayt-say',
+      className: 'ayt-say',
+      icon: '🧮',
+      title: 'AYT',
+      subtitle: 'Sayısal',
+      route: '/ayt-say-subjects',
+      hasEnterKey: true
+    },
+    {
+      id: 'ayt-soz',
+      className: 'ayt-soz',
+      icon: '📖',
+      title: 'AYT',
+      subtitle: 'Sözel',
+      route: '/ayt-soz-subjects',
+      hasEnterKey: true
+    },
+    {
+      id: 'stats',
+      className: 'stats',
+      icon: '📊',
+      title: 'İSTATİSTİK',
+      subtitle: 'Detaylı Analiz<br />ve Raporlar',
+      route: '/istatistikler'
+    }
+  ], []);
+
+  // Memoized user data calculations
+  const userData = useMemo(() => {
+    if (!user) return null;
+    
+    const energy = user.energy ?? 0;
+    const energyLimit = user.energyLimit || 100;
+    const experience = user.stats.experience || 0;
+    const experienceToNext = user.stats.experienceToNext || 0;
+    const totalExperience = experience + experienceToNext;
+    const xpProgress = experienceToNext > 0 ? (experience / totalExperience) * 100 : 100;
+    
+    return {
+      energy,
+      energyLimit,
+      experience,
+      experienceToNext,
+      totalExperience,
+      xpProgress: Math.min(100, Math.round(xpProgress)),
+      isEnergyFull: energy === energyLimit,
+      isEnergyMax: energy === 100
+    };
+  }, [user]);
+
+  // Memoized countdown display
+  const countdownDisplay = useMemo(() => {
+    if (regenCountdown <= 0 || regenCountdown >= 10000) return null;
+    const minutes = Math.floor(regenCountdown / 60);
+    const seconds = (regenCountdown % 60).toString().padStart(2, '0');
+    return `Yeni enerji için: ${minutes}:${seconds}`;
+  }, [regenCountdown]);
+
+  // Update user ref when user changes
   useEffect(() => {
     userRef.current = user;
   }, [user]);
@@ -41,9 +125,7 @@ const Home: React.FC = React.memo(() => {
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      cleanup();
-    };
+    return cleanup;
   }, [cleanup]);
 
   // Memoized energy calculation
@@ -51,8 +133,7 @@ const Home: React.FC = React.memo(() => {
     if (!user) return null;
     
     const ENERGY_MAX = user.energyLimit || 100;
-    const ENERGY_REGEN_SPEED = user.energyRegenSpeed || 300; // saniye cinsinden
-    const ENERGY_REGEN_MINUTES = ENERGY_REGEN_SPEED / 60; // dakika cinsinden
+    const ENERGY_REGEN_SPEED = user.energyRegenSpeed || 300;
     const ENERGY_PER_REGEN = 1;
     const now = new Date();
     const lastUpdate = user.lastEnergyUpdate ? new Date(user.lastEnergyUpdate) : now;
@@ -63,24 +144,21 @@ const Home: React.FC = React.memo(() => {
     return {
       ENERGY_MAX,
       ENERGY_REGEN_SPEED,
-      ENERGY_REGEN_MINUTES,
       ENERGY_PER_REGEN,
-      now,
       lastUpdate,
       diffMs,
-      diffSeconds,
       regenCount
     };
   }, [user]);
 
+  // Handle level up modal
   useEffect(() => {
-    if (location.state && location.state.xpResult) {
+    if (location.state?.xpResult) {
       const { xpResult } = location.state;
       if (xpResult.levelUp || xpResult.newRankUnlocked) {
         setLevelModalData(xpResult);
         setShowLevelModal(true);
       }
-      // State'i temizle (geri gelince tekrar gösterilmesin)
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
@@ -92,11 +170,9 @@ const Home: React.FC = React.memo(() => {
     const {
       ENERGY_MAX,
       ENERGY_REGEN_SPEED,
-      // ENERGY_REGEN_MINUTES,
       ENERGY_PER_REGEN,
       lastUpdate,
       diffMs,
-      // diffSeconds,
       regenCount
     } = energyCalculation;
 
@@ -108,8 +184,6 @@ const Home: React.FC = React.memo(() => {
       const newLastUpdate = new Date(lastUpdate.getTime() + secondsUsed * 1000);
       updateUserEnergy(user.id, newEnergy, newLastUpdate.toISOString());
       updateUser({ ...user, energy: newEnergy, lastEnergyUpdate: newLastUpdate.toISOString() });
-      // setEnergyPopup(`${Math.floor(diffSeconds / 60)} dakika içinde ${regenCount} enerji kazandınız!`);
-      // setTimeout(() => setEnergyPopup(null), 5000);
       
       const now2 = new Date();
       const diffMs2 = now2.getTime() - newLastUpdate.getTime();
@@ -125,7 +199,6 @@ const Home: React.FC = React.memo(() => {
     }
     
     // Real-time energy increase interval
-    if (interval) clearInterval(interval);
     interval = setInterval(() => {
       setRegenCountdown(prev => {
         if (prev <= 1) {
@@ -140,8 +213,6 @@ const Home: React.FC = React.memo(() => {
             const newLastUpdate = new Date().toISOString();
             updateUserEnergy(currentUser.id, newEnergy, newLastUpdate);
             updateUser({ ...currentUser, energy: newEnergy, lastEnergyUpdate: newLastUpdate });
-            // setEnergyPopup(`${Math.floor(ENERGY_REGEN_SPEED / 60)} dakika geçti, 1 enerji kazandınız!`);
-            // setTimeout(() => setEnergyPopup(null), 4000);
           }
           return ENERGY_REGEN_SPEED;
         }
@@ -150,8 +221,6 @@ const Home: React.FC = React.memo(() => {
     }, 1000);
     
     setEnergyTimer(interval);
-    
-    // Store cleanup function
     cleanupRef.current = () => {
       if (interval) clearInterval(interval);
     };
@@ -161,6 +230,7 @@ const Home: React.FC = React.memo(() => {
     };
   }, [user?.id, energyCalculation, justRegenerated, updateUser]);
 
+  // Refresh user data
   useEffect(() => {
     if (refreshUser) {
       refreshUser().then(() => {
@@ -169,9 +239,9 @@ const Home: React.FC = React.memo(() => {
         }
       });
     }
-  }, [refreshUser]);
+  }, [refreshUser, user?.jokers]);
 
-  // Joker haklarını kontrol et
+  // Development logging
   useEffect(() => {
     if (user?.jokers && process.env['NODE_ENV'] === 'development') {
       console.log('Home - Mevcut joker hakları:', user.jokers);
@@ -179,6 +249,7 @@ const Home: React.FC = React.memo(() => {
     }
   }, [user?.jokers, user?.jokersUsed]);
 
+  // Optimized event handlers
   const handleEditProfile = useCallback(() => {
     if (process.env['NODE_ENV'] === 'development') {
       console.log("Profil düzenleme sayfasına git...");
@@ -186,7 +257,25 @@ const Home: React.FC = React.memo(() => {
     navigate('/edit-profile');
   }, [navigate]);
 
-  if (!user) {
+  const handleMarketClick = useCallback(() => {
+    navigate('/market');
+  }, [navigate]);
+
+  const handleCategoryClick = useCallback((route: string) => {
+    navigate(route);
+  }, [navigate]);
+
+  const handleCategoryKeyDown = useCallback((e: React.KeyboardEvent, route: string) => {
+    if (e.key === 'Enter') {
+      navigate(route);
+    }
+  }, [navigate]);
+
+  const handleCloseModal = useCallback(() => {
+    setShowLevelModal(false);
+  }, []);
+
+  if (!user || !userData) {
     return <Navigate to="/login" />;
   }
 
@@ -194,185 +283,127 @@ const Home: React.FC = React.memo(() => {
     <GradientBackground variant="home" showParticles={true} particleCount={6}>
       <div className="page-container">
         <div className="content-wrapper">
-        {showLevelModal && levelModalData && (
-          <div className="levelup-modal-overlay">
-            <div className="levelup-modal">
-              <div className="confetti"></div>
-              <h2>Tebrikler!</h2>
-              {levelModalData.levelUp && (
-                <p><b>{levelModalData.newLevel}. Seviye</b> oldun!</p>
-              )}
-              {levelModalData.newRankUnlocked && (
-                <p><b>{levelModalData.newRank}</b> ünvanını almaya hak kazandın!</p>
-              )}
-              <p>Başarı Oranı: %{Math.round(levelModalData.percent)}<br/>Kazandığın XP: <b>{levelModalData.gainedXp} XP</b></p>
-              <button className="close-modal-btn" onClick={() => setShowLevelModal(false)}>Kapat</button>
-            </div>
-          </div>
-        )}
-        
-        {/* Profil Kartı */}
-        <div className="profile-card">
-          <div className="profile-card-inner">
-            {/* Profil/Seviye Kartı */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ marginBottom: 12 }}>
-                <div className="profile-avatar">
-                  {user.avatar || '👤'}
-                </div>
-              </div>
-              <div className="profile-name">{user.displayName}</div>
-              <div className="profile-rank">{user.stats.rank || ''}</div>
-              <div className="profile-level">
-                <span className="profile-level-label">Seviye</span>
-                <span className="profile-level-number">{user.stats.level || 1}</span>
-              </div>
-              <div className="xp-progress-container">
-                <div 
-                  className="xp-progress-bar"
-                  style={{ width: `${Math.min(100, Math.round((user.stats.experienceToNext > 0 ? (user.stats.experience / (user.stats.experience + user.stats.experienceToNext)) : 1) * 100))}%` }}
-                ></div>
-              </div>
-              <div className="xp-info">
-                <span>{user.stats.experience} / {user.stats.experience + user.stats.experienceToNext} XP</span>
-                {user.stats.experienceToNext > 0 && <span className="xp-remaining">({user.stats.experienceToNext} XP kaldı)</span>}
-              </div>
-              {/* Coin Bilgisi */}
-              <div className="coin-display">
-                <div className="coin-container">
-                  <span className="coin-icon">🪙</span>
-                  <span className="coin-amount">{user.coins ?? 0}</span>
-                  <span className="coin-label">coin</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Enerji Barı */}
-            <div className="energy-container">
-              <div 
-                className={`energy-bar ${(user.energy ?? 0) === (user.energyLimit || 100) ? 'full' : 'not-full'}`}
-                style={{ width: `${((user.energy ?? 0) / (user.energyLimit || 100)) * 100}%` }}
-              >
-                <span className={`energy-pulse ${(user.energy ?? 0) === 100 ? 'full' : ''}`} />
-                <span className={`energy-lightning ${(user.energy ?? 0) === 100 ? 'full' : ''}`}>⚡</span>
-              </div>
-            </div>
-            <div className="energy-info">
-              <span className="energy-amount">
-                <span className="energy-current">{user.energy ?? 0}</span>
-                <span className="energy-max">/ {user.energyLimit || 100}</span>
-              </span>
-              <div className="energy-timer">
-                <span className="energy-clock">⏳</span>
-                {regenCountdown > 0 && regenCountdown < 10000 && (
-                  <>Yeni enerji için: {Math.floor(regenCountdown / 60)}:{(regenCountdown % 60).toString().padStart(2, '0')}</>
+          {showLevelModal && levelModalData && (
+            <div className="levelup-modal-overlay">
+              <div className="levelup-modal">
+                <div className="confetti"></div>
+                <h2>Tebrikler!</h2>
+                {levelModalData.levelUp && (
+                  <p><b>{levelModalData.newLevel}. Seviye</b> oldun!</p>
                 )}
+                {levelModalData.newRankUnlocked && (
+                  <p><b>{levelModalData.newRank}</b> ünvanını almaya hak kazandın!</p>
+                )}
+                <p>Başarı Oranı: %{Math.round(levelModalData.percent)}<br/>Kazandığın XP: <b>{levelModalData.gainedXp} XP</b></p>
+                <button className="close-modal-btn" onClick={handleCloseModal}>Kapat</button>
+              </div>
+            </div>
+          )}
+          
+          {/* Profil Kartı */}
+          <div className="profile-card">
+            <div className="profile-card-inner">
+              <div className="profile-content">
+                <div className="profile-avatar-container">
+                  <div className="profile-avatar">
+                    {user.avatar || '👤'}
+                  </div>
+                </div>
+                <div className="profile-name">{user.displayName}</div>
+                <div className="profile-rank">{user.stats.rank || ''}</div>
+                <div className="profile-level">
+                  <span className="profile-level-label">Seviye</span>
+                  <span className="profile-level-number">{user.stats.level || 1}</span>
+                </div>
+                <div className="xp-progress-container">
+                  <div 
+                    className="xp-progress-bar"
+                    style={{ width: `${userData.xpProgress}%` }}
+                  ></div>
+                </div>
+                <div className="xp-info">
+                  <span>{userData.experience} / {userData.totalExperience} XP</span>
+                  {userData.experienceToNext > 0 && <span className="xp-remaining">({userData.experienceToNext} XP kaldı)</span>}
+                </div>
+                <div className="coin-display">
+                  <div className="coin-container">
+                    <span className="coin-icon">🪙</span>
+                    <span className="coin-amount">{user.coins ?? 0}</span>
+                    <span className="coin-label">coin</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Enerji Barı */}
+              <div className="energy-container">
+                <div 
+                  className={`energy-bar ${userData.isEnergyFull ? 'full' : 'not-full'}`}
+                  style={{ width: `${(userData.energy / userData.energyLimit) * 100}%` }}
+                >
+                  <span className={`energy-pulse ${userData.isEnergyMax ? 'full' : ''}`} />
+                  <span className={`energy-lightning ${userData.isEnergyMax ? 'full' : ''}`}>⚡</span>
+                </div>
+              </div>
+              <div className="energy-info">
+                <span className="energy-amount">
+                  <span className="energy-current">{userData.energy}</span>
+                  <span className="energy-max">/ {userData.energyLimit}</span>
+                </span>
+                <div className="energy-timer">
+                  <span className="energy-clock">⏳</span>
+                  {countdownDisplay}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <SettingsActions onEditProfile={handleEditProfile} onLogout={logout} />
-        
-
-        
-        {/* MARKET Butonu */}
-        <div className="market-button">
-          <button
-            className="market-btn"
-            onClick={() => navigate('/market')}
-          >
-            🛒 MARKET
-          </button>
-        </div>
-        
-        <div className="welcome-container">
-          <div className="welcome-card-wrapper">
-            <div className="welcome-card">
-              <div className="welcome-bg-gradient" />
-              <div className="welcome-shine" />
-              <div className="welcome-content">
-                <span className="welcome-emoji">👋</span>
-                <span className="welcome-text">Hoşgeldin,</span>
-                <span className="welcome-name">{user.displayName || 'Kullanıcı'}</span>
-                <span className="welcome-celebration">🎉</span>
-              </div>
-            </div>
+          
+          <SettingsActions onEditProfile={handleEditProfile} onLogout={logout} />
+          
+          {/* MARKET Butonu */}
+          <div className="market-button">
+            <button className="market-btn" onClick={handleMarketClick}>
+              🛒 MARKET
+            </button>
           </div>
+          
+          <div className="welcome-container">
+            <div className="welcome-card-wrapper">
+              <div className="welcome-card">
+                <div className="welcome-bg-gradient" />
+                <div className="welcome-shine" />
+                <div className="welcome-content">
+                  <span className="welcome-emoji">👋</span>
+                  <span className="welcome-text">Hoşgeldin,</span>
+                  <span className="welcome-name">{user.displayName || 'Kullanıcı'}</span>
+                  <span className="welcome-celebration">🎉</span>
+                </div>
+              </div>
+            </div>
 
-          <div className="action-buttons">
-            <div
-              className="category-card tyt"
-              onClick={() => navigate('/tyt-subjects')}
-              tabIndex={0}
-              onKeyDown={e => { if (e.key === 'Enter') navigate('/tyt-subjects'); }}
-            >
-              <div className="category-icon">📝</div>
-              <div className="category-content">
-                <span className="category-title">TYT</span>
-                <span className="category-subtitle">Temel Yeterlilik<br />Testi</span>
-              </div>
-              <span className="category-shine" />
-            </div>
-            
-            <div
-              className="category-card ayt-ea"
-              onClick={() => navigate('/ayt-ea-subjects')}
-              tabIndex={0}
-              onKeyDown={e => { if (e.key === 'Enter') navigate('/ayt-ea-subjects'); }}
-            >
-              <div className="category-icon">⚖️</div>
-              <div className="category-content">
-                <span className="category-title">AYT</span>
-                <span className="category-subtitle single-line">Eşit Ağırlık</span>
-              </div>
-              <span className="category-shine" />
-            </div>
-            
-            <div
-              className="category-card ayt-say"
-              onClick={() => navigate('/ayt-say-subjects')}
-              tabIndex={0}
-              onKeyDown={e => { if (e.key === 'Enter') navigate('/ayt-say-subjects'); }}
-            >
-              <div className="category-icon">🧮</div>
-              <div className="category-content">
-                <span className="category-title">AYT</span>
-                <span className="category-subtitle single-line">Sayısal</span>
-              </div>
-              <span className="category-shine" />
-            </div>
-            
-            <div
-              className="category-card ayt-soz"
-              onClick={() => navigate('/ayt-soz-subjects')}
-              tabIndex={0}
-              onKeyDown={e => { if (e.key === 'Enter') navigate('/ayt-soz-subjects'); }}
-            >
-              <div className="category-icon">📖</div>
-              <div className="category-content">
-                <span className="category-title">AYT</span>
-                <span className="category-subtitle single-line">Sözel</span>
-              </div>
-              <span className="category-shine" />
-            </div>
-            
-            <div
-              className="category-card stats"
-              onClick={() => navigate('/istatistikler')}
-              tabIndex={0}
-            >
-              <div className="category-icon">📊</div>
-              <div className="category-content">
-                <span className="category-title">İSTATİSTİK</span>
-                <span className="category-subtitle">Detaylı Analiz<br />ve Raporlar</span>
-              </div>
-              <span className="category-shine" />
+            <div className="action-buttons">
+              {categoryCards.map((card) => (
+                <div
+                  key={card.id}
+                  className={`category-card ${card.className}`}
+                  onClick={() => handleCategoryClick(card.route)}
+                  tabIndex={0}
+                  onKeyDown={card.hasEnterKey ? (e) => handleCategoryKeyDown(e, card.route) : undefined}
+                >
+                  <div className="category-icon">{card.icon}</div>
+                  <div className="category-content">
+                    <span className="category-title">{card.title}</span>
+                    <span 
+                      className={`category-subtitle ${card.subtitle.includes('<br />') ? '' : 'single-line'}`}
+                      dangerouslySetInnerHTML={{ __html: card.subtitle }}
+                    />
+                  </div>
+                  <span className="category-shine" />
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
-    </div>
     </GradientBackground>
   );
 });

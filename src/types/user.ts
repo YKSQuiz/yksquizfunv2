@@ -25,7 +25,10 @@ export interface UserStats {
   correctAnswers: number;
   totalQuestions: number;
   dailyActivity: {
-    [date: string]: DailyActivity;
+    [date: string]: {
+      questionsSolved: number;
+      correctAnswers: number;
+    };
   };
   level: number;
   experience: number;
@@ -34,12 +37,6 @@ export interface UserStats {
   totalQuizTime?: number;
   totalSessionTime?: number;
   sessionHistory?: { date: string; seconds: number }[];
-}
-
-// Günlük aktivite
-export interface DailyActivity {
-  questionsSolved: number;
-  correctAnswers: number;
 }
 
 export interface JokerState {

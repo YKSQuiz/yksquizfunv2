@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px 0;
+  margin: 50px 0;
   padding: 0 20px;
 }
 
@@ -85,36 +85,6 @@
   box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
 }
 
-.settings-actions-footer {
-  margin-top: 16px;
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-  opacity: 0.8;
-}
-
-.settings-footer-link {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s;
-}
-
-.settings-footer-link:hover {
-  color: #764ba2;
-  text-decoration: underline;
-}
-
-.settings-footer-sep {
-  color: #999;
-  margin: 0 8px;
-}
-
-.settings-footer-version {
-  color: #888;
-  font-size: 12px;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .settings-actions-panel {
@@ -154,37 +124,4 @@
   .settings-btn-icon {
     font-size: 15px;
   }
-}
-
-/* Dark Theme Support */
-[data-theme="dark"] .settings-btn {
-  background: linear-gradient(135deg, #4b5563 0%, #374151 50%, #1f2937 100%);
-  box-shadow: 0 4px 20px rgba(75, 85, 99, 0.3);
-}
-
-[data-theme="dark"] .settings-btn:hover {
-  background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
-  box-shadow: 0 8px 30px rgba(75, 85, 99, 0.4);
-}
-
-[data-theme="dark"] .settings-btn-logout {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
-  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
-}
-
-[data-theme="dark"] .settings-btn-logout:hover {
-  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 50%, #dc2626 100%);
-  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.4);
-}
-
-[data-theme="dark"] .settings-actions-footer {
-  color: #d1d5db;
-}
-
-[data-theme="dark"] .settings-footer-link {
-  color: #8b5cf6;
-}
-
-[data-theme="dark"] .settings-footer-link:hover {
-  color: #a78bfa;
 } 

@@ -17,7 +17,6 @@ import {
   increment
 } from 'firebase/firestore';
 import { Jokers, JokersUsed, User } from '../types';
-import { getFirestore } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -43,111 +42,6 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
-  const userRef = doc(db, 'users', firebaseUser.uid);
-  const userSnap = await getDoc(userRef);
-  if (userSnap.exists()) {
-    const userData = userSnap.data() as User;
-    let needsUpdate = false;
-    if (!userData.jokers) {
-      userData.jokers = {
-        eliminate: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        extraTime: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        doubleAnswer: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        autoCorrect: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-      };
-      needsUpdate = true;
-    }
-    if (!userData.jokersUsed) {
-      userData.jokersUsed = {
-        eliminate: 0,
-        extraTime: 0,
-        doubleAnswer: 0,
-        autoCorrect: 0,
-      };
-      needsUpdate = true;
-    }
-    // Enerji alanları yoksa ekle
-    if (typeof userData.energy !== 'number') {
-      userData.energy = 100;
-      needsUpdate = true;
-    }
-    if (!userData.lastEnergyUpdate) {
-      userData.lastEnergyUpdate = new Date().toISOString();
-      needsUpdate = true;
-    }
-    // Coin alanı yoksa ekle
-    if (typeof userData.coins !== 'number') {
-      userData.coins = 0;
-      needsUpdate = true;
-    }
-    // Yeni enerji sistemi alanları yoksa ekle
-    if (typeof userData.energyLimit !== 'number') {
-      userData.energyLimit = 100;
-      needsUpdate = true;
-    }
-    if (typeof userData.energyRegenSpeed !== 'number') {
-      userData.energyRegenSpeed = 300; // 5 dakika
-      needsUpdate = true;
-    }
-    if (!userData.unlockedTests || typeof userData.unlockedTests !== 'object' || Array.isArray(userData.unlockedTests)) {
-      userData.unlockedTests = {}; // Boş obje, her alt konu için ayrı kontrol
-      needsUpdate = true;
-    }
-    if (needsUpdate) {
-      await updateDoc(userRef, {
-        jokers: userData.jokers,
-        jokersUsed: userData.jokersUsed,
-        energy: userData.energy,
-        lastEnergyUpdate: userData.lastEnergyUpdate,
-        coins: userData.coins,
-        energyLimit: userData.energyLimit,
-        energyRegenSpeed: userData.energyRegenSpeed,
-        unlockedTests: userData.unlockedTests,
-      });
-    }
-    return userData;
-  } else {
-    // Yeni kullanıcı için Firestore'da profil oluştur
-    const newUser: User = {
-      id: firebaseUser.uid,
-      displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Kullanıcı',
-      email: firebaseUser.email || '',
-      avatar: firebaseUser.displayName ? firebaseUser.displayName[0]?.toUpperCase() || 'K' : (firebaseUser.email ? firebaseUser.email[0]?.toUpperCase() || 'K' : 'K'),
-      stats: {
-        totalQuizzes: 0,
-        correctAnswers: 0,
-        totalQuestions: 0,
-        dailyActivity: {},
-        level: 1,
-        experience: 0,
-        experienceToNext: 100,
-        totalSessionTime: 0
-      },
-      jokers: {
-        eliminate: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        extraTime: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        doubleAnswer: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        autoCorrect: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-      },
-      jokersUsed: {
-        eliminate: 0,
-        extraTime: 0,
-        doubleAnswer: 0,
-        autoCorrect: 0,
-      },
-      energy: 100,
-      lastEnergyUpdate: new Date().toISOString(),
-      energyLimit: 100,
-      energyRegenSpeed: 300, // 5 dakika
-      coins: 0,
-      unlockedTests: {}, // Boş obje, her alt konu için ayrı kontrol
-    };
-    await setDoc(userRef, newUser, { merge: true });
-    return newUser;
-  }
 };
 
 // Rütbe listesi
@@ -282,7 +176,6 @@ export async function resetDailyJokers(userId: string, userJokers: Jokers) {
     }
   });
   if (needsReset) {
-    const db = getFirestore();
     await updateDoc(doc(db, 'users', userId), { jokers: newJokers });
   }
   return newJokers;
@@ -308,7 +201,6 @@ export async function jokerKullan(
     ...userJokersUsed,
     [type]: (userJokersUsed[type] || 0) + 1,
   };
-  const db = getFirestore();
   await updateDoc(doc(db, 'users', userId), {
     jokers: newJokers,
     jokersUsed: newJokersUsed,
@@ -316,13 +208,121 @@ export async function jokerKullan(
   return { newJokers, newJokersUsed };
 }
 
+// Varsayılan joker yapısı
+const getDefaultJokers = () => ({
+  eliminate: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
+  extraTime: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
+  doubleAnswer: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
+  autoCorrect: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
+});
 
+// Varsayılan joker kullanım yapısı
+const getDefaultJokersUsed = () => ({
+  eliminate: 0,
+  extraTime: 0,
+  doubleAnswer: 0,
+  autoCorrect: 0,
+});
+
+// Varsayılan stats yapısı
+const getDefaultStats = () => ({
+  totalQuizzes: 0,
+  correctAnswers: 0,
+  totalQuestions: 0,
+  dailyActivity: {},
+  level: 1,
+  experience: 0,
+  experienceToNext: 100,
+  totalSessionTime: 0
+});
+
+const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
+  const userRef = doc(db, 'users', firebaseUser.uid);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) {
+    const userData = userSnap.data() as User;
+    let needsUpdate = false;
+    
+    // Joker alanları kontrol et
+    if (!userData.jokers) {
+      userData.jokers = getDefaultJokers();
+      needsUpdate = true;
+    }
+    if (!userData.jokersUsed) {
+      userData.jokersUsed = getDefaultJokersUsed();
+      needsUpdate = true;
+    }
+    
+    // Enerji alanları kontrol et
+    if (typeof userData.energy !== 'number') {
+      userData.energy = 100;
+      needsUpdate = true;
+    }
+    if (!userData.lastEnergyUpdate) {
+      userData.lastEnergyUpdate = new Date().toISOString();
+      needsUpdate = true;
+    }
+    if (typeof userData.energyLimit !== 'number') {
+      userData.energyLimit = 100;
+      needsUpdate = true;
+    }
+    if (typeof userData.energyRegenSpeed !== 'number') {
+      userData.energyRegenSpeed = 300; // 5 dakika
+      needsUpdate = true;
+    }
+    
+    // Coin alanı kontrol et
+    if (typeof userData.coins !== 'number') {
+      userData.coins = 0;
+      needsUpdate = true;
+    }
+    
+    // Açılan testler alanı kontrol et
+    if (!userData.unlockedTests || typeof userData.unlockedTests !== 'object' || Array.isArray(userData.unlockedTests)) {
+      userData.unlockedTests = {};
+      needsUpdate = true;
+    }
+    
+    if (needsUpdate) {
+      await updateDoc(userRef, {
+        jokers: userData.jokers,
+        jokersUsed: userData.jokersUsed,
+        energy: userData.energy,
+        lastEnergyUpdate: userData.lastEnergyUpdate,
+        coins: userData.coins,
+        energyLimit: userData.energyLimit,
+        energyRegenSpeed: userData.energyRegenSpeed,
+        unlockedTests: userData.unlockedTests,
+      });
+    }
+    return userData;
+  } else {
+    // Yeni kullanıcı için Firestore'da profil oluştur
+    const newUser: User = {
+      id: firebaseUser.uid,
+      displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Kullanıcı',
+      email: firebaseUser.email || '',
+      avatar: firebaseUser.displayName ? firebaseUser.displayName[0]?.toUpperCase() || 'K' : (firebaseUser.email ? firebaseUser.email[0]?.toUpperCase() || 'K' : 'K'),
+      stats: getDefaultStats(),
+      jokers: getDefaultJokers(),
+      jokersUsed: getDefaultJokersUsed(),
+      energy: 100,
+      lastEnergyUpdate: new Date().toISOString(),
+      energyLimit: 100,
+      energyRegenSpeed: 300, // 5 dakika
+      coins: 0,
+      unlockedTests: {},
+    };
+    await setDoc(userRef, newUser, { merge: true });
+    return newUser;
+  }
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const sessionStartRef = React.useRef<number | null>(null);
-  const sessionAccumulatedRef = React.useRef<number>(0); // Henüz kaydedilmemiş süre (ms)
+  const sessionAccumulatedRef = React.useRef<number>(0);
   const sessionIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Oturum süresi takibi (periyodik kayıt)
@@ -412,40 +412,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      // Profil Firestore'a kaydedilecek
       const newUser: User = {
         id: result.user.uid,
         displayName: name,
         email,
         avatar: name && name.length > 0 ? name[0]?.toUpperCase() || 'U' : 'U',
-        stats: {
-          totalQuizzes: 0,
-          correctAnswers: 0,
-          totalQuestions: 0,
-          dailyActivity: {},
-          level: 1,
-          experience: 0,
-          experienceToNext: 100,
-          totalSessionTime: 0
-        },
-        jokers: {
-          eliminate: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          extraTime: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          doubleAnswer: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          autoCorrect: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        },
-        jokersUsed: {
-          eliminate: 0,
-          extraTime: 0,
-          doubleAnswer: 0,
-          autoCorrect: 0,
-        },
+        stats: getDefaultStats(),
+        jokers: getDefaultJokers(),
+        jokersUsed: getDefaultJokersUsed(),
         energy: 100,
         lastEnergyUpdate: new Date().toISOString(),
         energyLimit: 100,
         energyRegenSpeed: 300, // 5 dakika
         coins: 0,
-        unlockedTests: {}, // Boş obje, her alt konu için ayrı kontrol
+        unlockedTests: {},
       };
       await setDoc(doc(db, 'users', result.user.uid), newUser);
       setUser(newUser);
@@ -512,8 +492,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updates['stats.totalQuizTime'] = prevQuizTime + duration;
       }
 
-      // Konu bazlı istatistikler kodu kaldırıldı
-
       // Günlük aktivite
       const dailyKey = `stats.dailyActivity.${today}`;
       const currentDaily = user.stats.dailyActivity?.[today as string] || { questionsSolved: 0, correctAnswers: 0 };
@@ -558,7 +536,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'stats.totalQuizzes': 0,
         'stats.correctAnswers': 0,
         'stats.totalQuestions': 0,
-        // subjectStats: {} satırı kaldırıldı
         'stats.dailyActivity': {},
         'stats.level': 1,
         'stats.experience': 0,

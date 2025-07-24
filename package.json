@@ -30,14 +30,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build:prod": "GENERATE_SOURCEMAP=false react-scripts build",
-    "build:analyze": "npm run build:prod && npx webpack-bundle-analyzer build/static/js/*.js",
-    "build:clean": "rm -rf build && npm run build:prod",
-    "build:size": "npm run build:prod && du -sh build/",
-    "build:optimize": "npm run build:prod && npm run optimize-images",
     "test": "react-scripts test",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
-    "analyze": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
     "type-check": "tsc --noEmit",
@@ -97,20 +92,5 @@
     "singleQuote": true,
     "printWidth": 80,
     "tabWidth": 2
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-username/yksquizv23.git"
-  },
-  "keywords": [
-    "yks",
-    "quiz",
-    "education",
-    "türkiye",
-    "üniversite",
-    "sınav",
-    "react",
-    "typescript",
-    "firebase"
-  ]
+  }
 }

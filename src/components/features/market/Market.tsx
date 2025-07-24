@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useCallback } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { MarketItem } from '../../../types';
 import { doc, updateDoc, increment } from 'firebase/firestore';
@@ -7,7 +6,40 @@ import { db } from '../../../services/firebase';
 import { GradientBackground } from '../../common/ui';
 import './Market.css';
 
-// Onay Dialog Bileşeni - React.memo ile optimize edildi
+// Sabit değerler
+const CONSTANTS = {
+  ENERGY_REFILL_PRICE: 100,
+  MAX_JOKER_COUNT: 3,
+  MESSAGE_TIMEOUT: 3000,
+  ENERGY_LIMIT_BASE: 100,
+  ENERGY_LIMIT_INCREMENT: 5,
+  ENERGY_LIMIT_MAX_LEVEL: 30,
+  ENERGY_SPEED_BASE: 300,
+  ENERGY_SPEED_DECREMENT: 10,
+  ENERGY_SPEED_MAX_LEVEL: 20,
+  UPGRADE_BASE_PRICE: 1000,
+  UPGRADE_PRICE_INCREMENT: 500
+} as const;
+
+// Joker türleri
+const JOKER_TYPES = {
+  eliminate: { name: '%50 Joker Hakkı', icon: '➗' },
+  extraTime: { name: 'Ekstra Süre', icon: '⏰' },
+  doubleAnswer: { name: 'Çift Cevap', icon: '2️⃣' },
+  autoCorrect: { name: 'Otomatik Doğru', icon: '✅' }
+} as const;
+
+// Enerji Upgrade Interface
+interface EnergyUpgrade {
+  level: number;
+  value: number;
+  price: number;
+  isCompleted: boolean;
+  isAvailable: boolean;
+  unit: string;
+}
+
+// Onay Dialog Bileşeni
 const ConfirmDialog: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -16,6 +48,8 @@ const ConfirmDialog: React.FC<{
   userCoins: number;
 }> = React.memo(({ isOpen, onClose, onConfirm, upgrade, userCoins }) => {
   if (!isOpen || !upgrade) return null;
+
+  const isSufficient = userCoins >= upgrade.price;
 
   return (
     <div className="confirm-dialog-overlay" onClick={onClose}>
@@ -44,8 +78,8 @@ const ConfirmDialog: React.FC<{
           </div>
           
           <div className="confirm-dialog-balance">
-            <span className={`balance-status ${userCoins >= upgrade.price ? 'sufficient' : 'insufficient'}`}>
-              {userCoins >= upgrade.price ? '✅ Yeterli Bakiye' : '❌ Yetersiz Bakiye'}
+            <span className={`balance-status ${isSufficient ? 'sufficient' : 'insufficient'}`}>
+              {isSufficient ? '✅ Yeterli Bakiye' : '❌ Yetersiz Bakiye'}
             </span>
           </div>
         </div>
@@ -55,9 +89,9 @@ const ConfirmDialog: React.FC<{
             İptal
           </button>
           <button 
-            className={`confirm-dialog-confirm ${userCoins >= upgrade.price ? 'available' : 'disabled'}`}
-            onClick={userCoins >= upgrade.price ? onConfirm : undefined}
-            disabled={userCoins < upgrade.price}
+            className={`confirm-dialog-confirm ${isSufficient ? 'available' : 'disabled'}`}
+            onClick={isSufficient ? onConfirm : undefined}
+            disabled={!isSufficient}
           >
             Satın Al
           </button>
@@ -67,17 +101,7 @@ const ConfirmDialog: React.FC<{
   );
 });
 
-// Enerji Upgrade Interface
-interface EnergyUpgrade {
-  level: number;
-  value: number;
-  price: number;
-  isCompleted: boolean;
-  isAvailable: boolean;
-  unit: string;
-}
-
-// Segmentli Progress Bar Bileşeni - React.memo ile optimize edildi
+// Segmentli Progress Bar Bileşeni
 const SegmentedProgressBar: React.FC<{
   upgrades: EnergyUpgrade[];
   currentValue: number;
@@ -87,7 +111,6 @@ const SegmentedProgressBar: React.FC<{
   subtitle: string;
   unit: string;
 }> = React.memo(({ upgrades, currentValue, maxValue, onUpgrade, title, subtitle, unit }) => {
-  // Progress hesaplamasını düzelt
   const minValue = upgrades[0]?.value || 0;
   const progress = Math.min(((currentValue - minValue) / (maxValue - minValue)) * 100, 100);
 
@@ -113,14 +136,9 @@ const SegmentedProgressBar: React.FC<{
               onClick={() => upgrade.isAvailable && onUpgrade(upgrade)}
               title={upgrade.isAvailable ? `${upgrade.value}${unit} - ${upgrade.price} coin` : `${upgrade.value}${unit} - Kilitli`}
             >
-              {/* Kilit ikonu - üstte */}
               {!upgrade.isAvailable && !upgrade.isCompleted && (
-                <div className="segment-lock-icon">
-                  🔒
-                </div>
+                <div className="segment-lock-icon">🔒</div>
               )}
-              
-              {/* Değer - altta */}
               <div className="segment-value">
                 {upgrade.value}{unit}
               </div>
@@ -146,8 +164,25 @@ const SegmentedProgressBar: React.FC<{
   );
 });
 
+// Joker Status Item Bileşeni
+const JokerStatusItem: React.FC<{
+  type: keyof typeof JOKER_TYPES;
+  count: number;
+}> = React.memo(({ type, count }) => {
+  const jokerInfo = JOKER_TYPES[type];
+  
+  return (
+    <div className="joker-status-item">
+      <span className="joker-status-icon">{jokerInfo.icon}</span>
+      <div className="joker-status-info">
+        <span className="joker-status-name">{jokerInfo.name}</span>
+        <span className="joker-status-count">{Math.min(count, CONSTANTS.MAX_JOKER_COUNT)}/{CONSTANTS.MAX_JOKER_COUNT}</span>
+      </div>
+    </div>
+  );
+});
+
 const Market: React.FC = React.memo(() => {
-  // const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'joker' | 'energy'>('joker');
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
@@ -157,18 +192,20 @@ const Market: React.FC = React.memo(() => {
     upgrade: EnergyUpgrade | null;
   }>({ isOpen: false, upgrade: null });
 
-  // Tab değiştirme fonksiyonları - useCallback ile optimize edildi
+  // Tab değiştirme fonksiyonları
   const handleJokerTab = useCallback(() => setActiveTab('joker'), []);
   const handleEnergyTab = useCallback(() => setActiveTab('energy'), []);
 
-  // Enerji Limiti Upgrade'leri - useMemo ile optimize edildi
+  // Enerji Limiti Upgrade'leri
   const energyLimitUpgrades = useMemo(() => {
     const upgrades: EnergyUpgrade[] = [];
-    for (let level = 1; level <= 30; level++) {
-      const value = 100 + ((level - 1) * 5);
-      const price = 1000 + ((level - 1) * 500);
-      const isCompleted = (user?.energyLimit || 100) >= value;
-      const isAvailable = (user?.energyLimit || 100) >= (value - 5) && !isCompleted;
+    const currentLimit = user?.energyLimit || CONSTANTS.ENERGY_LIMIT_BASE;
+    
+    for (let level = 1; level <= CONSTANTS.ENERGY_LIMIT_MAX_LEVEL; level++) {
+      const value = CONSTANTS.ENERGY_LIMIT_BASE + ((level - 1) * CONSTANTS.ENERGY_LIMIT_INCREMENT);
+      const price = CONSTANTS.UPGRADE_BASE_PRICE + ((level - 1) * CONSTANTS.UPGRADE_PRICE_INCREMENT);
+      const isCompleted = currentLimit >= value;
+      const isAvailable = currentLimit >= (value - CONSTANTS.ENERGY_LIMIT_INCREMENT) && !isCompleted;
       
       upgrades.push({
         level,
@@ -182,14 +219,16 @@ const Market: React.FC = React.memo(() => {
     return upgrades;
   }, [user?.energyLimit]);
 
-  // Enerji Hızı Upgrade'leri - useMemo ile optimize edildi
+  // Enerji Hızı Upgrade'leri
   const energySpeedUpgrades = useMemo(() => {
     const upgrades: EnergyUpgrade[] = [];
-    for (let level = 1; level <= 20; level++) {
-      const value = 300 - ((level - 1) * 10);
-      const price = 1000 + ((level - 1) * 500);
-      const isCompleted = (user?.energyRegenSpeed || 300) <= value;
-      const isAvailable = (user?.energyRegenSpeed || 300) === (value + 10) && !isCompleted;
+    const currentSpeed = user?.energyRegenSpeed || CONSTANTS.ENERGY_SPEED_BASE;
+    
+    for (let level = 1; level <= CONSTANTS.ENERGY_SPEED_MAX_LEVEL; level++) {
+      const value = CONSTANTS.ENERGY_SPEED_BASE - ((level - 1) * CONSTANTS.ENERGY_SPEED_DECREMENT);
+      const price = CONSTANTS.UPGRADE_BASE_PRICE + ((level - 1) * CONSTANTS.UPGRADE_PRICE_INCREMENT);
+      const isCompleted = currentSpeed <= value;
+      const isAvailable = currentSpeed === (value + CONSTANTS.ENERGY_SPEED_DECREMENT) && !isCompleted;
       
       upgrades.push({
         level,
@@ -203,46 +242,46 @@ const Market: React.FC = React.memo(() => {
     return upgrades;
   }, [user?.energyRegenSpeed]);
 
-  // Joker Market ürünleri - useMemo ile optimize edildi
+  // Joker Market ürünleri
   const jokerItems = useMemo((): MarketItem[] => [
     {
       id: 'eliminate',
-      name: '%50 Joker Hakkı',
+      name: JOKER_TYPES.eliminate.name,
       description: 'Yanlış cevaplardan rastgele 2 tanesini siler',
       price: 50,
       category: 'joker',
       type: 'single',
-      icon: '➗',
+      icon: JOKER_TYPES.eliminate.icon,
       isAvailable: true
     },
     {
       id: 'extraTime',
-      name: 'Ekstra Süre',
+      name: JOKER_TYPES.extraTime.name,
       description: 'Quiz süresini 60 saniye arttırır',
       price: 75,
       category: 'joker',
       type: 'single',
-      icon: '⏰',
+      icon: JOKER_TYPES.extraTime.icon,
       isAvailable: true
     },
     {
       id: 'doubleAnswer',
-      name: 'Çift Cevap',
+      name: JOKER_TYPES.doubleAnswer.name,
       description: 'Doğru cevabı bulmak için 2 defa deneme hakkı verir',
       price: 100,
       category: 'joker',
       type: 'single',
-      icon: '2️⃣',
+      icon: JOKER_TYPES.doubleAnswer.icon,
       isAvailable: true
     },
     {
       id: 'autoCorrect',
-      name: 'Otomatik Doğru',
+      name: JOKER_TYPES.autoCorrect.name,
       description: 'Otomatik olarak doğru cevabı seçer ve soruyu çözer',
       price: 150,
       category: 'joker',
       type: 'single',
-      icon: '✅',
+      icon: JOKER_TYPES.autoCorrect.icon,
       isAvailable: true
     },
     {
@@ -257,6 +296,38 @@ const Market: React.FC = React.memo(() => {
     }
   ], []);
 
+  // Ortak satın alma fonksiyonu
+  const handlePurchase = useCallback(async (
+    price: number,
+    loadingId: string,
+    successMessage: string,
+    errorMessage: string,
+    updateFunction: () => Promise<void>
+  ) => {
+    if (!user) return;
+    
+    setPurchaseLoading(loadingId);
+    setPurchaseMessage(null);
+
+    try {
+      if ((user.coins || 0) < price) {
+        setPurchaseMessage(`Yetersiz coin! ${errorMessage}`);
+        return;
+      }
+
+      await updateFunction();
+      setPurchaseMessage(`✅ ${successMessage}`);
+      setTimeout(() => setPurchaseMessage(null), CONSTANTS.MESSAGE_TIMEOUT);
+
+    } catch (error) {
+      console.error('Satın alma hatası:', error);
+      setPurchaseMessage('❌ Satın alma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setPurchaseLoading(null);
+    }
+  }, [user]);
+
+  // Enerji upgrade fonksiyonu
   const handleEnergyUpgrade = useCallback((upgrade: EnergyUpgrade) => {
     setConfirmDialog({ isOpen: true, upgrade });
   }, []);
@@ -265,179 +336,143 @@ const Market: React.FC = React.memo(() => {
     if (!confirmDialog.upgrade || !user) return;
     
     setConfirmDialog({ isOpen: false, upgrade: null });
-    await handlePurchase(confirmDialog.upgrade);
-  }, [confirmDialog.upgrade, user]);
-
-  const handlePurchase = useCallback(async (upgrade: EnergyUpgrade) => {
-    if (!user) return;
     
-    setPurchaseLoading(`upgrade_${upgrade.level}`);
-    setPurchaseMessage(null);
+    await handlePurchase(
+      confirmDialog.upgrade.price,
+      `upgrade_${confirmDialog.upgrade.level}`,
+      'Satın alma başarılı!',
+      'Bu geliştirmeyi satın almak için daha fazla coin gerekli.',
+      async () => {
+        const userRef = doc(db, 'users', user.id);
+        const updates: any = {
+          coins: increment(-confirmDialog.upgrade!.price)
+        };
 
-    try {
-      // Coin kontrolü
-      if ((user.coins || 0) < upgrade.price) {
-        setPurchaseMessage('Yetersiz coin! Bu geliştirmeyi satın almak için daha fazla coin gerekli.');
-        return;
+        if (confirmDialog.upgrade!.unit === '') {
+          updates.energyLimit = confirmDialog.upgrade!.value;
+        } else {
+          updates.energyRegenSpeed = confirmDialog.upgrade!.value;
+        }
+
+        await updateDoc(userRef, updates);
+
+        const updatedUser = { ...user };
+        updatedUser.coins = (user.coins || 0) - confirmDialog.upgrade!.price;
+
+        if (confirmDialog.upgrade!.unit === '') {
+          updatedUser.energyLimit = confirmDialog.upgrade!.value;
+        } else {
+          updatedUser.energyRegenSpeed = confirmDialog.upgrade!.value;
+        }
+
+        updateUser(updatedUser);
       }
+    );
+  }, [confirmDialog.upgrade, user, updateUser, handlePurchase]);
 
-      const userRef = doc(db, 'users', user.id);
-      const updates: any = {
-        coins: increment(-upgrade.price)
-      };
-
-      // Upgrade tipine göre güncelleme
-      if (upgrade.unit === '') {
-        // Enerji Limiti
-        updates.energyLimit = upgrade.value;
-      } else {
-        // Enerji Hızı
-        updates.energyRegenSpeed = upgrade.value;
-      }
-
-      await updateDoc(userRef, updates);
-
-      // Local user state'ini güncelle
-      const updatedUser = { ...user };
-      updatedUser.coins = (user.coins || 0) - upgrade.price;
-
-      if (upgrade.unit === '') {
-        updatedUser.energyLimit = upgrade.value;
-      } else {
-        updatedUser.energyRegenSpeed = upgrade.value;
-      }
-
-      updateUser(updatedUser);
-      setPurchaseMessage('✅ Satın alma başarılı!');
-      setTimeout(() => setPurchaseMessage(null), 3000);
-
-    } catch (error) {
-      console.error('Satın alma hatası:', error);
-      setPurchaseMessage('❌ Satın alma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
-    } finally {
-      setPurchaseLoading(null);
-    }
-  }, [user, updateUser]);
-
+  // Joker satın alma fonksiyonu
   const handleJokerPurchase = useCallback(async (item: MarketItem) => {
     if (!user) return;
-    
-    setPurchaseLoading(item.id);
-    setPurchaseMessage(null);
 
-    try {
-      // Coin kontrolü
-      if ((user.coins || 0) < item.price) {
-        setPurchaseMessage('Yetersiz coin! Bu ürünü satın almak için daha fazla coin gerekli.');
+    // Joker miktar kontrolü
+    if (item.type === 'single') {
+      const jokerType = item.id as keyof typeof user.jokers;
+      const currentCount = user.jokers?.[jokerType]?.count || 0;
+      
+      if (currentCount >= CONSTANTS.MAX_JOKER_COUNT) {
+        setPurchaseMessage(`Bu jokerden zaten maksimum miktarda (${CONSTANTS.MAX_JOKER_COUNT} adet) sahipsiniz!`);
         return;
       }
-
-      // Joker miktar kontrolü
-      if (item.type === 'single') {
-        const jokerType = item.id as keyof typeof user.jokers;
-        const currentCount = user.jokers?.[jokerType]?.count || 0;
-        
-        if (currentCount >= 3) {
-          setPurchaseMessage(`Bu jokerden zaten maksimum miktarda (3 adet) sahipsiniz!`);
-          return;
-        }
-      }
-
-      const userRef = doc(db, 'users', user.id);
-      const updates: any = {
-        coins: increment(-item.price)
-      };
-
-      if (item.type === 'single') {
-        const jokerType = item.id as keyof typeof user.jokers;
-        updates[`jokers.${jokerType}.count`] = increment(1);
-      } else if (item.type === 'refill') {
-        updates.jokers = {
-          eliminate: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          extraTime: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          doubleAnswer: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          autoCorrect: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        };
-      }
-
-      await updateDoc(userRef, updates);
-
-      // Local user state'ini güncelle
-      const updatedUser = { ...user };
-      updatedUser.coins = (user.coins || 0) - item.price;
-
-      if (item.type === 'single') {
-        const jokerType = item.id as keyof typeof user.jokers;
-        const currentCount = user.jokers?.[jokerType]?.count || 0;
-        updatedUser.jokers = { ...user.jokers };
-        updatedUser.jokers[jokerType].count = Math.min(currentCount + 1, 3);
-      } else if (item.type === 'refill') {
-        updatedUser.jokers = {
-          eliminate: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          extraTime: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          doubleAnswer: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-          autoCorrect: { count: 3, lastReset: new Date().toISOString().slice(0, 10) },
-        };
-      }
-
-      updateUser(updatedUser);
-      setPurchaseMessage('✅ Satın alma başarılı!');
-      setTimeout(() => setPurchaseMessage(null), 3000);
-
-    } catch (error) {
-      console.error('Satın alma hatası:', error);
-      setPurchaseMessage('❌ Satın alma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
-    } finally {
-      setPurchaseLoading(null);
     }
-  }, [user, updateUser]);
+
+    await handlePurchase(
+      item.price,
+      item.id,
+      'Satın alma başarılı!',
+      'Bu ürünü satın almak için daha fazla coin gerekli.',
+      async () => {
+        const userRef = doc(db, 'users', user.id);
+        const updates: any = {
+          coins: increment(-item.price)
+        };
+
+        if (item.type === 'single') {
+          const jokerType = item.id as keyof typeof user.jokers;
+          updates[`jokers.${jokerType}.count`] = increment(1);
+        } else if (item.type === 'refill') {
+          const today = new Date().toISOString().slice(0, 10);
+          updates.jokers = {
+            eliminate: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+            extraTime: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+            doubleAnswer: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+            autoCorrect: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+          };
+        }
+
+        await updateDoc(userRef, updates);
+
+        const updatedUser = { ...user };
+        updatedUser.coins = (user.coins || 0) - item.price;
+
+        if (item.type === 'single') {
+          const jokerType = item.id as keyof typeof user.jokers;
+          const currentCount = user.jokers?.[jokerType]?.count || 0;
+          updatedUser.jokers = { ...user.jokers };
+          updatedUser.jokers[jokerType].count = Math.min(currentCount + 1, CONSTANTS.MAX_JOKER_COUNT);
+        } else if (item.type === 'refill') {
+          const today = new Date().toISOString().slice(0, 10);
+          updatedUser.jokers = {
+            eliminate: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+            extraTime: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+            doubleAnswer: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+            autoCorrect: { count: CONSTANTS.MAX_JOKER_COUNT, lastReset: today },
+          };
+        }
+
+        updateUser(updatedUser);
+      }
+    );
+  }, [user, updateUser, handlePurchase]);
 
   // Enerji doldurma fonksiyonu
   const handleEnergyRefill = useCallback(async () => {
     if (!user) return;
-    
-    setPurchaseLoading('refill_energy');
-    setPurchaseMessage(null);
 
-    try {
-      const price = 100;
-      
-      // Coin kontrolü
-      if ((user.coins || 0) < price) {
-        setPurchaseMessage('Yetersiz coin! Enerjiyi doldurmak için 100 coin gerekli.');
-        return;
-      }
-
-      // Enerji zaten dolu mu kontrolü
-      if ((user.energy || 0) >= (user.energyLimit || 100)) {
-        setPurchaseMessage('Enerjin zaten dolu!');
-        return;
-      }
-
-      const userRef = doc(db, 'users', user.id);
-      const updates: any = {
-        coins: increment(-price),
-        energy: user.energyLimit || 100
-      };
-
-      await updateDoc(userRef, updates);
-
-      // Local user state'ini güncelle
-      const updatedUser = { ...user };
-      updatedUser.coins = (user.coins || 0) - price;
-      updatedUser.energy = user.energyLimit || 100;
-
-      updateUser(updatedUser);
-      setPurchaseMessage('✅ Enerji başarıyla dolduruldu!');
-      setTimeout(() => setPurchaseMessage(null), 3000);
-
-    } catch (error) {
-      console.error('Enerji doldurma hatası:', error);
-      setPurchaseMessage('❌ Enerji doldurma sırasında bir hata oluştu. Lütfen tekrar deneyin.');
-    } finally {
-      setPurchaseLoading(null);
+    if ((user.energy || 0) >= (user.energyLimit || CONSTANTS.ENERGY_LIMIT_BASE)) {
+      setPurchaseMessage('Enerjin zaten dolu!');
+      return;
     }
-  }, [user, updateUser]);
+
+    await handlePurchase(
+      CONSTANTS.ENERGY_REFILL_PRICE,
+      'refill_energy',
+      'Enerji başarıyla dolduruldu!',
+      'Enerjiyi doldurmak için 100 coin gerekli.',
+      async () => {
+        const userRef = doc(db, 'users', user.id);
+        const updates: any = {
+          coins: increment(-CONSTANTS.ENERGY_REFILL_PRICE),
+          energy: user.energyLimit || CONSTANTS.ENERGY_LIMIT_BASE
+        };
+
+        await updateDoc(userRef, updates);
+
+        const updatedUser = { ...user };
+        updatedUser.coins = (user.coins || 0) - CONSTANTS.ENERGY_REFILL_PRICE;
+        updatedUser.energy = user.energyLimit || CONSTANTS.ENERGY_LIMIT_BASE;
+
+        updateUser(updatedUser);
+      }
+    );
+  }, [user, updateUser, handlePurchase]);
+
+  // Joker status verileri
+  const jokerStatusData = useMemo(() => [
+    { type: 'eliminate' as const, count: user?.jokers?.eliminate?.count || 0 },
+    { type: 'extraTime' as const, count: user?.jokers?.extraTime?.count || 0 },
+    { type: 'doubleAnswer' as const, count: user?.jokers?.doubleAnswer?.count || 0 },
+    { type: 'autoCorrect' as const, count: user?.jokers?.autoCorrect?.count || 0 }
+  ], [user?.jokers]);
 
   if (!user) {
     return <div>Kullanıcı oturumu bulunamadı.</div>;
@@ -447,192 +482,159 @@ const Market: React.FC = React.memo(() => {
     <GradientBackground variant="market" showParticles={true} particleCount={8}>
       <div className="market-container">
         <div className="market-card">
-        {/* Header */}
-        <div className="market-header">
-          <h1 className="market-title">
-            🛒 MARKET
-          </h1>
-          <div className="coin-display">
-            <span className="coin-icon">🪙</span>
-            <span className="coin-amount">
-              {user.coins || 0}
-            </span>
+          {/* Header */}
+          <div className="market-header">
+            <h1 className="market-title">🛒 MARKET</h1>
+            <div className="coin-display">
+              <span className="coin-icon">🪙</span>
+              <span className="coin-amount">{user.coins || 0}</span>
+            </div>
           </div>
-        </div>
 
-        {/* Tab Navigation */}
-        <div className="tab-container">
-          <button
-            onClick={handleJokerTab}
-            className={`tab-button ${activeTab === 'joker' ? 'active' : ''}`}
-          >
-            <span>🎯 Joker Market</span>
-          </button>
-          <button
-            onClick={handleEnergyTab}
-            className={`tab-button ${activeTab === 'energy' ? 'active' : ''}`}
-          >
-            <span>⚡ Enerji Market</span>
-          </button>
-        </div>
-
-        {/* Purchase Message */}
-        {purchaseMessage && (
-          <div className={`purchase-message ${purchaseMessage.includes('✅') ? 'success' : 'error'}`}>
-            {purchaseMessage}
+          {/* Tab Navigation */}
+          <div className="tab-container">
+            <button
+              onClick={handleJokerTab}
+              className={`tab-button ${activeTab === 'joker' ? 'active' : ''}`}
+            >
+              <span>🎯 Joker Market</span>
+            </button>
+            <button
+              onClick={handleEnergyTab}
+              className={`tab-button ${activeTab === 'energy' ? 'active' : ''}`}
+            >
+              <span>⚡ Enerji Market</span>
+            </button>
           </div>
-        )}
 
-        {/* Content */}
-        <div className="market-content">
-          {activeTab === 'energy' ? (
-            /* Modern Energy Market */
-            <div className="energy-market-container">
-              <div className="energy-market-header">
-                <h2 className="energy-market-title">
-                  ⚡ Enerji Geliştirme Merkezi
-                </h2>
-                <p className="energy-market-subtitle">
-                  Enerji limitini ve yenilenme hızını geliştir
-                </p>
-              </div>
+          {/* Purchase Message */}
+          {purchaseMessage && (
+            <div className={`purchase-message ${purchaseMessage.includes('✅') ? 'success' : 'error'}`}>
+              {purchaseMessage}
+            </div>
+          )}
 
-              {/* Enerji Limiti Progress Bar */}
-              <SegmentedProgressBar
-                upgrades={energyLimitUpgrades}
-                currentValue={user.energyLimit || 100}
-                maxValue={250}
-                onUpgrade={handleEnergyUpgrade}
-                title="Enerji Limiti"
-                subtitle="Maksimum enerji kapasitesi"
-                unit=""
-              />
-
-              {/* Enerji Hızı Progress Bar */}
-              <SegmentedProgressBar
-                upgrades={energySpeedUpgrades}
-                currentValue={user.energyRegenSpeed || 300}
-                maxValue={100}
-                onUpgrade={handleEnergyUpgrade}
-                title="Enerji Hızı"
-                subtitle="Yenilenme süresi (saniye)"
-                unit="s"
-              />
-
-              {/* Enerjiyi Fulle Kartı */}
-              <div className="energy-refill-card">
-                <div className="energy-refill-header">
-                  <div className="energy-refill-icon">🔋</div>
-                  <div className="energy-refill-info">
-                    <h3>Enerjiyi Fulle</h3>
-                    <p>Enerjini anında maksimum seviyeye çıkar</p>
-                  </div>
+          {/* Content */}
+          <div className="market-content">
+            {activeTab === 'energy' ? (
+              /* Modern Energy Market */
+              <div className="energy-market-container">
+                <div className="energy-market-header">
+                  <h2 className="energy-market-title">⚡ Enerji Geliştirme Merkezi</h2>
+                  <p className="energy-market-subtitle">
+                    Enerji limitini ve yenilenme hızını geliştir
+                  </p>
                 </div>
-                
-                <div className="energy-refill-content">
-                  <div className="energy-refill-price">
-                    <span className="price-icon">🪙</span>
-                    <span className="price-amount">100</span>
+
+                {/* Enerji Limiti Progress Bar */}
+                <SegmentedProgressBar
+                  upgrades={energyLimitUpgrades}
+                  currentValue={user.energyLimit || CONSTANTS.ENERGY_LIMIT_BASE}
+                  maxValue={250}
+                  onUpgrade={handleEnergyUpgrade}
+                  title="Enerji Limiti"
+                  subtitle="Maksimum enerji kapasitesi"
+                  unit=""
+                />
+
+                {/* Enerji Hızı Progress Bar */}
+                <SegmentedProgressBar
+                  upgrades={energySpeedUpgrades}
+                  currentValue={user.energyRegenSpeed || CONSTANTS.ENERGY_SPEED_BASE}
+                  maxValue={100}
+                  onUpgrade={handleEnergyUpgrade}
+                  title="Enerji Hızı"
+                  subtitle="Yenilenme süresi (saniye)"
+                  unit="s"
+                />
+
+                {/* Enerjiyi Fulle Kartı */}
+                <div className="energy-refill-card">
+                  <div className="energy-refill-header">
+                    <div className="energy-refill-icon">🔋</div>
+                    <div className="energy-refill-info">
+                      <h3>Enerjiyi Fulle</h3>
+                      <p>Enerjini anında maksimum seviyeye çıkar</p>
+                    </div>
                   </div>
                   
-                  <button
-                    onClick={handleEnergyRefill}
-                    disabled={purchaseLoading === 'refill_energy'}
-                    className={`energy-refill-button ${
-                      purchaseLoading === 'refill_energy' ? 'loading' :
-                      (user.coins || 0) >= 100 ? 'available' : 'disabled'
-                    }`}
-                  >
-                    {purchaseLoading === 'refill_energy' ? 'Yükleniyor...' : 'Fulle'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Joker Market Items */
-            <>
-              {/* Joker Durumu */}
-              <div className="joker-status-container">
-                <h3 className="joker-status-title">
-                   Joker Durumun
-                </h3>
-                <div className="joker-status-grid">
-                  <div className="joker-status-item">
-                    <span className="joker-status-icon">➗</span>
-                    <div className="joker-status-info">
-                      <span className="joker-status-name">%50 Joker Hakkı</span>
-                      <span className="joker-status-count">{Math.min(user.jokers?.eliminate?.count || 0, 3)}/3</span>
+                  <div className="energy-refill-content">
+                    <div className="energy-refill-price">
+                      <span className="price-icon">🪙</span>
+                      <span className="price-amount">{CONSTANTS.ENERGY_REFILL_PRICE}</span>
                     </div>
-                  </div>
-                  <div className="joker-status-item">
-                    <span className="joker-status-icon">⏰</span>
-                    <div className="joker-status-info">
-                      <span className="joker-status-name">Ekstra Süre</span>
-                      <span className="joker-status-count">{Math.min(user.jokers?.extraTime?.count || 0, 3)}/3</span>
-                    </div>
-                  </div>
-                  <div className="joker-status-item">
-                    <span className="joker-status-icon">2️⃣</span>
-                    <div className="joker-status-info">
-                      <span className="joker-status-name">Çift Cevap</span>
-                      <span className="joker-status-count">{Math.min(user.jokers?.doubleAnswer?.count || 0, 3)}/3</span>
-                    </div>
-                  </div>
-                  <div className="joker-status-item">
-                    <span className="joker-status-icon">✅</span>
-                    <div className="joker-status-info">
-                      <span className="joker-status-name">Otomatik Doğru</span>
-                      <span className="joker-status-count">{Math.min(user.jokers?.autoCorrect?.count || 0, 3)}/3</span>
-                    </div>
+                    
+                    <button
+                      onClick={handleEnergyRefill}
+                      disabled={purchaseLoading === 'refill_energy'}
+                      className={`energy-refill-button ${
+                        purchaseLoading === 'refill_energy' ? 'loading' :
+                        (user.coins || 0) >= CONSTANTS.ENERGY_REFILL_PRICE ? 'available' : 'disabled'
+                      }`}
+                    >
+                      {purchaseLoading === 'refill_energy' ? 'Yükleniyor...' : 'Fulle'}
+                    </button>
                   </div>
                 </div>
               </div>
-
-              <div className="market-grid">
-                {jokerItems.map((item) => (
-                  <div key={item.id} className="market-item-card">
-                    <div className="market-item-header">
-                      <span className="market-item-icon">{item.icon}</span>
-                      <div className="market-item-info">
-                        <h3>{item.name}</h3>
-                        <p>{item.description}</p>
-                      </div>
-                    </div>
-
-                    <div className="market-item-footer">
-                      <div className="price-container">
-                        <span className="price-icon">🪙</span>
-                        <span className="price-amount">{item.price}</span>
-                      </div>
-
-                      <button
-                        onClick={() => handleJokerPurchase(item)}
-                        disabled={purchaseLoading === item.id}
-                        className={`purchase-button ${
-                          purchaseLoading === item.id ? 'loading' :
-                          (user.coins || 0) >= item.price ? 'available' : 'disabled'
-                        }`}
-                      >
-                        {purchaseLoading === item.id ? 'Satın Alınıyor...' : 'Satın Al'}
-                      </button>
-                    </div>
+            ) : (
+              /* Joker Market Items */
+              <>
+                {/* Joker Durumu */}
+                <div className="joker-status-container">
+                  <h3 className="joker-status-title">Joker Durumun</h3>
+                  <div className="joker-status-grid">
+                    {jokerStatusData.map(({ type, count }) => (
+                      <JokerStatusItem key={type} type={type} count={count} />
+                    ))}
                   </div>
-                ))}
-              </div>
-            </>
-          )}
+                </div>
+
+                <div className="market-grid">
+                  {jokerItems.map((item) => (
+                    <div key={item.id} className="market-item-card">
+                      <div className="market-item-header">
+                        <span className="market-item-icon">{item.icon}</span>
+                        <div className="market-item-info">
+                          <h3>{item.name}</h3>
+                          <p>{item.description}</p>
+                        </div>
+                      </div>
+
+                      <div className="market-item-footer">
+                        <div className="price-container">
+                          <span className="price-icon">🪙</span>
+                          <span className="price-amount">{item.price}</span>
+                        </div>
+
+                        <button
+                          onClick={() => handleJokerPurchase(item)}
+                          disabled={purchaseLoading === item.id}
+                          className={`purchase-button ${
+                            purchaseLoading === item.id ? 'loading' :
+                            (user.coins || 0) >= item.price ? 'available' : 'disabled'
+                          }`}
+                        >
+                          {purchaseLoading === item.id ? 'Satın Alınıyor...' : 'Satın Al'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
 
-      {/* Onay Dialog */}
-      <ConfirmDialog
-        isOpen={confirmDialog.isOpen}
-        onClose={() => setConfirmDialog({ isOpen: false, upgrade: null })}
-        onConfirm={handleConfirmUpgrade}
-        upgrade={confirmDialog.upgrade}
-        userCoins={user.coins || 0}
-      />
+        {/* Onay Dialog */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog({ isOpen: false, upgrade: null })}
+          onConfirm={handleConfirmUpgrade}
+          upgrade={confirmDialog.upgrade}
+          userCoins={user.coins || 0}
+        />
+      </div>
     </GradientBackground>
   );
 });

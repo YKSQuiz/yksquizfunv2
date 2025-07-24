@@ -377,11 +377,9 @@ const TestSelection: React.FC = React.memo(() => {
   // User state'ini yenile (Firestore'dan güncel veriyi al)
   useEffect(() => {
     if (user?.id) {
-      console.log('🔄 User state yenileniyor...');
       refreshUser().then(() => {
-        console.log('✅ User state yenilendi');
-      }).catch((error: any) => {
-        console.error('❌ User state yenileme hatası:', error);
+      }).catch(() => {
+        // Hata durumunda sessizce devam et
       });
     }
   }, [user?.id, refreshUser]);
@@ -516,13 +514,6 @@ const TestSelection: React.FC = React.memo(() => {
           return;
         }
 
-        console.log('🔒 Test kilitli, modal açılıyor:', {
-          testNumber,
-          testPrice: TEST_PRICES[testNumber],
-          userCoins: user.coins,
-          isPreviousTestSuccessful: checkPreviousTestSuccess(testNumber)
-        });
-
         // Satın alma modalını göster
         setSelectedTest(testNumber);
         setShowUnlockModal(true);
@@ -595,9 +586,7 @@ const TestSelection: React.FC = React.memo(() => {
           coins: increment(-testPrice),
           [`unlockedTests.${subjectTopicKey}`]: updatedTopicUnlockedTests
         });
-        console.log('✅ Firestore\'a test açma kaydedildi');
       } catch (firestoreError) {
-        console.error('❌ Firestore hatası (test açma):', firestoreError);
         setUnlockMessage('❌ Test açılırken bir hata oluştu. Lütfen tekrar deneyin.');
         return;
       }
@@ -641,7 +630,6 @@ const TestSelection: React.FC = React.memo(() => {
       }, 1500);
 
     } catch (error) {
-      console.error('Test açma hatası:', error);
       setUnlockMessage('❌ Test açılırken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setUnlockLoading(false);
@@ -677,16 +665,6 @@ const TestSelection: React.FC = React.memo(() => {
         else if (!unlockedTests.includes(testNumber)) {
           isTestUnlocked = false;
         }
-        
-        // Debug için Test 2 durumunu logla
-        if (testNumber === 2) {
-          console.log('🔍 Test 2 Durumu:', {
-            isTestUnlocked,
-            isPreviousTestSuccessful,
-            unlockedTests,
-            isLocked: testNumber > 1 && !isTestUnlocked
-          });
-        }
       }
       
       const isLocked = testNumber > 1 && !isTestUnlocked;
@@ -720,27 +698,6 @@ const TestSelection: React.FC = React.memo(() => {
       </div>
     );
   }
-
-  // Debug bilgileri
-  console.log('🔍 Test Seçim Ekranı Debug:', {
-    mainTopic,
-    subTopic,
-    subjectTopicKey,
-    testResults,
-    unlockedTests,
-    userId: user?.id,
-    userCoins: user?.coins,
-    userTestResults: user?.testResults,
-    userUnlockedTests: user?.unlockedTests,
-    test2Unlocked: unlockedTests.includes(2),
-    test2Status: getTestStatus(2),
-    test1Status: getTestStatus(1),
-    test1Completed: testResults['1']?.completed,
-    test1Percentage: testResults['1']?.percentage,
-    test2Price: TEST_PRICES[2],
-    hasEnoughCoins: (user?.coins || 0) >= (TEST_PRICES[2] || 0),
-    isPreviousTestSuccessful: checkPreviousTestSuccess(2)
-  });
 
   return (
     <div className="test-selection-container">
