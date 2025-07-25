@@ -373,7 +373,7 @@ const Home: React.FC = React.memo(() => {
                 <div className="welcome-shine" />
                 <div className="welcome-content">
                   <span className="welcome-emoji">👋</span>
-                  <span className="welcome-text">Hoşgeldin,</span>
+                  <span className="welcome-text">Hoşgeldiniz,</span>
                   <span className="welcome-name">{user.displayName || 'Kullanıcı'}</span>
                   <span className="welcome-celebration">🎉</span>
                 </div>
