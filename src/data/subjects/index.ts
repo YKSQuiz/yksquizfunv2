@@ -1,3 +1,6 @@
+// Types
+export * from './types';
+
 // Alt konular
 export * from './tyt';
 export * from './ayt';

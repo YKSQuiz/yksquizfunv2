@@ -1,5 +1,3 @@
-// Firebase konfigürasyonu
+// Firebase servisleri - Merkezi export dosyası
 export * from './config';
-
-// Kullanıcı servisleri
 export * from './user'; 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import './GradientBackground.css';
 
 interface GradientBackgroundProps {
@@ -10,6 +10,12 @@ interface GradientBackgroundProps {
   style?: React.CSSProperties;
 }
 
+interface Particle {
+  id: number;
+  left: string;
+  delay: number;
+}
+
 const GradientBackground: React.FC<GradientBackgroundProps> = ({
   children,
   variant = 'default',
@@ -18,32 +24,35 @@ const GradientBackground: React.FC<GradientBackgroundProps> = ({
   className = '',
   style = {}
 }) => {
-  const [particles, setParticles] = useState<Array<{ id: number; left: string; delay: number }>>([]);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
-  useEffect(() => {
-    if (showParticles) {
-      const newParticles = Array.from({ length: particleCount }, (_, index) => ({
-        id: index,
-        left: `${(index + 1) * 20}%`,
-        delay: index * 2
-      }));
-      setParticles(newParticles);
-    }
-  }, [showParticles, particleCount]);
-
-  const containerClasses = [
+  const containerClasses = useMemo(() => [
     'gradient-background',
     `gradient-background-${variant}`,
     className
-  ].filter(Boolean).join(' ');
+  ].filter(Boolean).join(' '), [variant, className]);
+
+  const generatedParticles = useMemo(() => {
+    if (!showParticles) return [];
+    
+    return Array.from({ length: particleCount }, (_, index) => ({
+      id: index,
+      left: `${(index + 1) * 20}%`,
+      delay: index * 2
+    }));
+  }, [showParticles, particleCount]);
+
+  useEffect(() => {
+    setParticles(generatedParticles);
+  }, [generatedParticles]);
 
   return (
     <div className={containerClasses} style={style}>
       {/* Ana gradient arka plan */}
-      <div className="gradient-bg-base"></div>
+      <div className="gradient-bg-base" />
       
       {/* Particle efektleri */}
-      {showParticles && (
+      {showParticles && particles.length > 0 && (
         <div className="particle-background">
           {particles.map((particle) => (
             <div
@@ -60,9 +69,9 @@ const GradientBackground: React.FC<GradientBackgroundProps> = ({
       
       {/* Geometric şekiller */}
       <div className="geometric-shapes">
-        <div className="geometric-shape shape-1"></div>
-        <div className="geometric-shape shape-2"></div>
-        <div className="geometric-shape shape-3"></div>
+        <div className="geometric-shape shape-1" />
+        <div className="geometric-shape shape-2" />
+        <div className="geometric-shape shape-3" />
       </div>
       
       {/* İçerik */}

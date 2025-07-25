@@ -1,8 +1,11 @@
-// Test sayısı
-export const TEST_COUNT = 10;
+// Oyun sabitleri - Merkezi tanım dosyası
 
-// Quiz süresi (saniye)
-export const QUIZ_DURATION = 600;
+/* Not: Bu sabitler şu anda hiçbir yerde kullanılmıyor:
+ * - TEST_COUNT: TestSelection.tsx'te yerel olarak tanımlanmış
+ * - QUIZ_DURATION: TestSelection.tsx'te yerel olarak tanımlanmış  
+ * - DAILY_GOAL: Hiçbir yerde kullanılmıyor
+ * 
+ * Bu sabitler gelecekte kullanılabilir, bu yüzden dosya korunuyor.
+ */
 
-// Günlük hedef
-export const DAILY_GOAL = 30; 
+export {}; 

@@ -1,4 +1,12 @@
 // Ortak CSS stilleri ve animasyonları
+
+// Ortak değerler
+const COMMON_VALUES = {
+  title: 'Hangi dersi seçmek istersin?',
+  cardBackground: 'linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%)',
+  boxShadowBase: '0 8px 40px'
+} as const;
+
 export const subjectStyles = {
   // Animasyonlar
   animations: {
@@ -13,12 +21,6 @@ export const subjectStyles = {
         0% { transform: rotate(0deg) scale(1); }
         60% { transform: rotate(18deg) scale(1.18); }
         100% { transform: rotate(0deg) scale(1); }
-      }
-    `,
-    shineMove: `
-      @keyframes tyt-shine-move {
-        0% { left: -60%; top: -60%; }
-        100% { left: 100%; top: 100%; }
       }
     `
   },
@@ -123,20 +125,20 @@ export const subjectStyles = {
   // Card container stilleri
   cardContainer: {
     tyt: {
-      background: 'linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%)',
-      boxShadow: '0 8px 40px #43e97b22'
+      background: COMMON_VALUES.cardBackground,
+      boxShadow: `${COMMON_VALUES.boxShadowBase} #43e97b22`
     },
     aytSayisal: {
-      background: 'linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%)',
-      boxShadow: '0 8px 40px #43e97b22'
+      background: COMMON_VALUES.cardBackground,
+      boxShadow: `${COMMON_VALUES.boxShadowBase} #43e97b22`
     },
     aytEa: {
-      background: 'linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%)',
-      boxShadow: '0 8px 40px #10b98122'
+      background: COMMON_VALUES.cardBackground,
+      boxShadow: `${COMMON_VALUES.boxShadowBase} #10b98122`
     },
     aytSozel: {
-      background: 'linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%)',
-      boxShadow: '0 8px 40px #f953c622'
+      background: COMMON_VALUES.cardBackground,
+      boxShadow: `${COMMON_VALUES.boxShadowBase} #f953c622`
     }
   },
 
@@ -159,31 +161,31 @@ export const subjectClasses = {
 // Tema konfigürasyonları
 export const themeConfig = {
   tyt: {
-    titleColor: '#6366f1',
+    titleColor: subjectStyles.titleColors.tyt,
     cardContainer: subjectStyles.cardContainer.tyt,
     emoji: '🎉',
-    title: 'Hangi dersi seçmek istersin?',
+    title: COMMON_VALUES.title,
     subtitle: 'Her dersin kendine özel soruları seni bekliyor!'
   },
   aytSayisal: {
-    titleColor: '#6366f1',
+    titleColor: subjectStyles.titleColors.aytSayisal,
     cardContainer: subjectStyles.cardContainer.aytSayisal,
     emoji: '🔢',
-    title: 'Hangi dersi seçmek istersin?',
+    title: COMMON_VALUES.title,
     subtitle: 'Sayısal derslerin soruları seni bekliyor!'
   },
   aytEa: {
-    titleColor: '#10b981',
+    titleColor: subjectStyles.titleColors.aytEa,
     cardContainer: subjectStyles.cardContainer.aytEa,
     emoji: '⚖️',
-    title: 'Hangi dersi seçmek istersin?',
+    title: COMMON_VALUES.title,
     subtitle: 'Eşit ağırlık derslerinin soruları seni bekliyor!'
   },
   aytSozel: {
-    titleColor: '#b91d73',
+    titleColor: subjectStyles.titleColors.aytSozel,
     cardContainer: subjectStyles.cardContainer.aytSozel,
     emoji: '📚',
-    title: 'Hangi dersi seçmek istersin?',
+    title: COMMON_VALUES.title,
     subtitle: 'Sözel derslerin soruları seni bekliyor!'
   }
 }; 

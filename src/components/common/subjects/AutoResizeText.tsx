@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 
 interface AutoResizeTextProps {
   children: string;
@@ -15,26 +15,29 @@ const AutoResizeText: React.FC<AutoResizeTextProps> = ({
 }) => {
   const spanRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fontSize, setFontSize] = useState(maxFont);
+
+  const checkIfTextFits = useCallback((fontSize: number): boolean => {
+    if (!spanRef.current || !containerRef.current) return false;
+    
+    spanRef.current.style.fontSize = `${fontSize}px`;
+    
+    return spanRef.current.scrollHeight <= containerRef.current.offsetHeight && 
+           spanRef.current.scrollWidth <= containerRef.current.offsetWidth;
+  }, []);
 
   useEffect(() => {
     if (!spanRef.current || !containerRef.current) return;
     
     let currentFont = maxFont;
-    spanRef.current.style.fontSize = currentFont + 'px';
     
-    let fits = spanRef.current.scrollHeight <= containerRef.current.offsetHeight && 
-               spanRef.current.scrollWidth <= containerRef.current.offsetWidth;
-    
-    while (!fits && currentFont > minFont) {
+    // Metni sığana kadar font boyutunu küçült
+    while (!checkIfTextFits(currentFont) && currentFont > minFont) {
       currentFont -= 1;
-      spanRef.current.style.fontSize = currentFont + 'px';
-      fits = spanRef.current.scrollHeight <= containerRef.current.offsetHeight && 
-             spanRef.current.scrollWidth <= containerRef.current.offsetWidth;
     }
     
-    setFontSize(currentFont);
-  }, [children, maxFont, minFont]);
+    // Son font boyutunu ayarla
+    spanRef.current.style.fontSize = `${currentFont}px`;
+  }, [children, maxFont, minFont, checkIfTextFits]);
 
   return (
     <div 
@@ -52,7 +55,7 @@ const AutoResizeText: React.FC<AutoResizeTextProps> = ({
       <span 
         ref={spanRef} 
         style={{
-          fontSize, 
+          fontSize: maxFont, 
           fontWeight: 700, 
           lineHeight: 1.22, 
           width: '100%', 

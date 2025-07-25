@@ -127,19 +127,6 @@ class ABTestingFramework {
       console.warn('Failed to send AB test event to analytics:', e);
     }
   }
-
-  getTestResults(testId: string): any {
-    // This would typically fetch from analytics service
-    // For now, return mock data
-    return {
-      testId,
-      totalUsers: 1000,
-      variants: {
-        A: { users: 500, conversions: 50 },
-        B: { users: 500, conversions: 55 }
-      }
-    };
-  }
 }
 
 // Predefined AB Tests

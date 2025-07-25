@@ -23,9 +23,9 @@ import {
   aytFelsefeAltKonular
 } from './ayt';
 
-// Ana alt konular konfigürasyonu - Yeni Organize Edilmiş Versiyon
+// Ana alt konular konfigürasyonu
 export const altKonularConfigNew: Record<string, AltKonu[]> = {
-  // TYT Dersleri - Ayrı dosyalardan import edildi
+  // TYT Dersleri
   'tyt-matematik': tytMatematikAltKonular,
   'tyt-turkce': tytTurkceAltKonular,
   'tyt-tarih': tytTarihAltKonular,
@@ -36,7 +36,7 @@ export const altKonularConfigNew: Record<string, AltKonu[]> = {
   'tyt-kimya': tytKimyaAltKonular,
   'tyt-biyoloji': tytBiyolojiAltKonular,
   
-  // AYT Dersleri - Ayrı dosyalardan import edildi
+  // AYT Dersleri
   'ayt-matematik': aytMatematikAltKonular,
   'ayt-fizik': aytFizikAltKonular,
   'ayt-kimya': aytKimyaAltKonular,

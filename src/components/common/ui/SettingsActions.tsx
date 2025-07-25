@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FaEdit, FaSignOutAlt } from 'react-icons/fa';
 
 interface SettingsActionsProps {
@@ -7,20 +7,23 @@ interface SettingsActionsProps {
 }
 
 const SettingsActions: React.FC<SettingsActionsProps> = ({ onEditProfile, onLogout }) => {
+  const handleEditProfile = useCallback(() => {
+    onEditProfile?.();
+  }, [onEditProfile]);
+
+  const handleLogout = useCallback(() => {
+    onLogout();
+  }, [onLogout]);
+
   return (
     <div className="settings-actions-panel">
       <div className="settings-actions-btns">
-        <button className="settings-btn" onClick={onEditProfile}>
+        <button className="settings-btn" onClick={handleEditProfile}>
           <FaEdit className="settings-btn-icon" /> Profil Düzenle
         </button>
-        <button className="settings-btn settings-btn-logout" onClick={onLogout}>
+        <button className="settings-btn settings-btn-logout" onClick={handleLogout}>
           <FaSignOutAlt className="settings-btn-icon" /> Çıkış Yap
         </button>
-      </div>
-      <div className="settings-actions-footer">
-        {/* <a href="/privacy" className="settings-footer-link">Gizlilik Politikası</a>
-        <span className="settings-footer-sep">·</span>
-        <span className="settings-footer-version">v1.0.0</span> */}
       </div>
     </div>
   );

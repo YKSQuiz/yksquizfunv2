@@ -1,19 +1,80 @@
 /* ========================================
-   MARKET COMPONENT STYLES - BİRLEŞTİRİLMİŞ DOSYA
+   MARKET COMPONENT STYLES - OPTIMIZED
    ======================================== */
+
+:root {
+  /* Colors */
+  --primary-color: #764ba2;
+  --secondary-color: #667eea;
+  --accent-color: #ff6b35;
+  --success-color: #00ff88;
+  --warning-color: #ffb300;
+  --error-color: #ff6b6b;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --text-light: #fff;
+  --bg-primary: #fff;
+  --bg-secondary: #f8fafc;
+  --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f5f6ff 100%);
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --shadow-xl: 0 12px 40px rgba(0,0,0,0.2);
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Font Sizes */
+  --text-xs: 0.7rem;
+  --text-sm: 0.9rem;
+  --text-base: 1rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.8rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+  
+  /* Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+}
 
 /* Market Container */
 .market-container {
   min-height: 100vh;
-  padding: 20px 12px;
+  padding: var(--spacing-xl) var(--spacing-md);
 }
 
 .market-card {
   max-width: 900px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 24px;
-  box-shadow: 0 8px 32px #b39ddb33;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   backdrop-filter: blur(10px);
 }
@@ -21,7 +82,7 @@
 /* Header */
 .market-header {
   background: rgba(255, 179, 71, 0.9);
-  padding: 24px 32px;
+  padding: var(--spacing-2xl) var(--spacing-3xl);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -29,28 +90,12 @@
   overflow: hidden;
 }
 
-/* Shimmer animasyonunu kaldırıyoruz - performans için */
-.market-header::before {
-  display: none;
-}
-
-/* Gereksiz animasyonları kaldırıyoruz - performans için */
-.market-header::after {
-  display: none;
-}
-
-/* Market card pseudo-element'lerini kaldırıyoruz - performans için */
-.market-card::before,
-.market-card::after {
-  display: none;
-}
-
 .market-title {
-  font-size: 32px;
-  font-weight: 900;
-  color: #764ba2;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-black);
+  color: var(--primary-color);
   margin: 0;
-  text-shadow: 0 2px 12px #fff8;
+  text-shadow: 0 2px 12px rgba(255, 255, 255, 0.5);
   position: relative;
   z-index: 1;
 }
@@ -58,69 +103,48 @@
 .coin-display {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
   position: relative;
   z-index: 1;
   background: rgba(255, 255, 255, 0.9);
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 2px solid rgba(255,179,0,0.6);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-xl);
+  border: 2px solid rgba(255, 179, 0, 0.6);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(255,179,0,0.3);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
 }
 
 .coin-display:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255,179,0,0.5);
-  border-color: rgba(255,179,0,0.8);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(255, 179, 0, 0.8);
   background: rgba(255, 255, 255, 0.95);
 }
 
-/* Coin shimmer animasyonunu kaldırıyoruz */
-.coin-display::before {
-  display: none;
-}
-
-/* Coin display after pseudo-element'ini de kaldırıyoruz */
-.coin-display::after {
-  display: none;
-}
-
 .coin-icon {
-  font-size: 28px;
-  /* Coin bounce animasyonunu kaldırıyoruz - performans için */
-  filter: drop-shadow(0 2px 4px rgba(255,179,0,0.5));
+  font-size: var(--text-2xl);
+  filter: drop-shadow(0 2px 4px rgba(255, 179, 0, 0.5));
   position: relative;
   z-index: 1;
-  color: #ffb300;
+  color: var(--warning-color);
 }
 
 .coin-amount {
-  font-size: 32px;
-  font-weight: 900;
-  color: #ff6b35;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-black);
+  color: var(--accent-color);
   font-family: 'Orbitron', monospace;
-  text-shadow: 0 2px 8px rgba(255,107,53,0.5);
+  text-shadow: 0 2px 8px rgba(255, 107, 53, 0.5);
   position: relative;
   z-index: 1;
   letter-spacing: 1px;
 }
 
-/* Coin amount glow efektini kaldırıyoruz */
-.coin-amount::after {
-  display: none;
-}
-
-/* Coin amount before pseudo-element'ini de kaldırıyoruz */
-.coin-amount::before {
-  display: none;
-}
-
 /* Tab Navigation */
 .tab-container {
   display: flex;
-  background: #f8fafc;
+  background: var(--bg-secondary);
   border-bottom: 2px solid #e0c3fc;
   position: relative;
 }
@@ -134,7 +158,7 @@
   height: 2px;
   background: rgba(102, 126, 234, 0.8);
   transform: scaleX(0);
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-normal);
 }
 
 .tab-container:hover::after {
@@ -143,14 +167,14 @@
 
 .tab-button {
   flex: 1;
-  padding: 16px 24px;
+  padding: var(--spacing-lg) var(--spacing-2xl);
   background: transparent;
-  color: #764ba2;
+  color: var(--primary-color);
   border: none;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition-normal);
   position: relative;
   overflow: hidden;
 }
@@ -163,7 +187,7 @@
   width: 100%;
   height: 100%;
   background: rgba(102, 126, 234, 0.1);
-  transition: left 0.3s ease;
+  transition: left var(--transition-normal);
   z-index: 0;
 }
 
@@ -173,9 +197,9 @@
 
 .tab-button.active {
   background: rgba(102, 126, 234, 0.9);
-  color: #fff;
+  color: var(--text-light);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .tab-button span {
@@ -185,12 +209,12 @@
 
 /* Purchase Message */
 .purchase-message {
-  padding: 12px 24px;
-  margin: 16px 24px;
-  border-radius: 12px;
-  font-weight: 600;
+  padding: var(--spacing-md) var(--spacing-2xl);
+  margin: var(--spacing-lg) var(--spacing-2xl);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-semibold);
   text-align: center;
-  animation: slideIn 0.3s ease;
+  animation: slideIn var(--transition-normal);
 }
 
 .purchase-message.success {
@@ -218,23 +242,23 @@
 
 /* Content */
 .market-content {
-  padding: 24px;
+  padding: var(--spacing-2xl);
   max-height: 70vh;
   overflow-y: auto;
 }
 
 .market-content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--spacing-sm);
 }
 
 .market-content::-webkit-scrollbar-track {
   background: rgba(0,0,0,0.1);
-  border-radius: 4px;
+  border-radius: var(--spacing-xs);
 }
 
 .market-content::-webkit-scrollbar-thumb {
   background: rgba(102,126,234,0.3);
-  border-radius: 4px;
+  border-radius: var(--spacing-xs);
 }
 
 .market-content::-webkit-scrollbar-thumb:hover {
@@ -243,42 +267,20 @@
 
 /* Energy Stats Container */
 .energy-stats-container {
-  background: linear-gradient(135deg, #e0e7ff 0%, #f5f6ff 100%);
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(102,126,234,0.1);
+  background: var(--bg-gradient);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
 }
 
-.energy-stats-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-  animation: shimmer 2s infinite;
-}
-
-.energy-stats-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  opacity: 0.3;
-}
-
 .energy-stats-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
   color: #4a4ad6;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-lg);
   text-align: center;
   position: relative;
   z-index: 1;
@@ -286,22 +288,22 @@
 
 /* Progress Section */
 .progress-section {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-md);
   position: relative;
   z-index: 1;
 }
 
 .progress-label {
-  font-size: 18px;
-  font-weight: 800;
-  color: #333;
+  font-size: var(--text-lg);
+  font-weight: var(--font-extrabold);
+  color: var(--text-primary);
   text-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
@@ -311,15 +313,14 @@
   top: 50%;
   transform: translateY(-50%);
   color: #27eaff;
-  font-weight: 900;
-  font-size: 20px;
+  font-weight: var(--font-black);
+  font-size: var(--text-xl);
   text-shadow: 
     0 0 10px #27eaff,
     0 0 20px #27eaff,
     0 0 30px #27eaff;
   z-index: 10;
   font-family: 'Orbitron', monospace;
-  /* Percentage glow animasyonunu kaldırıyoruz - performans için */
 }
 
 /* Modern Progress Bar */
@@ -340,7 +341,6 @@
   margin: 8px 0;
 }
 
-/* Container shimmer animasyonunu kaldırıyoruz */
 .progress-bar-container::before {
   display: none;
 }
@@ -360,7 +360,7 @@
     inset 0 2px 4px rgba(0,0,0,0.2),
     0 0 15px rgba(0,255,136,0.6),
     0 0 30px rgba(0,255,136,0.3);
-  /* Neon glow animasyonunu kaldırıyoruz - performans için */
+  
   border: 1px solid rgba(0,255,136,0.5);
 }
 
@@ -372,11 +372,10 @@
     0 0 15px rgba(255,107,53,0.6),
     0 0 30px rgba(255,107,53,0.3),
     inset 0 2px 4px rgba(0,0,0,0.2);
-  /* Next segment pulse animasyonunu kaldırıyoruz - performans için */
+  
   position: relative;
 }
 
-/* Next segment shimmer animasyonunu kaldırıyoruz */
 .progress-segment.next::after {
   display: none;
 }
@@ -436,11 +435,11 @@
 /* Market Item Card */
 .market-item-card {
   background: rgba(255,255,255,0.9);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(102,126,234,0.1);
@@ -455,7 +454,7 @@
   bottom: 0;
   background: linear-gradient(45deg, transparent 30%, rgba(102,126,234,0.05) 50%, transparent 70%);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-normal);
 }
 
 .market-item-card:hover::before {
@@ -464,32 +463,32 @@
 
 .market-item-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(102,126,234,0.2);
+  box-shadow: var(--shadow-xl);
   border-color: rgba(102,126,234,0.3);
 }
 
 .market-item-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .market-item-icon {
-  font-size: 2rem;
-  color: #667eea;
+  font-size: var(--text-3xl);
+  color: var(--secondary-color);
 }
 
 .market-item-info h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #333;
-  margin: 0 0 4px 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
 }
 
 .market-item-info p {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
 }
@@ -498,42 +497,37 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 16px;
+  margin-top: var(--spacing-lg);
 }
 
 .price-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .price-icon {
-  font-size: 1.2rem;
-  color: #ffb300;
-}
-
-@keyframes sparkle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  font-size: var(--text-lg);
+  color: var(--warning-color);
 }
 
 .price-amount {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #ff6b35;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--accent-color);
   font-family: 'Orbitron', monospace;
 }
 
 .purchase-button {
   background: rgba(102, 126, 234, 0.9);
-  color: white;
+  color: var(--text-light);
   border: none;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-weight: 600;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -546,7 +540,7 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
+  transition: left var(--transition-slow);
 }
 
 .purchase-button:hover::before {
@@ -555,18 +549,18 @@
 
 .purchase-button.available {
   background: rgba(102, 126, 234, 0.9);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  color: var(--text-light);
+  box-shadow: var(--shadow-sm);
 }
 
 .purchase-button.available:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .purchase-button.disabled {
   background: #ccc;
-  color: #666;
+  color: var(--text-secondary);
   cursor: not-allowed;
 }
 
@@ -585,45 +579,45 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .market-container {
-    padding: 10px 8px;
+    padding: var(--spacing-md) var(--spacing-sm);
   }
   
   .market-header {
-    padding: 16px 20px;
+    padding: var(--spacing-lg) var(--spacing-xl);
   }
   
   .market-title {
-    font-size: 24px;
+    font-size: var(--text-2xl);
   }
   
   .coin-display {
-    padding: 6px 12px;
+    padding: var(--spacing-xs) var(--spacing-md);
   }
   
   .coin-icon {
-    font-size: 24px;
+    font-size: var(--text-2xl);
   }
   
   .coin-amount {
-    font-size: 24px;
+    font-size: var(--text-2xl);
   }
   
   .tab-button {
-    padding: 12px 16px;
-    font-size: 16px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--text-base);
   }
   
   .market-content {
-    padding: 16px;
+    padding: var(--spacing-lg);
   }
   
   .energy-stats-container {
-    padding: 16px;
+    padding: var(--spacing-lg);
   }
   
   .market-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: var(--spacing-lg);
   }
 }
 
@@ -635,39 +629,39 @@
   
   .market-header {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-md);
     text-align: center;
   }
   
   .market-title {
-    font-size: 20px;
+    font-size: var(--text-xl);
   }
   
   .coin-display {
-    padding: 4px 8px;
-    border-radius: 16px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-lg);
   }
   
   .coin-icon {
-    font-size: 20px;
+    font-size: var(--text-xl);
   }
   
   .coin-amount {
-    font-size: 20px;
+    font-size: var(--text-xl);
   }
   
   .tab-button {
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--text-sm);
   }
   
   .progress-bar-container {
-    height: 16px;
+    height: var(--spacing-lg);
   }
   
   .price-tag {
-    font-size: 0.7rem;
-    padding: 2px 8px;
+    font-size: var(--text-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
   }
 } 
 
@@ -684,12 +678,10 @@
   backdrop-filter: blur(10px);
 }
 
-/* Joker status rotate animasyonunu kaldırıyoruz */
 .joker-status-container::before {
   display: none;
 }
 
-/* Joker status shimmer animasyonunu kaldırıyoruz */
 .joker-status-container::after {
   display: none;
 }
@@ -779,7 +771,6 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  /* Icon float animasyonunu kaldırıyoruz - performans için */
   flex-shrink: 0;
 }
 
@@ -834,7 +825,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  /* Joker count glow animasyonunu kaldırıyoruz - performans için */
   text-shadow: 0 2px 4px rgba(118, 75, 162, 0.3);
 }
 
@@ -1017,7 +1007,6 @@
   border-radius: 16px;
   color: white;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  /* Icon float animasyonunu kaldırıyoruz - performans için */
 }
 
 .energy-upgrade-info h3 {
@@ -1052,7 +1041,6 @@
     0 0 20px rgba(39,234,255,0.3),
     0 0 40px rgba(39,234,255,0.1);
   backdrop-filter: blur(10px);
-  /* Border glow animasyonunu kaldırıyoruz - performans için */
 }
 
 .progress-segment {
@@ -1166,7 +1154,6 @@
     inset 0 2px 4px rgba(0,0,0,0.3),
     0 0 15px rgba(0,255,136,0.6),
     0 0 30px rgba(0,255,136,0.3);
-  /* Completed glow animasyonunu kaldırıyoruz - performans için */
   border: 1px solid rgba(0,255,136,0.5);
 }
 
@@ -1177,12 +1164,10 @@
     inset 0 2px 4px rgba(0,0,0,0.3),
     0 0 15px rgba(255,107,53,0.6),
     0 0 30px rgba(255,107,53,0.3);
-  /* Available pulse animasyonunu kaldırıyoruz - performans için */
   border: 1px solid rgba(255,107,53,0.5);
   position: relative;
 }
 
-/* Available shimmer animasyonunu kaldırıyoruz */
 .progress-segment.available::after {
   display: none;
 }
@@ -1197,15 +1182,7 @@
   position: relative;
 }
 
-/* Eski locked::after stilini kaldırıyoruz çünkü artık segment-lock-icon kullanıyoruz */
-.progress-segment.locked::after {
-  display: none;
-}
 
-/* Eski locked .segment-price stilini kaldırıyoruz */
-.progress-segment.locked .segment-price {
-  display: none;
-}
 
 .progress-segment:hover.available {
   transform: scale(1.08) translateY(-3px);
@@ -1214,7 +1191,6 @@
     0 0 40px rgba(255,107,53,0.6),
     inset 0 2px 4px rgba(0,0,0,0.2);
   z-index: 10;
-  /* Hover glow animasyonunu kaldırıyoruz - performans için */
   border: 2px solid rgba(255,255,255,0.5);
 }
 
@@ -1228,10 +1204,7 @@
   border: 2px solid rgba(255,255,255,0.5);
 }
 
-/* Eski segment-price stilini kaldırıyoruz çünkü artık segment-value kullanıyoruz */
-.segment-price {
-  display: none;
-}
+
 
 .progress-percentage {
   position: absolute;
@@ -1247,7 +1220,6 @@
     0 0 30px #27eaff;
   z-index: 10;
   font-family: 'Orbitron', monospace;
-  /* Percentage glow animasyonunu kaldırıyoruz - performans için */
 }
 
 /* Energy Upgrade Stats */
@@ -1283,9 +1255,6 @@
 }
 
 /* Animations */
-/* Eski pulse animasyonu kaldırıldı, yeni animasyonlar kullanılıyor */
-
-/* Icon float animasyonunu kaldırıyoruz - performans için */
 
 /* Updated Confirm Dialog Styles */
 .confirm-dialog-details {
@@ -1368,7 +1337,6 @@
   border-radius: 16px;
   color: white;
   box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
-  /* Icon float animasyonunu kaldırıyoruz - performans için */
 }
 
 .energy-refill-info h3 {
@@ -1398,7 +1366,6 @@
 
 .energy-refill-price .price-icon {
   font-size: 24px;
-  /* Coin bounce animasyonunu kaldırıyoruz - performans için */
 }
 
 .energy-refill-price .price-amount {
@@ -1548,7 +1515,6 @@
 
 .confirm-dialog-price .price-icon {
   font-size: 20px;
-  animation: coinBounce 2s infinite;
 }
 
 .confirm-dialog-price .price-amount {
@@ -1799,66 +1765,4 @@
   }
 } 
 
-/* Modern Neon Progress Bar */
-.neon-progress-container {
-  width: 100%;
-  margin: 24px 0 12px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.neon-progress-bar {
-  width: 100%;
-  height: 32px;
-  border-radius: 20px;
-  border: 4px solid #27eaff;
-  background: #23204a;
-  box-sizing: border-box;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 8px;
-  box-shadow: 0 0 16px #27eaff99;
-}
-
-.neon-progress-fill {
-  height: 100%;
-  border-radius: 16px 0 0 16px;
-  background: repeating-linear-gradient(
-    45deg,
-    #27eaff 0 16px,
-    #27eaff 16px,
-    #27eaff99 16px 32px,
-    #27eaff99 32px 32px
-  );
-  transition: width 0.7s cubic-bezier(.4,2,.6,1);
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 2;
-  animation: stripes-move 2s linear infinite;
-  background-size: 32px 32px;
-}
-
-@keyframes stripes-move {
-  0% { background-position: 0 0; }
-  100% { background-position: 64px 0; }
-}
-
-.neon-progress-bar .neon-progress-bg {
-  position: absolute;
-  left: 0; top: 0; right: 0; bottom: 0;
-  background: #44425a;
-  z-index: 1;
-  border-radius: 16px;
-}
-
-.neon-progress-label {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #27eaff;
-  text-align: center;
-  text-shadow: 0 2px 12px #27eaff99;
-  margin-top: 8px;
-  font-family: 'Orbitron', monospace;
-} 
+/* End of Market Component Styles */ 

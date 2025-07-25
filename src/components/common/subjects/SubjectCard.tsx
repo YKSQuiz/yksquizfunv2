@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { AutoResizeText } from '../ui';
 
 interface SubjectCardProps {
-  id: string;
   label: string;
   icon: string;
   color: string;
@@ -13,7 +12,6 @@ interface SubjectCardProps {
 }
 
 const SubjectCard: React.FC<SubjectCardProps> = ({
-  id,
   label,
   icon,
   color,
@@ -23,9 +21,10 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
   disabled = false
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const animationDelay = (index * 0.09).toFixed(2);
+  
+  const animationDelay = useMemo(() => (index * 0.09).toFixed(2), [index]);
 
-  const handleClick = async () => {
+  const handleClick = useCallback(async () => {
     if (disabled || isLoading) return;
     
     setIsLoading(true);
@@ -34,33 +33,34 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [disabled, isLoading, onClick]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick();
     }
-  };
+  }, [handleClick]);
+
+  const isDisabled = disabled || isLoading;
+  const cardClassName = `subject-card ${isLoading ? 'loading' : ''} ${disabled ? 'disabled' : ''}`;
+  const iconClassName = `subject-icon ${isAltKonu ? 'alt-konu' : ''}`;
 
   return (
     <div
-      key={id}
-      className={`subject-card ${isLoading ? 'loading' : ''} ${disabled ? 'disabled' : ''}`}
+      className={cardClassName}
       onClick={handleClick}
       style={{
         background: color,
         animation: `popIn 0.5s cubic-bezier(0.39, 0.575, 0.56, 1) ${animationDelay}s both`
       }}
-      tabIndex={disabled ? -1 : 0}
+      tabIndex={isDisabled ? -1 : 0}
       onKeyDown={handleKeyDown}
       role="button"
       aria-label={`${label} dersini seç`}
-      aria-disabled={disabled || isLoading}
+      aria-disabled={isDisabled}
     >
-      <div 
-        className={`subject-icon ${isAltKonu ? 'alt-konu' : ''}`}
-      >
+      <div className={iconClassName}>
         {icon}
       </div>
       

@@ -6,26 +6,9 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { updateXpLevelRank, jokerKullan } from '../../../contexts/AuthContext';
 import { GradientBackground } from '../../common/ui';
 import './Quiz.css';
-// import { User } from '../../../types/index';
 import { usePerformanceMonitor } from '../../../utils/performance';
 import { useABTest } from '../../../utils/abTesting';
-// import BackButton from '../common/BackButton';
-// import {
-//   TYT_SUBJECTS, AYT_SAY_SUBJECTS, AYT_EA_SUBJECTS, AYT_SOZ_SUBJECTS,
-//   TYT_TR_ALT_KONULAR, TYT_DIN_ALT_KONULAR, TYT_FIZIK_ALT_KONULAR, TYT_KIMYA_ALT_KONULAR, TYT_BIYOLOJI_ALT_KONULAR, TYT_COGRAFYA_ALT_KONULAR, TYT_TARIH_ALT_KONULAR,
-//   AYT_EDEBIYAT_ALT_KONULAR, AYT_FELSEFE_ALT_KONULAR, AYT_BIYOLOJI_ALT_KONULAR, AYT_KIMYA_ALT_KONULAR, AYT_FIZIK_ALT_KONULAR, AYT_COGRAFYA_ALT_KONULAR
-// } from '../../utils/constants';
 import confetti from 'canvas-confetti';
-
-// Dynamic imports for heavy components
-// const JokerPanel = lazy(() => import("./JokerPanel"));
-
-// Loading component for dynamic imports
-// const DynamicComponentLoader = ({ children }: { children: React.ReactNode }) => (
-//   <Suspense fallback={<div className="loading-spinner">Yükleniyor...</div>}>
-//     {children}
-//   </Suspense>
-// );
 
 interface Question {
   id: string;
@@ -47,30 +30,7 @@ const JOKER_ICONS = {
   autoCorrect: "✅",
 };
 
-// Yardımcı fonksiyon: konu ID'sinden konu adını bul
-// function getSubjectNameById(subjectId: string): string {
-//   const allSubjects = [
-//     ...TYT_SUBJECTS,
-//     ...AYT_SAY_SUBJECTS,
-//     ...AYT_EA_SUBJECTS,
-//     ...AYT_SOZ_SUBJECTS,
-//     ...TYT_TR_ALT_KONULAR,
-//     ...TYT_DIN_ALT_KONULAR,
-//     ...TYT_FIZIK_ALT_KONULAR,
-//     ...TYT_KIMYA_ALT_KONULAR,
-//     ...TYT_BIYOLOJI_ALT_KONULAR,
-//     ...TYT_COGRAFYA_ALT_KONULAR,
-//     ...TYT_TARIH_ALT_KONULAR,
-//     ...AYT_EDEBIYAT_ALT_KONULAR,
-//     ...AYT_FELSEFE_ALT_KONULAR,
-//     ...AYT_BIYOLOJI_ALT_KONULAR,
-//     ...AYT_KIMYA_ALT_KONULAR,
-//     ...AYT_FIZIK_ALT_KONULAR,
-//     ...AYT_COGRAFYA_ALT_KONULAR
-//   ];
-//   const found = allSubjects.find(subj => subj.id === subjectId);
-//   return found ? found.label : subjectId;
-// }
+
 
 const Quiz: React.FC = () => {
   const { subTopic, testNumber } = useParams<{ subTopic: string; testNumber: string }>();
@@ -93,7 +53,6 @@ const Quiz: React.FC = () => {
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [isDoubleAnswerActive, setIsDoubleAnswerActive] = useState(false);
-  // const [isAutoCorrectActive, setIsAutoCorrectActive] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [quizDuration, setQuizDuration] = useState(0);
   const [earnedXp, setEarnedXp] = useState(0);
@@ -121,14 +80,8 @@ const Quiz: React.FC = () => {
 
   // Track quiz start
   useEffect(() => {
-    trackUIEvent('quiz_started', {
-      variant: uiVariant,
-      config: uiConfig
-    });
-    trackLoadingEvent('quiz_started', {
-      variant: loadingVariant,
-      config: loadingConfig
-    });
+    trackUIEvent('quiz_started', { variant: uiVariant, config: uiConfig });
+    trackLoadingEvent('quiz_started', { variant: loadingVariant, config: loadingConfig });
   }, [uiVariant, uiConfig, loadingVariant, loadingConfig, trackUIEvent, trackLoadingEvent]);
 
   useEffect(() => {
@@ -138,20 +91,12 @@ const Quiz: React.FC = () => {
           setIsLoading(true);
           setError(null);
 
-          if (process.env.NODE_ENV === 'development') {
-            console.log('🔍 Quiz sorgusu başlatılıyor...');
-            console.log('📝 subTopic:', subTopic);
-            console.log('📝 testNumber:', testNumber);
-            console.log('📝 parseInt(testNumber):', parseInt(testNumber || '1'));
-          }
+
 
           const cacheKey = `${subTopic}-${testNumber}`;
           
           // Check cache first
           if (questionsCache.current.has(cacheKey)) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('📦 Cache\'den sorular yükleniyor...');
-            }
             setQuestions(questionsCache.current.get(cacheKey)!);
             setIsLoading(false);
             recordMetric('cache_hit', 1);
@@ -166,19 +111,9 @@ const Quiz: React.FC = () => {
             where('testNumber', '==', parseInt(testNumber || '1'))
           );
           
-          if (process.env.NODE_ENV === 'development') {
-            console.log('🔄 Firebase sorgusu çalıştırılıyor...');
-          }
           const querySnapshot = await getDocs(q);
-          
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📊 Sorgu sonucu:', querySnapshot.size, 'soru bulundu');
-          }
 
           if (querySnapshot.empty) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('❌ Hiç soru bulunamadı!');
-            }
             setError('Bu test için soru bulunamadı.');
             setIsLoading(false);
             return;
@@ -188,11 +123,6 @@ const Quiz: React.FC = () => {
             id: doc.id,
             ...doc.data()
           })) as Question[];
-
-          if (process.env.NODE_ENV === 'development') {
-            console.log('✅ Sorular başarıyla yüklendi:', fetchedQuestions.length, 'adet');
-            console.log('📋 İlk soru:', fetchedQuestions[0]);
-          }
 
           // Cache the questions based on AB test config
           const cacheSize = loadingConfig.cacheSize || 10;
@@ -208,7 +138,7 @@ const Quiz: React.FC = () => {
             variant: loadingVariant 
           });
         } catch (err) {
-          console.error('🚫 Firebase hatası:', err);
+          console.error('Firebase hatası:', err);
           setError('Sorular yüklenirken bir hata oluştu.');
           setIsLoading(false);
           recordMetric('fetch_error', 1);
@@ -218,14 +148,8 @@ const Quiz: React.FC = () => {
     };
 
     if (subTopic && testNumber) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🚀 fetchQuestions çağrılıyor...');
-      }
       fetchQuestions();
     } else {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Geçersiz parametreler:', { subTopic, testNumber });
-      }
       setError('Geçersiz quiz parametreleri.');
       setIsLoading(false);
     }
@@ -233,21 +157,11 @@ const Quiz: React.FC = () => {
 
   useEffect(() => {
     if (refreshUser) {
-      refreshUser().then(() => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Quiz - Joker hakları güncellendi:', user?.jokers);
-        }
-      });
+      refreshUser();
     }
   }, [refreshUser]);
 
-  // Joker haklarını kontrol et
-  useEffect(() => {
-    if (user?.jokers && process.env.NODE_ENV === 'development') {
-      console.log('Quiz - Mevcut joker hakları:', user.jokers);
-      console.log('Quiz - Joker kullanım sayıları:', user.jokersUsed);
-    }
-  }, [user?.jokers, user?.jokersUsed]);
+
 
   // Optimized timer effect
   useEffect(() => {
@@ -306,7 +220,6 @@ const Quiz: React.FC = () => {
       setIsAnswered(false);
       setSelectedAnswers([]);
       setIsDoubleAnswerActive(false);
-      // setIsAutoCorrectActive(false);
     } else {
       finishQuiz(score);
     }
@@ -334,14 +247,7 @@ const Quiz: React.FC = () => {
       const percentage = Math.round((finalScore / totalQuestions) * 100);
       const completed = finalScore >= 7; // 7 doğru kesin eşik
 
-      console.log('🎯 Test Sonucu Kaydediliyor:', {
-        finalScore,
-        totalQuestions,
-        percentage,
-        completed,
-        subjectTopicKey,
-        testId
-      });
+
 
       // Yeni test sonucu
       const newTestResult = {
@@ -378,9 +284,8 @@ const Quiz: React.FC = () => {
         await updateDoc(userRef, {
           testResults: updatedTestResults
         });
-        console.log('✅ Firestore\'a test sonuçları kaydedildi');
       } catch (firestoreError) {
-        console.error('❌ Firestore hatası (testResults):', firestoreError);
+        console.error('Firestore hatası (testResults):', firestoreError);
         throw new Error('Test sonucu kaydedilemedi');
       }
 
@@ -389,19 +294,8 @@ const Quiz: React.FC = () => {
         ...user,
         testResults: updatedTestResults
       });
-
-      console.log('✅ Local state güncellendi');
-      console.log('🎉 Test sonucu başarıyla kaydedildi:', newTestResult);
-
-      // Artık otomatik test açma sistemi kaldırıldı
-      // Test 2 ve sonrası için coin ile satın alma gerekli
-      if (completed) {
-        console.log('✅ Test başarıyla tamamlandı! Bir sonraki test için coin ile satın alma gerekli.');
-      } else {
-        console.log('❌ Test başarısız, bir sonraki test için önce bu testi başarıyla tamamlamanız gerekli.');
-      }
     } catch (error) {
-      console.error('❌ Test sonucu kaydetme hatası:', error);
+      console.error('Test sonucu kaydetme hatası:', error);
     }
   };
 
@@ -429,9 +323,7 @@ const Quiz: React.FC = () => {
           correct: finalScore,
           total: questions.length,
         });
-        if (xpResult) {
-          console.log('XP Sonucu:', xpResult);
-        }
+
         if (xpResult && typeof xpResult.gainedXp === 'number') {
           setEarnedXp(xpResult.gainedXp);
           setEarnedCoin(xpResult.gainedXp); // Coin de aynı miktarda kazanılıyor
@@ -536,8 +428,6 @@ const Quiz: React.FC = () => {
         setSelectedAnswers([]);
       }
       if (type === 'autoCorrect') {
-        // setIsAutoCorrectActive(true);
-        // Otomatik doğru kabul et ama bir sonraki soruya geçme
         setSelectedAnswer(questions[currentQuestionIndex]?.correctAnswer || 0);
         setIsAnswered(true);
         setScore(prev => prev + 1);
@@ -552,7 +442,6 @@ const Quiz: React.FC = () => {
     setEliminatedOptions([]);
     setIsDoubleAnswerActive(false);
     setSelectedAnswers([]);
-    // setIsAutoCorrectActive(false);
   }, [currentQuestionIndex]);
 
   useEffect(() => {
@@ -829,17 +718,9 @@ const Quiz: React.FC = () => {
   return (
     <GradientBackground variant="quiz" showParticles={true} particleCount={12}>
       <div className="quiz-container">
-        {/* Background gradient and geometric shapes */}
-        <div className="quiz-background">
-          <div className="geometric-shape shape-1"></div>
-          <div className="geometric-shape shape-2"></div>
-          <div className="geometric-shape shape-3"></div>
-        </div>
-      {/* Main quiz card - TÜM İÇERİK BURADA */}
       <div className="quiz-card">
 
 
-        {/* Kompakt ve sade Joker Barı */}
         {user && user.jokers && user.jokersUsed && (
           <div style={{
             display: 'flex',
@@ -910,7 +791,6 @@ const Quiz: React.FC = () => {
                   </span>
                   
                   {isDisabled ? (
-                    // Joker bittiğinde fiyat butonu göster
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
@@ -964,7 +844,6 @@ const Quiz: React.FC = () => {
           </div>
         )}
         
-        {/* Joker Satın Alma Mesajı */}
         {jokerPurchaseMessage && (
           <div style={{
             position: 'fixed',
@@ -984,9 +863,7 @@ const Quiz: React.FC = () => {
             {jokerPurchaseMessage}
           </div>
         )}
-        {/* Header section */}
         <div className="quiz-header">
-          {/* Quiz başlığı ve sayaç */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -995,7 +872,6 @@ const Quiz: React.FC = () => {
             marginBottom: 18,
             position: 'relative',
           }}>
-            {/* Quiz başlığı */}
             <h1 style={{
               flex: 1,
               textAlign: 'left',
@@ -1005,7 +881,6 @@ const Quiz: React.FC = () => {
               margin: 0,
               letterSpacing: 1,
             }}>Quiz</h1>
-            {/* Anlık Doğru/Yanlış Sayacı */}
             <div style={{
               position: 'absolute',
               left: '50%',
@@ -1027,7 +902,6 @@ const Quiz: React.FC = () => {
               <span>/</span>
               <span>Yanlış: <span style={{ color: '#ef4444', fontWeight: 900 }}>{currentQuestionIndex - score >= 0 ? currentQuestionIndex - score : 0}</span></span>
             </div>
-            {/* Zamanlayıcı ve soru sayacı */}
             <div style={{
               flex: 1,
               display: 'flex',
@@ -1053,7 +927,6 @@ const Quiz: React.FC = () => {
             </div>
           </div>
         </div>
-        {/* Progress bar */}
         <div className="progress-container">
           <div className="progress-bar">
             <div 
@@ -1062,7 +935,6 @@ const Quiz: React.FC = () => {
             ></div>
           </div>
         </div>
-        {/* Question section */}
         <div className="question-section">
           <div className="question-number">
             Soru {currentQuestionIndex + 1}
@@ -1071,7 +943,6 @@ const Quiz: React.FC = () => {
             {currentQuestion?.question || 'Soru yükleniyor...'}
           </div>
         </div>
-        {/* Answer options */}
         <div className="answer-options">
           {currentQuestion?.options?.map((option, index) => (
             <button
@@ -1097,14 +968,12 @@ const Quiz: React.FC = () => {
             </button>
           ))}
         </div>
-        {/* Explanation (shown after answering) */}
         {isAnswered && currentQuestion?.explanation && (
           <div className="explanation">
             <h4>Açıklama:</h4>
             <p>{currentQuestion.explanation}</p>
           </div>
         )}
-        {/* Navigation */}
         <div className="quiz-navigation">
           <button
             className="next-button"

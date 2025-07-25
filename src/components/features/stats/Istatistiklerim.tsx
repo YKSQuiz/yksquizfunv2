@@ -9,49 +9,12 @@ import { db } from '../../../services/firebase';
 import { GradientBackground } from '../../common/ui';
 import './Stats.css';
 
-// interface ChartData {
-//   date: string;
-//   correct: number;
-//   incorrect: number;
-//   successRate: number;
-// }
-
-// interface SubjectData {
-//   name: string;
-//   correct: number;
-//   incorrect: number;
-//   successRate: number;
-// }
-
-// Zaman aralığına göre dailyActivity verisini filtreleyen fonksiyon
-// function filterDailyActivity(dailyActivity: { [date: string]: any }, range: 'week' | 'month' | '3months') {
-//   if (!dailyActivity) return [];
-//   const today = new Date();
-//   const startDate = new Date();
-//   if (range === 'week') {
-//     startDate.setDate(today.getDate() - 6);
-//   } else if (range === 'month') {
-//     startDate.setDate(today.getDate() - 29);
-//   } else if (range === '3months') {
-//     startDate.setDate(today.getDate() - 89);
-//   }
-//   // Tarihleri sırala ve filtrele
-//   return Object.entries(dailyActivity)
-//     .map(([date, stats]) => ({ date, ...stats }))
-//     .filter(item => {
-//       const d = new Date(item.date);
-//       return d >= startDate && d <= today;
-//     })
-//     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-// }
-
-// Yardımcı: Belirli bir aralık için tüm günleri dizi olarak döndür
-function getDateRangeArray(range: 'week' | 'month' | '3months') {
+function getDateRangeArray(range: 'week' | 'month' | '3months'): Date[] {
   const today = new Date();
   let days = 7;
   if (range === 'month') days = 30;
   else if (range === '3months') days = 90;
-  const arr = [];
+  const arr: Date[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
@@ -63,18 +26,8 @@ function getDateRangeArray(range: 'week' | 'month' | '3months') {
 const Istatistiklerim: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  // const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
-  // const [timeData, setTimeData] = useState<{day: string, minutes: number}[]>([
-  //   { day: 'Pazartesi', minutes: 30 },
-  //   { day: 'Salı', minutes: 45 },
-  //   { day: 'Çarşamba', minutes: 20 },
-  //   { day: 'Perşembe', minutes: 50 },
-  //   { day: 'Cuma', minutes: 35 },
-  //   { day: 'Cumartesi', minutes: 60 },
-  //   { day: 'Pazar', minutes: 25 },
-  // ]);
   const [selectedRange, setSelectedRange] = useState<'week' | 'month' | '3months'>('week');
 
   // Memoized subjects array
@@ -165,7 +118,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
 
   // Grafik için veri hazırlama (eksik günler 0'lı olacak)
   const dateArray = getDateRangeArray(selectedRange);
-  const chartData = dateArray.map(dateObj => {
+  const chartData = dateArray.map((dateObj: Date) => {
     const dateKey = dateObj.toISOString().split('T')[0];
     const activity = userStats?.dailyActivity?.[dateKey!] || { questionsSolved: 0, correctAnswers: 0 };
     return {
@@ -177,9 +130,9 @@ const Istatistiklerim: React.FC = React.memo(() => {
   });
 
   // Grafik altı özet istatistikler
-  const chartTotalSolved = chartData.reduce((sum, d) => sum + d.solved, 0);
-  const chartTotalCorrect = chartData.reduce((sum, d) => sum + d.correct, 0);
-  const chartTotalIncorrect = chartData.reduce((sum, d) => sum + d.incorrect, 0);
+  const chartTotalSolved = chartData.reduce((sum: any, d: any) => sum + d.solved, 0);
+  const chartTotalCorrect = chartData.reduce((sum: any, d: any) => sum + d.correct, 0);
+  const chartTotalIncorrect = chartData.reduce((sum: any, d: any) => sum + d.incorrect, 0);
   const chartSuccessRate = chartTotalSolved > 0 ? Math.round((chartTotalCorrect / chartTotalSolved) * 100) : 0;
   const chartAvgDaily = chartData.length > 0 ? Math.round(chartTotalSolved / chartData.length) : 0;
 
@@ -620,7 +573,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
                 textShadow: '0 2px 8px rgba(247, 151, 30, 0.4)',
                 letterSpacing: 2
               }}>
-                {Object.values(user.jokersUsed).reduce((a, b) => a + b, 0)}
+                {Object.values(user.jokersUsed).reduce((a: any, b: any) => a + b, 0)}
               </div>
             </div>
             {/* Beyaz kutu içindeki hologram efekti */}
@@ -660,7 +613,7 @@ const Istatistiklerim: React.FC = React.memo(() => {
                 label: 'Otomatik Doğru', 
                 value: user.jokersUsed.autoCorrect || 0,
                 gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-              }].map((joker, i) => (
+              }].map((joker: any, i: number) => (
                 <div
                   key={joker.label}
                   className="hologram-card"

@@ -28,24 +28,9 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "exactOptionalPropertyTypes": false,
-    "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": true,
-    "baseUrl": "src",
-    "paths": {
-      "@/*": ["*"],
-      "@/components/*": ["components/*"],
-      "@/services/*": ["services/*"],
-      "@/utils/*": ["utils/*"],
-      "@/types/*": ["types/*"],
-      "@/contexts/*": ["contexts/*"],
-      "@/hooks/*": ["hooks/*"],
-      "@/styles/*": ["styles/*"],
-      "@/data/*": ["data/*"]
-    }
+    "baseUrl": "src"
   },
   "include": [
     "src",
@@ -54,10 +39,7 @@
   "exclude": [
     "node_modules",
     "build",
-    "dist",
-    "src/utils/convertOldQuizDatesToIstanbul.ts",
-    "src/utils/migrateQuizDurationsToTotalAppTime.ts",
-    "src/utils/removeTotalAppTimeField.ts"
+    "dist"
   ],
   "ts-node": {
     "esm": true,
