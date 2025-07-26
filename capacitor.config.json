@@ -6,9 +6,7 @@
     "androidScheme": "https",
     "cleartext": true,
     "allowNavigation": [
-      "localhost:*",
-      "*.firebaseapp.com",
-      "*.firestore.googleapis.com"
+      "localhost:*"
     ]
   },
   "plugins": {
