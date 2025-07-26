@@ -37,6 +37,7 @@ function addActiveSeconds(seconds: number) {
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
+  console.log('PrivateRoute - isAuthenticated:', isAuthenticated);
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 

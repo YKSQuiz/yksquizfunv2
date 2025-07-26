@@ -32,6 +32,7 @@ sudo systemctl reload nginx
 npm install @capacitor/core @capacitor/cli @capacitor/android
 npx cap sync
 cd android
+chmod +x ./gradlew
 ./gradlew assembleDebug
 ```
 

@@ -440,19 +440,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
+      console.log('Google login başlatılıyor...');
+      
       // Mobilde native Google login kullan
       if ((window as any).Capacitor?.isNative) {
+        console.log('Native Google login kullanılıyor...');
         const result = await FirebaseAuthentication.signInWithGoogle();
+        console.log('Native login sonucu:', result);
+        
         if (result.credential?.idToken) {
+          console.log('ID Token alındı, Firebase credential oluşturuluyor...');
           const credential = GoogleAuthProvider.credential(result.credential.idToken);
           const userCredential = await signInWithCredential(auth, credential);
+          console.log('Firebase signInWithCredential sonucu:', userCredential);
+          
           const profile = await getUserProfile(userCredential.user);
+          console.log('Kullanıcı profili alındı:', profile);
+          
           setUser(profile);
           setIsAuthenticated(true);
+          console.log('Authentication state güncellendi - isAuthenticated: true');
           return true;
         }
+        console.log('ID Token alınamadı');
         return false;
       } else {
+        console.log('Web popup login kullanılıyor...');
         // Web'de popup kullan
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
