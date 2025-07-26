@@ -7,6 +7,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCredential,
   User as FirebaseUser
 } from 'firebase/auth';
 import {
@@ -17,6 +18,7 @@ import {
   increment
 } from 'firebase/firestore';
 import { Jokers, JokersUsed, User } from '../types';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 interface AuthContextType {
   user: User | null;
@@ -438,14 +440,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
-      const provider = new GoogleAuthProvider();
-      
-      // Hem mobil hem desktop'ta popup kullan
-      const result = await signInWithPopup(auth, provider);
-      const profile = await getUserProfile(result.user);
-      setUser(profile);
-      setIsAuthenticated(true);
-      return true;
+      // Mobilde native Google login kullan
+      if ((window as any).Capacitor?.isNative) {
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        if (result.credential?.idToken) {
+          const credential = GoogleAuthProvider.credential(result.credential.idToken);
+          const userCredential = await signInWithCredential(auth, credential);
+          const profile = await getUserProfile(userCredential.user);
+          setUser(profile);
+          setIsAuthenticated(true);
+          return true;
+        }
+        return false;
+      } else {
+        // Web'de popup kullan
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const profile = await getUserProfile(result.user);
+        setUser(profile);
+        setIsAuthenticated(true);
+        return true;
+      }
     } catch (e) {
       console.error('Google login error:', e);
       return false;
