@@ -439,12 +439,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
       const provider = new GoogleAuthProvider();
+      
+      // Hem mobil hem desktop'ta popup kullan
       const result = await signInWithPopup(auth, provider);
       const profile = await getUserProfile(result.user);
       setUser(profile);
       setIsAuthenticated(true);
       return true;
     } catch (e) {
+      console.error('Google login error:', e);
       return false;
     }
   };

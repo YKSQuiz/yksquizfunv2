@@ -2,7 +2,6 @@
   "name": "yks-quiz",
   "version": "1.0.0",
   "description": "YKS Quiz Uygulaması - Türkiye'nin en kapsamlı YKS hazırlık platformu",
-  "homepage": "https://www.yksquiz.fun",
   "private": true,
   "author": "YKS Quiz Team",
   "license": "MIT",
@@ -11,6 +10,10 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/ios": "^7.4.2",
     "@types/node": "^16.18.0",
     "@types/react": "^18.3.7",
     "@types/react-dom": "^18.3.7",
